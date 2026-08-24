@@ -1,33 +1,65 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ShieldCheck, Check, ArrowRight, Globe } from "lucide-react";
+import { redirect } from "next/navigation";
+import { ShieldCheck, ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { AddSiteForm } from "@/components/dashboard/add-site-form";
+import { SiteManager } from "@/components/dashboard/site-manager";
 import { siteConfig } from "@/lib/config";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
-import { DUMMY_SITES } from "@/lib/dummy-data";
-import { formatCompact, formatGrowth, hostname } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/server";
+import { getOptionalUser } from "@/lib/auth";
+import type { PublishedSite } from "@/lib/supabase/types";
 
-// Private surface — keep it out of search results.
 export const metadata: Metadata = {
   title: "Dashboard",
   robots: { index: false, follow: false },
 };
 
-export default function DashboardPage() {
-  const authReady = isSupabaseConfigured();
-  // Preview: pretend the first few seed sites belong to the current user.
-  const mySites = DUMMY_SITES.slice(0, 3);
+export default async function DashboardPage() {
+  // Not configured yet (e.g. local dev without keys): show a setup notice.
+  if (!isSupabaseConfigured()) {
+    return <SetupNotice />;
+  }
+
+  const user = await getOptionalUser();
+  if (!user) redirect("/login");
+
+  const supabase = await createClient();
+  const [{ data: sites }, { data: connection }] = await Promise.all([
+    supabase
+      .from("published_sites")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("connected_accounts")
+      .select("google_email")
+      .eq("user_id", user.id)
+      .eq("provider", "google")
+      .maybeSingle(),
+  ]);
+
+  const mySites = (sites ?? []) as PublishedSite[];
+  const googleConnected = Boolean(connection?.google_email);
+  const liveCount = mySites.filter((s) => s.is_active).length;
 
   return (
     <div className="container max-w-4xl py-12">
-      <h1 className="text-3xl font-bold tracking-tight">Your sites</h1>
-      <p className="mt-1 text-muted-foreground">
-        Connect Google Search Console, choose which properties to publish, and
-        watch your rank.
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Your sites</h1>
+          <p className="mt-1 text-muted-foreground">
+            Signed in as <span className="text-foreground">{user.email}</span>
+          </p>
+        </div>
+        <span className="text-sm text-muted-foreground">
+          {liveCount} live · {mySites.length} total
+        </span>
+      </div>
 
-      {/* Step 1 — Connect */}
+      {/* Connect Google Search Console */}
       <div className="mt-8 rounded-xl border border-border bg-card p-6">
         <div className="flex items-start gap-4">
           <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
@@ -35,92 +67,94 @@ export default function DashboardPage() {
           </div>
           <div className="flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-lg font-semibold">Connect Google Search Console</h2>
-              <Badge variant="outline">Read-only</Badge>
-            </div>
-            <p className="mt-1 text-sm text-muted-foreground">
-              We request only <code className="text-foreground">webmasters.readonly</code>.
-              We can never modify your site. Your token is encrypted and never
-              leaves the server.
-            </p>
-            <div className="mt-4">
-              {authReady ? (
-                <Button asChild>
-                  <a href="/api/auth/google/start">
-                    Connect with Google
-                    <ArrowRight className="size-4" />
-                  </a>
-                </Button>
+              <h2 className="text-lg font-semibold">Google Search Console</h2>
+              {googleConnected ? (
+                <Badge variant="success">Connected</Badge>
               ) : (
-                <Button disabled title="Set Supabase + Google env vars to enable">
-                  Connect with Google
-                </Button>
+                <Badge variant="outline">Read-only</Badge>
               )}
             </div>
-            {!authReady && (
-              <p className="mt-3 text-xs text-muted-foreground">
-                Auth is not configured yet. Add your Supabase and Google OAuth
-                credentials to <code>.env.local</code> to enable the live
-                connection. The table below is a preview of the manage-sites UI.
+            {googleConnected ? (
+              <p className="mt-1 text-sm text-muted-foreground">
+                Connected as{" "}
+                <span className="text-foreground">{connection!.google_email}</span>.
+                Verified clicks refresh automatically every{" "}
+                {siteConfig.refreshCadenceHours} hours.
               </p>
+            ) : (
+              <>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Connect to verify real organic clicks automatically. We request
+                  only <code className="text-foreground">webmasters.readonly</code>.
+                </p>
+                <div className="mt-4">
+                  <Button asChild>
+                    <a href="/api/auth/google/start">
+                      Connect with Google
+                      <ArrowRight className="size-4" />
+                    </a>
+                  </Button>
+                </div>
+              </>
             )}
           </div>
         </div>
       </div>
 
-      {/* Step 2 — Select & publish (preview) */}
+      {/* Add a site */}
       <div className="mt-8">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Select properties to publish</h2>
-          <span className="text-sm text-muted-foreground">
-            {mySites.length} verified
-          </span>
-        </div>
-
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
-          <ul className="divide-y divide-border">
-            {mySites.map((site) => (
-              <li
-                key={site.id}
-                className="flex items-center justify-between gap-4 px-5 py-4"
-              >
-                <div className="flex min-w-0 items-center gap-3">
-                  <Globe className="size-4 shrink-0 text-muted-foreground" />
-                  <div className="min-w-0">
-                    <p className="truncate font-medium">{site.display_name}</p>
-                    <p className="truncate text-sm text-muted-foreground">
-                      {hostname(site.site_url)}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-6">
-                  <div className="hidden text-right sm:block">
-                    <p className="font-semibold tabular-nums">
-                      {formatCompact(site.clicks_28d)}
-                    </p>
-                    <p className="text-xs text-success">
-                      {formatGrowth(site.growth_rate)} momentum
-                    </p>
-                  </div>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1 text-xs font-medium text-primary">
-                    <Check className="size-3.5" />
-                    Published
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <p className="mt-3 text-xs text-muted-foreground">
-          Toggling and category selection become active once your Google account
-          is connected. Data refreshes automatically every{" "}
-          {siteConfig.refreshCadenceHours} hours.
+        <h2 className="mb-1 text-lg font-semibold">Publish a site</h2>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Add a site to the public leaderboard. Connect Search Console to verify
+          its clicks — until then, seed values are used.
         </p>
+        <div className="rounded-xl border border-border bg-card p-6">
+          <AddSiteForm />
+        </div>
+      </div>
+
+      {/* Manage sites */}
+      <div className="mt-8">
+        <h2 className="mb-4 text-lg font-semibold">Manage</h2>
+        <SiteManager sites={mySites} />
       </div>
 
       <div className="mt-10 text-center">
         <Link href="/" className="text-sm text-primary hover:underline">
-          ← Back to the public leaderboard
+          ← View the public leaderboard
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function SetupNotice() {
+  return (
+    <div className="container max-w-2xl py-16">
+      <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+      <div className="mt-6 rounded-xl border border-border bg-card p-6">
+        <p className="flex items-center gap-2 font-medium">
+          <Check className="size-5 text-primary" />
+          Almost there — connect Supabase to enable accounts
+        </p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Sign-in and the publish flow are built and ready. They activate once
+          Supabase keys are present. Add them to{" "}
+          <code className="text-foreground">.env.local</code>:
+        </p>
+        <pre className="mt-4 overflow-x-auto rounded-lg bg-muted p-4 text-xs text-muted-foreground">
+{`NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...`}
+        </pre>
+        <p className="mt-4 text-sm text-muted-foreground">
+          Then run <code className="text-foreground">supabase/schema.sql</code> and{" "}
+          <code className="text-foreground">npm run db:check</code> to verify.
+        </p>
+      </div>
+      <div className="mt-6 text-center">
+        <Link href="/" className="text-sm text-primary hover:underline">
+          ← Back to the leaderboard
         </Link>
       </div>
     </div>

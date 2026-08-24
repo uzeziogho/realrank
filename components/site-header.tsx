@@ -1,8 +1,14 @@
 import Link from "next/link";
 import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AuthNav } from "@/components/auth-nav";
 import { siteConfig } from "@/lib/config";
 
+/**
+ * Static server component — no per-request data — so every page that uses the
+ * layout can still be statically/ISR rendered. Auth state is handled by the
+ * client <AuthNav /> to avoid forcing dynamic rendering on public pages.
+ */
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur">
@@ -21,9 +27,7 @@ export function SiteHeader() {
           <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
             <Link href="/about">How it works</Link>
           </Button>
-          <Button asChild size="sm">
-            <Link href="/dashboard">Add your site</Link>
-          </Button>
+          <AuthNav />
         </nav>
       </div>
     </header>
