@@ -1,0 +1,186 @@
+# Deploying OrganicRank — step by step
+
+From an empty Supabase project to a live site on Vercel. Follow in order.
+Nothing here is destructive; you can stop and resume at any step.
+
+There are 9 environment variables in total (see `.env.example`). You'll collect
+them across Parts 1–3, put them in `.env.local` for local testing, then paste
+the same set into Vercel in Part 5.
+
+```
+NEXT_PUBLIC_SITE_URL          # your public URL
+NEXT_PUBLIC_SUPABASE_URL      # Part 1
+NEXT_PUBLIC_SUPABASE_ANON_KEY # Part 1
+SUPABASE_SERVICE_ROLE_KEY     # Part 1  (secret)
+GOOGLE_CLIENT_ID              # Part 2
+GOOGLE_CLIENT_SECRET          # Part 2  (secret)
+GOOGLE_REDIRECT_URI           # Part 2
+TOKEN_ENCRYPTION_KEY          # Part 3  (secret, you generate)
+CRON_SECRET                   # Part 3  (secret, you generate)
+```
+
+---
+
+## Part 1 — Supabase (database + auth)
+
+1. **Create a project** at [supabase.com/dashboard](https://supabase.com/dashboard)
+   → *New project*. Choose a name, region (near your users), and a database
+   password (save it somewhere).
+
+2. **Create the tables + RLS.** Open **SQL Editor → New query**, paste the whole
+   of [`supabase/schema.sql`](supabase/schema.sql), and **Run**. Then optionally
+   run [`supabase/seed.sql`](supabase/seed.sql) for the sponsored slots.
+
+3. **Copy the API keys.** **Project Settings → API**:
+   - `Project URL` → `NEXT_PUBLIC_SUPABASE_URL`
+   - `anon` `public` key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `service_role` key (reveal) → `SUPABASE_SERVICE_ROLE_KEY` *(secret)*
+
+4. **Configure Auth URLs.** **Authentication → URL Configuration**:
+   - **Site URL**: `http://localhost:3000` for now (change to your real domain in Part 6).
+   - **Redirect URLs** — add both:
+     - `http://localhost:3000/auth/callback`
+     - `https://YOUR-DOMAIN/auth/callback` (add once you know it, Part 6)
+
+   Email sign-in works out of the box with Supabase's built-in email (rate-limited).
+   For production volume, set up custom SMTP under **Authentication → Emails**.
+
+---
+
+## Part 2 — Google Cloud (OAuth + Search Console API)
+
+1. **Create/select a project** at [console.cloud.google.com](https://console.cloud.google.com).
+
+2. **Enable the API.** *APIs & Services → Library* → search **"Google Search
+   Console API"** → **Enable**.
+
+3. **OAuth consent screen.** *APIs & Services → OAuth consent screen*:
+   - User type **External**.
+   - Fill app name, support email, developer email.
+   - **Scopes** → add `.../auth/webmasters.readonly`.
+   - **Test users** → add your own Google email (needed while the app is in
+     *Testing*). Publish the app later to allow anyone.
+
+4. **Create the OAuth client.** *APIs & Services → Credentials → Create
+   credentials → OAuth client ID*:
+   - Application type **Web application**.
+   - **Authorized redirect URIs** — add both:
+     - `http://localhost:3000/api/auth/google/callback`
+     - `https://YOUR-DOMAIN/api/auth/google/callback` (add in Part 6)
+   - Create, then copy:
+     - Client ID → `GOOGLE_CLIENT_ID`
+     - Client secret → `GOOGLE_CLIENT_SECRET` *(secret)*
+
+5. Set `GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/google/callback`
+   for local dev (must match a redirect URI above exactly).
+
+> The redirect URIs must match **character for character**, including scheme and
+> trailing path. Mismatch is the #1 cause of `redirect_uri_mismatch` errors.
+
+---
+
+## Part 3 — Generate app secrets
+
+```bash
+# 32-byte key for encrypting Google refresh tokens
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+# → TOKEN_ENCRYPTION_KEY
+
+# random secret that protects the cron endpoint
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+# → CRON_SECRET
+```
+
+---
+
+## Part 4 — Run and verify locally
+
+```bash
+git pull origin claude/organicrank-leaderboard-app-rm6645   # or main, once merged
+cp .env.example .env.local          # then fill in all 9 values
+npm install
+npm run db:check                    # ✓ all four tables present
+npm run dev                         # http://localhost:3000
+```
+
+Smoke test the full loop:
+1. Open `/` — leaderboard renders (seed data until you publish real sites).
+2. **Sign in** at `/login` — magic link arrives by email → lands on `/dashboard`.
+3. **Connect with Google** — approve read-only access.
+4. **Your verified properties** appear → **Publish** one → real clicks are fetched
+   and it shows on the public board.
+5. `/stats` shows the Organic Index and movers.
+
+If sign-in emails don't arrive, check **Supabase → Authentication → Logs** and
+that the redirect URL is allow-listed (Part 1.4).
+
+---
+
+## Part 5 — Deploy to Vercel
+
+1. **Push your code** to GitHub (this repo is already there). Merge your branch
+   to `main` when ready, or import the branch directly.
+
+2. **Import the project** at [vercel.com/new](https://vercel.com/new) → pick the
+   GitHub repo. Vercel auto-detects Next.js — no build config needed.
+
+3. **Add environment variables** (Project → Settings → Environment Variables) for
+   **Production** (and Preview if you want previews to work). Paste all 9, but use
+   production values for these two:
+   - `NEXT_PUBLIC_SITE_URL=https://YOUR-DOMAIN`
+   - `GOOGLE_REDIRECT_URI=https://YOUR-DOMAIN/api/auth/google/callback`
+
+4. **Deploy.** You'll get a `*.vercel.app` URL (or attach a custom domain under
+   Settings → Domains).
+
+5. **Cron.** [`vercel.json`](vercel.json) already schedules `/api/cron/refresh`
+   every 6 hours. Vercel automatically sends your `CRON_SECRET` as a Bearer token,
+   which the route verifies — no extra setup.
+   > Note: the **Hobby** plan runs cron at most **once per day**. For the 6-hour
+   > cadence use **Pro**, or change the schedule in `vercel.json` to `0 0 * * *`.
+
+---
+
+## Part 6 — Point everything at the real domain
+
+Now that you know the production URL, go back and add it everywhere:
+
+- **Supabase → Auth → URL Configuration**: set **Site URL** to your domain and add
+  `https://YOUR-DOMAIN/auth/callback` to Redirect URLs.
+- **Google Cloud → Credentials**: add `https://YOUR-DOMAIN/api/auth/google/callback`
+  to Authorized redirect URIs.
+- **Vercel env**: confirm `NEXT_PUBLIC_SITE_URL` and `GOOGLE_REDIRECT_URI` use the
+  domain, then **redeploy** so the change takes effect.
+
+---
+
+## Part 7 — Post-deploy checks
+
+```bash
+# public pages
+curl -I https://YOUR-DOMAIN/                 # 200
+curl    https://YOUR-DOMAIN/robots.txt        # allows /, disallows /dashboard,/api
+curl    https://YOUR-DOMAIN/sitemap.xml       # lists home, /stats, categories
+
+# trigger a data refresh manually (same call Vercel Cron makes)
+curl -H "Authorization: Bearer YOUR_CRON_SECRET" \
+     https://YOUR-DOMAIN/api/cron/refresh      # {"ok":true,...}
+```
+
+Then, in the real Google Search Console, add your OrganicRank domain as a
+property and **submit `https://YOUR-DOMAIN/sitemap.xml`** so Google indexes the
+leaderboard.
+
+---
+
+## Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `redirect_uri_mismatch` | The Google redirect URI must exactly match `GOOGLE_REDIRECT_URI`. Check scheme, host, and `/api/auth/google/callback`. |
+| Magic link 404s / "auth" error | Add the `/auth/callback` URL to Supabase Auth Redirect URLs. |
+| Leaderboard still shows "Preview data" | `published_sites` is empty — publish a site, or run the demo rows in `seed.sql`. |
+| `npm run db:check` fails | Keys wrong, or `schema.sql` not run in this project. |
+| Cron returns 401 | `CRON_SECRET` not set in Vercel, or mismatched. |
+| Google login works but no properties listed | That Google account has no verified Search Console properties, or the app is in Testing and the account isn't a test user. |
+```
