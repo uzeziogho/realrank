@@ -70,7 +70,7 @@ export default async function LoginPage({
 
         <p className="mt-6 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
           <ShieldCheck className="size-3.5 text-primary" />
-          Read-only access (<code className="text-foreground">webmasters.readonly</code>). We can never change your site.
+          Read-only access. We can never change your site.
         </p>
 
         {!ready && (
