@@ -7,12 +7,15 @@
  * NEXT_PUBLIC_SITE_URL (a blank value would otherwise make `new URL()` throw
  * during the build), falling back to Vercel's deployment URL, then localhost.
  */
+const PRODUCTION_URL = "https://www.realrank.lol";
+
 function resolveSiteUrl(): string {
   const explicit = process.env.NEXT_PUBLIC_SITE_URL?.trim();
   if (explicit) return explicit.replace(/\/+$/, "");
 
-  const vercel = process.env.NEXT_PUBLIC_VERCEL_URL?.trim() || process.env.VERCEL_URL?.trim();
-  if (vercel) return `https://${vercel.replace(/^https?:\/\//, "").replace(/\/+$/, "")}`;
+  // On Vercel, default to the real custom domain so canonical tags, the sitemap,
+  // and OAuth redirects are correct without needing an env var.
+  if (process.env.VERCEL) return PRODUCTION_URL;
 
   return "http://localhost:3000";
 }

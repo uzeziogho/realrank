@@ -3,21 +3,22 @@
 From an empty Supabase project to a live site on Vercel. Follow in order.
 Nothing here is destructive; you can stop and resume at any step.
 
-There are 9 environment variables in total (see `.env.example`). You'll collect
-them across Parts 1–3, put them in `.env.local` for local testing, then paste
-the same set into Vercel in Part 5.
+The public values (site URL, Supabase URL, Supabase anon key) are baked into the
+code with sensible defaults, so **Vercel only needs these six secrets** — all
+with NO `NEXT_PUBLIC_` prefix, so they save without any "Sensitive" prompt drama:
 
 ```
-NEXT_PUBLIC_SITE_URL          # your public URL
-NEXT_PUBLIC_SUPABASE_URL      # Part 1
-NEXT_PUBLIC_SUPABASE_ANON_KEY # Part 1
 SUPABASE_SERVICE_ROLE_KEY     # Part 1  (secret)
 GOOGLE_CLIENT_ID              # Part 2
 GOOGLE_CLIENT_SECRET          # Part 2  (secret)
-GOOGLE_REDIRECT_URI           # Part 2
+GOOGLE_REDIRECT_URI           # Part 2  = https://www.realrank.lol/api/auth/google/callback
 TOKEN_ENCRYPTION_KEY          # Part 3  (secret, you generate)
 CRON_SECRET                   # Part 3  (secret, you generate)
 ```
+
+(To point at a different Supabase project or domain later, set the optional
+`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, or
+`NEXT_PUBLIC_SITE_URL` — they override the baked-in defaults.)
 
 ---
 
