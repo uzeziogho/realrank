@@ -104,7 +104,7 @@ export default async function HomePage({
 
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
             <Button asChild size="lg">
-              <Link href="/dashboard">Add your site — it&apos;s free</Link>
+              <Link href="/login">Connect Google Search Console</Link>
             </Button>
             <Button asChild size="lg" variant="outline">
               <Link href="#leaderboard">View the leaderboard</Link>

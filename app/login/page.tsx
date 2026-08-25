@@ -11,11 +11,26 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function LoginPage() {
+const ERROR_MESSAGES: Record<string, string> = {
+  not_configured: "Google sign-in isn't fully configured yet. Please try again shortly.",
+  start_failed: "Couldn't start the Google connection. Please try again.",
+  signin_failed: "Google sign-in didn't complete. Please try again.",
+  bad_state: "Your session expired. Please try connecting again.",
+  exchange_failed: "Google authorization failed. Please try again.",
+  no_id_token: "Google didn't return an identity token. Please try again.",
+};
+
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
   // Already connected? Go straight to the dashboard.
   const user = await getOptionalUser();
   if (user) redirect("/dashboard");
 
+  const errorKey = (await searchParams).error;
+  const errorMessage = errorKey ? ERROR_MESSAGES[errorKey] ?? "Something went wrong. Please try again." : null;
   const ready = isSupabaseConfigured() && Boolean(process.env.GOOGLE_CLIENT_ID);
 
   return (
@@ -31,6 +46,12 @@ export default async function LoginPage() {
           Connect Google Search Console to verify your organic clicks and claim
           your spot on the leaderboard. No passwords, no separate sign-up.
         </p>
+
+        {errorMessage && (
+          <p className="mt-6 rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+            {errorMessage}
+          </p>
+        )}
 
         <div className="mt-8">
           {ready ? (

@@ -56,7 +56,7 @@ export function AuthNav() {
 
   return (
     <Button asChild size="sm">
-      <Link href="/login">Add your site</Link>
+      <Link href="/login">Connect Search Console</Link>
     </Button>
   );
 }

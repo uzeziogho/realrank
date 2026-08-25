@@ -30,7 +30,13 @@ export async function middleware(req: NextRequest) {
     },
   );
 
-  await supabase.auth.getUser();
+  // Never let an auth/network hiccup 500 the whole site — session refresh is
+  // best-effort here.
+  try {
+    await supabase.auth.getUser();
+  } catch (err) {
+    console.error("[middleware] session refresh failed:", err);
+  }
   return res;
 }
 
