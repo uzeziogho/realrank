@@ -1,4 +1,4 @@
-# OrganicRank
+# RealRank
 
 **Connect your sites. We verify the clicks. Real growth decides the order.**
 
@@ -92,8 +92,9 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 
 ### Cron
 
-`vercel.json` schedules `/api/cron/refresh` every 6 hours. Set `CRON_SECRET` in
-Vercel — the route rejects any call without `Authorization: Bearer $CRON_SECRET`.
+`vercel.json` schedules `/api/cron/refresh` once daily (Hobby-plan limit; raise
+on Pro). Set `CRON_SECRET` in Vercel — the route rejects any call without
+`Authorization: Bearer $CRON_SECRET`.
 
 ## Security
 

@@ -1,5 +1,5 @@
 -- ─────────────────────────────────────────────────────────────
--- OrganicRank database schema + Row Level Security
+-- RealRank database schema + Row Level Security
 -- Run in the Supabase SQL editor, or via `supabase db push`.
 -- ─────────────────────────────────────────────────────────────
 

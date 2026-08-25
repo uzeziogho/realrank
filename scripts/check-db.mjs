@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Supabase connection check for OrganicRank.
+ * Supabase connection check for RealRank.
  *
  *   npm run db:check
  *

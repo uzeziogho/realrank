@@ -1,4 +1,4 @@
-# Deploying OrganicRank — step by step
+# Deploying RealRank — step by step
 
 From an empty Supabase project to a live site on Vercel. Follow in order.
 Nothing here is destructive; you can stop and resume at any step.
@@ -40,7 +40,7 @@ CRON_SECRET                   # Part 3  (secret, you generate)
    - **Site URL**: `http://localhost:3000` for now (change to your real domain in Part 6).
    - **Redirect URLs** — add both:
      - `http://localhost:3000/auth/callback`
-     - `https://YOUR-DOMAIN/auth/callback` (add once you know it, Part 6)
+     - `https://realrank.lol/auth/callback` (add once you know it, Part 6)
 
    Email sign-in works out of the box with Supabase's built-in email (rate-limited).
    For production volume, set up custom SMTP under **Authentication → Emails**.
@@ -66,7 +66,7 @@ CRON_SECRET                   # Part 3  (secret, you generate)
    - Application type **Web application**.
    - **Authorized redirect URIs** — add both:
      - `http://localhost:3000/api/auth/google/callback`
-     - `https://YOUR-DOMAIN/api/auth/google/callback` (add in Part 6)
+     - `https://realrank.lol/api/auth/google/callback` (add in Part 6)
    - Create, then copy:
      - Client ID → `GOOGLE_CLIENT_ID`
      - Client secret → `GOOGLE_CLIENT_SECRET` *(secret)*
@@ -96,7 +96,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ## Part 4 — Run and verify locally
 
 ```bash
-git pull origin claude/organicrank-leaderboard-app-rm6645   # or main, once merged
+git pull origin claude/realrank-leaderboard-app-rm6645   # or main, once merged
 cp .env.example .env.local          # then fill in all 9 values
 npm install
 npm run db:check                    # ✓ all four tables present
@@ -104,7 +104,8 @@ npm run dev                         # http://localhost:3000
 ```
 
 Smoke test the full loop:
-1. Open `/` — leaderboard renders (seed data until you publish real sites).
+1. Open `/` — with Supabase connected the board is empty until you publish a
+   site (seed data only appears if you run with no Supabase keys at all).
 2. **Sign in** at `/login` — magic link arrives by email → lands on `/dashboard`.
 3. **Connect with Google** — approve read-only access.
 4. **Your verified properties** appear → **Publish** one → real clicks are fetched
@@ -127,17 +128,18 @@ that the redirect URL is allow-listed (Part 1.4).
 3. **Add environment variables** (Project → Settings → Environment Variables) for
    **Production** (and Preview if you want previews to work). Paste all 9, but use
    production values for these two:
-   - `NEXT_PUBLIC_SITE_URL=https://YOUR-DOMAIN`
-   - `GOOGLE_REDIRECT_URI=https://YOUR-DOMAIN/api/auth/google/callback`
+   - `NEXT_PUBLIC_SITE_URL=https://realrank.lol`
+   - `GOOGLE_REDIRECT_URI=https://realrank.lol/api/auth/google/callback`
 
 4. **Deploy.** You'll get a `*.vercel.app` URL (or attach a custom domain under
    Settings → Domains).
 
-5. **Cron.** [`vercel.json`](vercel.json) already schedules `/api/cron/refresh`
-   every 6 hours. Vercel automatically sends your `CRON_SECRET` as a Bearer token,
-   which the route verifies — no extra setup.
-   > Note: the **Hobby** plan runs cron at most **once per day**. For the 6-hour
-   > cadence use **Pro**, or change the schedule in `vercel.json` to `0 0 * * *`.
+5. **Cron.** [`vercel.json`](vercel.json) schedules `/api/cron/refresh` once daily
+   (`0 6 * * *`) — the max frequency the Hobby plan allows. Vercel automatically
+   sends your `CRON_SECRET` as a Bearer token, which the route verifies — no extra
+   setup.
+   > On **Pro** you can refresh more often: change the schedule in `vercel.json`
+   > (e.g. `0 */6 * * *`) and bump `refreshCadenceHours` in `lib/config.ts` to match.
 
 ---
 
@@ -146,8 +148,8 @@ that the redirect URL is allow-listed (Part 1.4).
 Now that you know the production URL, go back and add it everywhere:
 
 - **Supabase → Auth → URL Configuration**: set **Site URL** to your domain and add
-  `https://YOUR-DOMAIN/auth/callback` to Redirect URLs.
-- **Google Cloud → Credentials**: add `https://YOUR-DOMAIN/api/auth/google/callback`
+  `https://realrank.lol/auth/callback` to Redirect URLs.
+- **Google Cloud → Credentials**: add `https://realrank.lol/api/auth/google/callback`
   to Authorized redirect URIs.
 - **Vercel env**: confirm `NEXT_PUBLIC_SITE_URL` and `GOOGLE_REDIRECT_URI` use the
   domain, then **redeploy** so the change takes effect.
@@ -158,17 +160,17 @@ Now that you know the production URL, go back and add it everywhere:
 
 ```bash
 # public pages
-curl -I https://YOUR-DOMAIN/                 # 200
-curl    https://YOUR-DOMAIN/robots.txt        # allows /, disallows /dashboard,/api
-curl    https://YOUR-DOMAIN/sitemap.xml       # lists home, /stats, categories
+curl -I https://realrank.lol/                 # 200
+curl    https://realrank.lol/robots.txt        # allows /, disallows /dashboard,/api
+curl    https://realrank.lol/sitemap.xml       # lists home, /stats, categories
 
 # trigger a data refresh manually (same call Vercel Cron makes)
 curl -H "Authorization: Bearer YOUR_CRON_SECRET" \
-     https://YOUR-DOMAIN/api/cron/refresh      # {"ok":true,...}
+     https://realrank.lol/api/cron/refresh      # {"ok":true,...}
 ```
 
-Then, in the real Google Search Console, add your OrganicRank domain as a
-property and **submit `https://YOUR-DOMAIN/sitemap.xml`** so Google indexes the
+Then, in the real Google Search Console, add your RealRank domain as a
+property and **submit `https://realrank.lol/sitemap.xml`** so Google indexes the
 leaderboard.
 
 ---
@@ -179,7 +181,7 @@ leaderboard.
 |---|---|
 | `redirect_uri_mismatch` | The Google redirect URI must exactly match `GOOGLE_REDIRECT_URI`. Check scheme, host, and `/api/auth/google/callback`. |
 | Magic link 404s / "auth" error | Add the `/auth/callback` URL to Supabase Auth Redirect URLs. |
-| Leaderboard still shows "Preview data" | `published_sites` is empty — publish a site, or run the demo rows in `seed.sql`. |
+| Leaderboard is empty | `published_sites` has no active rows — publish a site, or run the demo rows in `seed.sql`. (Seed/"Preview data" only shows when Supabase isn't configured.) |
 | `npm run db:check` fails | Keys wrong, or `schema.sql` not run in this project. |
 | Cron returns 401 | `CRON_SECRET` not set in Vercel, or mismatched. |
 | Google login works but no properties listed | That Google account has no verified Search Console properties, or the app is in Testing and the account isn't a test user. |

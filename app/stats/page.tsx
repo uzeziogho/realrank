@@ -10,7 +10,7 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Organic Search Stats — Anonymous Benchmark",
   description:
-    "Verified, privacy-safe organic search benchmarks: the OrganicRank Index of median growth, growing vs. declining share, and the fastest verified movers. Anonymized conclusions only.",
+    "Verified, privacy-safe organic search benchmarks: the RealRank Index of median growth, growing vs. declining share, and the fastest verified movers. Anonymized conclusions only.",
   alternates: { canonical: "/stats" },
 };
 

@@ -18,14 +18,14 @@ function resolveSiteUrl(): string {
 }
 
 export const siteConfig = {
-  name: "OrganicRank",
+  name: "RealRank",
   // Keyword-forward tagline — targets "organic traffic" + "leaderboard" search intent.
   tagline: "Connect your sites. We verify the clicks. Real growth decides the order.",
   description:
     "The public organic traffic leaderboard. Sites ranked by verified Google Search Console clicks — momentum-first, so fast-growing sites can beat the giants.",
   url: resolveSiteUrl(),
   ogImage: "/og.png",
-  twitter: "@organicrank",
+  twitter: "@realrank",
   // How often the public data is refreshed by the cron job (used in copy only).
   // Matches vercel.json (daily on Hobby; raise cadence + this value on Pro).
   refreshCadenceHours: 24,

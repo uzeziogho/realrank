@@ -1,5 +1,5 @@
 /**
- * Momentum scoring — the heart of OrganicRank's default ranking.
+ * Momentum scoring — the heart of RealRank's default ranking.
  *
  * Goal: let a fast-growing small site compete with a large established one,
  * without letting statistical noise (5 → 15 clicks) top a steady 40k-click site.

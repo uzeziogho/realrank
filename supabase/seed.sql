@@ -1,5 +1,5 @@
 -- ─────────────────────────────────────────────────────────────
--- OrganicRank seed data (optional)
+-- RealRank seed data (optional)
 -- Run AFTER schema.sql, in the Supabase SQL editor.
 --
 -- Purpose: give a freshly-linked database something to render so you can

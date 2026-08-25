@@ -82,19 +82,16 @@ async function loadRaw(): Promise<{
 
     if (sitesRes.error) throw sitesRes.error;
 
-    const sites = sitesRes.data ?? [];
-    // If the table is empty (fresh project), fall back to seed data.
-    if (sites.length === 0) {
-      return { sites: DUMMY_SITES, slots: DUMMY_SPONSORED, usingDummyData: true };
-    }
-
+    // Supabase is connected: always show real data, never seed data — even when
+    // the table is empty (the UI renders a proper empty state instead).
     return {
-      sites,
+      sites: sitesRes.data ?? [],
       slots: slotsRes.data ?? [],
       usingDummyData: false,
     };
   } catch (err) {
-    console.error("[data] Supabase read failed, using seed data:", err);
-    return { sites: DUMMY_SITES, slots: DUMMY_SPONSORED, usingDummyData: true };
+    console.error("[data] Supabase read failed:", err);
+    // Don't fall back to seed data on the live site — surface an empty board.
+    return { sites: [], slots: [], usingDummyData: false };
   }
 }

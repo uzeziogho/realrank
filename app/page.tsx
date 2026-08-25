@@ -146,27 +146,42 @@ export default async function HomePage({
           </Suspense>
         </div>
 
-        <LeaderboardJsonLd sites={pageOrganic} />
-        <Leaderboard rows={pageRows} view={view} />
-
-        <Pagination
-          currentPage={page}
-          totalPages={totalPages}
-          buildHref={(p) => leaderboardHref(view, p)}
-        />
-
-        <div className="mt-4 flex flex-col items-center justify-between gap-2 text-xs text-muted-foreground sm:flex-row">
-          <p>
-            Showing {start + 1}–{start + pageOrganic.length} of {data.totalSites}.
-            Last updated {data.lastUpdated ? timeAgo(data.lastUpdated) : "—"}; refreshes
-            every {siteConfig.refreshCadenceHours} hours.
-          </p>
-          {data.usingDummyData && (
-            <p className="rounded-full border border-border px-2 py-0.5">
-              Preview data — connect a site to publish real numbers
+        {data.totalSites === 0 ? (
+          <div className="rounded-xl border border-dashed border-border bg-card/50 p-12 text-center">
+            <p className="text-lg font-medium">No sites on the board yet</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Be the first — connect Google Search Console and publish your site to
+              claim the top spot.
             </p>
-          )}
-        </div>
+            <Button asChild className="mt-5">
+              <Link href="/dashboard">Add your site</Link>
+            </Button>
+          </div>
+        ) : (
+          <>
+            <LeaderboardJsonLd sites={pageOrganic} />
+            <Leaderboard rows={pageRows} view={view} />
+
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              buildHref={(p) => leaderboardHref(view, p)}
+            />
+
+            <div className="mt-4 flex flex-col items-center justify-between gap-2 text-xs text-muted-foreground sm:flex-row">
+              <p>
+                Showing {start + 1}–{start + pageOrganic.length} of {data.totalSites}.
+                Last updated {data.lastUpdated ? timeAgo(data.lastUpdated) : "—"}; refreshes
+                every {siteConfig.refreshCadenceHours} hours.
+              </p>
+              {data.usingDummyData && (
+                <p className="rounded-full border border-border px-2 py-0.5">
+                  Preview data — connect a site to publish real numbers
+                </p>
+              )}
+            </div>
+          </>
+        )}
       </section>
 
       {/* Conversion band */}
