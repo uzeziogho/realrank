@@ -27,6 +27,7 @@ export function SiteFooter() {
             <p className="text-sm font-medium">Product</p>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li><Link href="/about" className="hover:text-foreground">How it works</Link></li>
+              <li><Link href="/stats" className="hover:text-foreground">Stats</Link></li>
               <li><Link href="/dashboard" className="hover:text-foreground">Add your site</Link></li>
               <li><Link href="/#leaderboard" className="hover:text-foreground">Leaderboard</Link></li>
             </ul>

@@ -10,6 +10,8 @@ import type { LeaderboardRow, RankedSite, RankingView } from "@/lib/types";
 export interface LeaderboardData {
   rows: LeaderboardRow[];
   organic: RankedSite[];
+  /** Active sponsored slots, so callers can re-inject ads per paginated page. */
+  sponsored: SponsoredSlot[];
   lastUpdated: string | null;
   totalSites: number;
   totalClicks28d: number;
@@ -42,11 +44,24 @@ export async function getLeaderboardData(
   return {
     rows,
     organic,
+    sponsored: slots,
     lastUpdated: latestRefresh(scoped),
     totalSites: organic.length,
     totalClicks28d,
     usingDummyData,
   };
+}
+
+/**
+ * Raw active sites from the same source as the leaderboard (Supabase or seed).
+ * Used by the stats page so both surfaces agree on the underlying data.
+ */
+export async function getActiveSites(): Promise<{
+  sites: PublishedSite[];
+  usingDummyData: boolean;
+}> {
+  const { sites, usingDummyData } = await loadRaw();
+  return { sites: sites.filter((s) => s.is_active), usingDummyData };
 }
 
 async function loadRaw(): Promise<{

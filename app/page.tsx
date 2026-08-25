@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { RankingToggle } from "@/components/ranking-toggle";
 import { Leaderboard } from "@/components/leaderboard";
 import { LeaderboardJsonLd } from "@/components/json-ld";
+import { Pagination } from "@/components/pagination";
 import { getLeaderboardData } from "@/lib/data";
+import { injectSponsored } from "@/lib/ranking";
 import { siteConfig, type RankingView } from "@/lib/config";
 import { formatCompact, timeAgo } from "@/lib/utils";
 
@@ -14,10 +16,27 @@ import { formatCompact, timeAgo } from "@/lib/utils";
 // refreshed at most hourly (and on-demand after the cron writes new data).
 export const revalidate = 3600;
 
-type SearchParams = Promise<{ view?: string }>;
+const PAGE_SIZE = 50;
+
+type SearchParams = Promise<{ view?: string; page?: string }>;
 
 function parseView(v?: string): RankingView {
   return v === "volume" ? "volume" : "momentum";
+}
+
+function parsePage(v: string | undefined, totalPages: number): number {
+  const n = Number.parseInt(v ?? "1", 10);
+  if (Number.isNaN(n) || n < 1) return 1;
+  return Math.min(n, Math.max(1, totalPages));
+}
+
+/** Build a leaderboard URL preserving view + page params. */
+function leaderboardHref(view: RankingView, page: number): string {
+  const params = new URLSearchParams();
+  if (view === "volume") params.set("view", "volume");
+  if (page > 1) params.set("page", String(page));
+  const qs = params.toString();
+  return qs ? `/?${qs}#leaderboard` : "/#leaderboard";
 }
 
 export async function generateMetadata({
@@ -25,15 +44,24 @@ export async function generateMetadata({
 }: {
   searchParams: SearchParams;
 }): Promise<Metadata> {
-  const view = parseView((await searchParams).view);
-  const title =
+  const sp = await searchParams;
+  const view = parseView(sp.view);
+  const page = Number.parseInt(sp.page ?? "1", 10) || 1;
+  const base =
     view === "volume"
       ? "Top Websites by Organic Traffic Volume"
       : "Fastest-Growing Websites by Organic Traffic";
+  const title = page > 1 ? `${base} — Page ${page}` : base;
+
+  const params = new URLSearchParams();
+  if (view === "volume") params.set("view", "volume");
+  if (page > 1) params.set("page", String(page));
+  const qs = params.toString();
+
   return {
     title,
     description: siteConfig.description,
-    alternates: { canonical: view === "volume" ? "/?view=volume" : "/" },
+    alternates: { canonical: qs ? `/?${qs}` : "/" },
   };
 }
 
@@ -42,8 +70,16 @@ export default async function HomePage({
 }: {
   searchParams: SearchParams;
 }) {
-  const view = parseView((await searchParams).view);
+  const sp = await searchParams;
+  const view = parseView(sp.view);
   const data = await getLeaderboardData(view);
+
+  const totalPages = Math.max(1, Math.ceil(data.organic.length / PAGE_SIZE));
+  const page = parsePage(sp.page, totalPages);
+  const start = (page - 1) * PAGE_SIZE;
+  const pageOrganic = data.organic.slice(start, start + PAGE_SIZE);
+  // Re-inject sponsored slots for this page (they only match ranks #10/#20 → page 1).
+  const pageRows = injectSponsored(pageOrganic, data.sponsored);
 
   return (
     <>
@@ -110,13 +146,20 @@ export default async function HomePage({
           </Suspense>
         </div>
 
-        <LeaderboardJsonLd sites={data.organic} />
-        <Leaderboard rows={data.rows} view={view} />
+        <LeaderboardJsonLd sites={pageOrganic} />
+        <Leaderboard rows={pageRows} view={view} />
+
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          buildHref={(p) => leaderboardHref(view, p)}
+        />
 
         <div className="mt-4 flex flex-col items-center justify-between gap-2 text-xs text-muted-foreground sm:flex-row">
           <p>
-            Last updated {data.lastUpdated ? timeAgo(data.lastUpdated) : "—"}. Data
-            refreshes every {siteConfig.refreshCadenceHours} hours.
+            Showing {start + 1}–{start + pageOrganic.length} of {data.totalSites}.
+            Last updated {data.lastUpdated ? timeAgo(data.lastUpdated) : "—"}; refreshes
+            every {siteConfig.refreshCadenceHours} hours.
           </p>
           {data.usingDummyData && (
             <p className="rounded-full border border-border px-2 py-0.5">
