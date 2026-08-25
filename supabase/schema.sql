@@ -13,14 +13,17 @@ create table if not exists public.profiles (
 
 alter table public.profiles enable row level security;
 
+drop policy if exists "profiles are viewable by owner" on public.profiles;
 create policy "profiles are viewable by owner"
   on public.profiles for select
   using (auth.uid() = id);
 
+drop policy if exists "users can insert their own profile" on public.profiles;
 create policy "users can insert their own profile"
   on public.profiles for insert
   with check (auth.uid() = id);
 
+drop policy if exists "users can update their own profile" on public.profiles;
 create policy "users can update their own profile"
   on public.profiles for update
   using (auth.uid() = id);
@@ -64,10 +67,12 @@ alter table public.connected_accounts enable row level security;
 -- Users may see WHETHER they are connected (email/provider), but the token
 -- column should never be selected client-side. Keep reads to owner; the app
 -- selects only non-secret columns on the client.
+drop policy if exists "owner can read own connection metadata" on public.connected_accounts;
 create policy "owner can read own connection metadata"
   on public.connected_accounts for select
   using (auth.uid() = user_id);
 
+drop policy if exists "owner can delete own connection" on public.connected_accounts;
 create policy "owner can delete own connection"
   on public.connected_accounts for delete
   using (auth.uid() = user_id);
@@ -98,23 +103,28 @@ alter table public.published_sites enable row level security;
 
 -- PUBLIC READ: the leaderboard is crawlable, so anyone (including anonymous
 -- crawlers) can read active sites.
+drop policy if exists "anyone can read active published sites" on public.published_sites;
 create policy "anyone can read active published sites"
   on public.published_sites for select
   using (is_active = true);
 
 -- Owners manage their own rows.
+drop policy if exists "owner can read all own sites" on public.published_sites;
 create policy "owner can read all own sites"
   on public.published_sites for select
   using (auth.uid() = user_id);
 
+drop policy if exists "owner can insert own sites" on public.published_sites;
 create policy "owner can insert own sites"
   on public.published_sites for insert
   with check (auth.uid() = user_id);
 
+drop policy if exists "owner can update own sites" on public.published_sites;
 create policy "owner can update own sites"
   on public.published_sites for update
   using (auth.uid() = user_id);
 
+drop policy if exists "owner can delete own sites" on public.published_sites;
 create policy "owner can delete own sites"
   on public.published_sites for delete
   using (auth.uid() = user_id);
@@ -143,6 +153,7 @@ create table if not exists public.sponsored_slots (
 alter table public.sponsored_slots enable row level security;
 
 -- Public read of active ads; writes are admin-only (service role).
+drop policy if exists "anyone can read active sponsored slots" on public.sponsored_slots;
 create policy "anyone can read active sponsored slots"
   on public.sponsored_slots for select
   using (is_active = true);
