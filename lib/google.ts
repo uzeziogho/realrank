@@ -22,13 +22,22 @@ export function createOAuthClient(): OAuth2Client {
   );
 }
 
-/** Build the consent URL. `state` should be a CSRF token tied to the session. */
+/**
+ * Build the consent URL. `state` should be a CSRF token tied to the session.
+ * We request identity scopes (openid/email/profile) alongside the GSC scope so
+ * a single Google consent both signs the user in AND connects Search Console.
+ */
 export function getAuthUrl(state: string): string {
   const client = createOAuthClient();
   return client.generateAuthUrl({
     access_type: "offline", // request a refresh token
     prompt: "consent", // force refresh_token on re-auth
-    scope: [GSC_SCOPE],
+    scope: [
+      "openid",
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile",
+      GSC_SCOPE,
+    ],
     include_granted_scopes: true,
     state,
   });

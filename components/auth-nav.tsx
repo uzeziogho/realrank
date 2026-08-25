@@ -55,13 +55,8 @@ export function AuthNav() {
   }
 
   return (
-    <>
-      <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-        <Link href="/login">Sign in</Link>
-      </Button>
-      <Button asChild size="sm">
-        <Link href="/dashboard">Add your site</Link>
-      </Button>
-    </>
+    <Button asChild size="sm">
+      <Link href="/login">Add your site</Link>
+    </Button>
   );
 }

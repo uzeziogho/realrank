@@ -36,14 +36,16 @@ CRON_SECRET                   # Part 3  (secret, you generate)
    - `anon` `public` key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `service_role` key (reveal) → `SUPABASE_SERVICE_ROLE_KEY` *(secret)*
 
-4. **Configure Auth URLs.** **Authentication → URL Configuration**:
-   - **Site URL**: `http://localhost:3000` for now (change to your real domain in Part 6).
-   - **Redirect URLs** — add both:
-     - `http://localhost:3000/auth/callback`
-     - `https://realrank.lol/auth/callback` (add once you know it, Part 6)
-
-   Email sign-in works out of the box with Supabase's built-in email (rate-limited).
-   For production volume, set up custom SMTP under **Authentication → Emails**.
+4. **Enable the Google auth provider.** Sign-in is Google-only (one click also
+   connects Search Console), so:
+   - **Authentication → Providers → Google → Enable.**
+   - In **Authorized Client IDs** (or "Client IDs"), paste your Google OAuth
+     **Web client ID** (from Part 2) — this lets the app verify Google identity
+     tokens. Add the client secret too if the field is shown.
+   - If sign-in reports a nonce error, turn on **Skip nonce checks** for Google.
+   - **Authentication → URL Configuration → Site URL**: `http://localhost:3000`
+     now (your real domain in Part 6). No custom Redirect URLs are needed —
+     Google returns to the app's own `/api/auth/google/callback`.
 
 ---
 
@@ -106,14 +108,14 @@ npm run dev                         # http://localhost:3000
 Smoke test the full loop:
 1. Open `/` — with Supabase connected the board is empty until you publish a
    site (seed data only appears if you run with no Supabase keys at all).
-2. **Sign in** at `/login` — magic link arrives by email → lands on `/dashboard`.
-3. **Connect with Google** — approve read-only access.
-4. **Your verified properties** appear → **Publish** one → real clicks are fetched
+2. Click **Add your site** → **Connect Google Search Console**. One Google
+   consent both signs you in and connects GSC → lands on `/dashboard`.
+3. **Your verified properties** appear → **Publish** one → real clicks are fetched
    and it shows on the public board.
-5. `/stats` shows the Organic Index and movers.
+4. `/stats` shows the Organic Index and movers.
 
-If sign-in emails don't arrive, check **Supabase → Authentication → Logs** and
-that the redirect URL is allow-listed (Part 1.4).
+If the Google step fails, check that the Google provider is enabled in Supabase
+with your Web client ID (Part 1.4) and that the redirect URI matches exactly.
 
 ---
 
@@ -147,8 +149,7 @@ that the redirect URL is allow-listed (Part 1.4).
 
 Now that you know the production URL, go back and add it everywhere:
 
-- **Supabase → Auth → URL Configuration**: set **Site URL** to your domain and add
-  `https://realrank.lol/auth/callback` to Redirect URLs.
+- **Supabase → Auth → URL Configuration**: set **Site URL** to your domain.
 - **Google Cloud → Credentials**: add `https://realrank.lol/api/auth/google/callback`
   to Authorized redirect URIs.
 - **Vercel env**: confirm `NEXT_PUBLIC_SITE_URL` and `GOOGLE_REDIRECT_URI` use the
@@ -180,7 +181,7 @@ leaderboard.
 | Symptom | Fix |
 |---|---|
 | `redirect_uri_mismatch` | The Google redirect URI must exactly match `GOOGLE_REDIRECT_URI`. Check scheme, host, and `/api/auth/google/callback`. |
-| Magic link 404s / "auth" error | Add the `/auth/callback` URL to Supabase Auth Redirect URLs. |
+| Google sign-in fails / `signin_failed` | Enable the Google provider in Supabase and add your Web **client ID** under Authorized Client IDs; enable "Skip nonce checks" if prompted. |
 | Leaderboard is empty | `published_sites` has no active rows — publish a site, or run the demo rows in `seed.sql`. (Seed/"Preview data" only shows when Supabase isn't configured.) |
 | `npm run db:check` fails | Keys wrong, or `schema.sql` not run in this project. |
 | Cron returns 401 | `CRON_SECRET` not set in Vercel, or mismatched. |
