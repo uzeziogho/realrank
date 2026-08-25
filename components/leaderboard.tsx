@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { cn, formatCompact, formatGrowth, hostname } from "@/lib/utils";
+import { cn, formatCompact, formatGrowth, hostname, siteHref } from "@/lib/utils";
 import { categoryLabel, type RankingView } from "@/lib/config";
 import type { LeaderboardRow, RankedSite, SponsoredRow } from "@/lib/types";
 
@@ -62,7 +62,7 @@ function OrganicRowItem({ row, view }: { row: RankedSite; view: RankingView }) {
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           <a
-            href={row.siteUrl}
+            href={siteHref(row.siteUrl)}
             target="_blank"
             rel="noopener nofollow"
             className="truncate text-base font-semibold text-foreground hover:underline"

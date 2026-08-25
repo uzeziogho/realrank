@@ -39,9 +39,17 @@ export function timeAgo(iso: string | null): string {
 }
 
 export function hostname(url: string): string {
+  // GSC domain properties look like "sc-domain:example.com".
+  if (url.startsWith("sc-domain:")) return url.slice("sc-domain:".length);
   try {
     return new URL(url).hostname.replace(/^www\./, "");
   } catch {
     return url.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "");
   }
+}
+
+/** A clickable href for a stored site_url, including GSC "sc-domain:" ids. */
+export function siteHref(url: string): string {
+  if (url.startsWith("sc-domain:")) return `https://${url.slice("sc-domain:".length)}`;
+  return url;
 }

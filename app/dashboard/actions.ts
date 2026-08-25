@@ -7,6 +7,9 @@ import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { computeMomentum } from "@/lib/momentum";
 import { categories } from "@/lib/config";
+import { hostname } from "@/lib/utils";
+import { fetchSiteMetrics } from "@/lib/google";
+import { getUserGscClient } from "@/lib/gsc-server";
 
 export interface ActionState {
   error?: string;
@@ -122,6 +125,75 @@ export async function deleteSite(formData: FormData): Promise<void> {
     .delete()
     .eq("id", id)
     .eq("user_id", user.id);
+
+  revalidatePublic();
+}
+
+/**
+ * Publish a verified GSC property: fetch its real 7d/28d clicks from Google,
+ * compute momentum, and insert (or re-activate) it in published_sites.
+ * Preserves any custom display_name/category on an existing row.
+ */
+export async function publishProperty(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const { supabase, user } = await requireUser();
+  const siteUrl = String(formData.get("site_url") ?? "").trim();
+  if (!siteUrl) return { error: "Missing property." };
+
+  const client = await getUserGscClient(user.id);
+  if (!client) return { error: "Google isn't connected. Reconnect and try again." };
+
+  let metrics;
+  try {
+    metrics = await fetchSiteMetrics(client, siteUrl);
+  } catch (err) {
+    console.error("[publishProperty] GSC fetch failed:", err);
+    return { error: "Couldn't fetch clicks from Search Console. Try again shortly." };
+  }
+
+  const now = new Date().toISOString();
+  const { data: existing } = await supabase
+    .from("published_sites")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("site_url", siteUrl)
+    .maybeSingle();
+
+  if (existing) {
+    await supabase
+      .from("published_sites")
+      .update({ ...metrics, is_active: true, last_refreshed_at: now, updated_at: now })
+      .eq("id", existing.id)
+      .eq("user_id", user.id);
+  } else {
+    const { error } = await supabase.from("published_sites").insert({
+      user_id: user.id,
+      site_url: siteUrl,
+      display_name: hostname(siteUrl),
+      ...metrics,
+      is_active: true,
+      last_refreshed_at: now,
+    });
+    if (error) return { error: error.message };
+  }
+
+  revalidatePublic();
+  return { success: `${hostname(siteUrl)} published.` };
+}
+
+/** Hide a published property from the leaderboard (keeps its data). */
+export async function unpublishProperty(formData: FormData): Promise<void> {
+  const { supabase, user } = await requireUser();
+  const siteUrl = String(formData.get("site_url") ?? "").trim();
+  if (!siteUrl) return;
+
+  await supabase
+    .from("published_sites")
+    .update({ is_active: false, updated_at: new Date().toISOString() })
+    .eq("user_id", user.id)
+    .eq("site_url", siteUrl);
 
   revalidatePublic();
 }

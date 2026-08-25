@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AddSiteForm } from "@/components/dashboard/add-site-form";
 import { SiteManager } from "@/components/dashboard/site-manager";
+import { GscProperties } from "@/components/dashboard/gsc-properties";
+import { listUserProperties } from "@/lib/gsc-server";
 import { siteConfig } from "@/lib/config";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
@@ -44,6 +46,17 @@ export default async function DashboardPage() {
   const mySites = (sites ?? []) as PublishedSite[];
   const googleConnected = Boolean(connection?.google_email);
   const liveCount = mySites.filter((s) => s.is_active).length;
+
+  // When Google is connected, list verified properties and mark which are live.
+  const activeUrls = new Set(
+    mySites.filter((s) => s.is_active).map((s) => s.site_url),
+  );
+  const properties = googleConnected
+    ? (await listUserProperties(user.id)).map((siteUrl) => ({
+        siteUrl,
+        published: activeUrls.has(siteUrl),
+      }))
+    : [];
 
   return (
     <div className="container max-w-4xl py-12">
@@ -101,9 +114,23 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Add a site */}
+      {/* Verified Search Console properties */}
+      {googleConnected && (
+        <div className="mt-8">
+          <h2 className="mb-1 text-lg font-semibold">Your verified properties</h2>
+          <p className="mb-4 text-sm text-muted-foreground">
+            Publish a property to fetch its real organic clicks and rank it on the
+            leaderboard.
+          </p>
+          <GscProperties properties={properties} />
+        </div>
+      )}
+
+      {/* Add a site manually */}
       <div className="mt-8">
-        <h2 className="mb-1 text-lg font-semibold">Publish a site</h2>
+        <h2 className="mb-1 text-lg font-semibold">
+          {googleConnected ? "Or add a site manually" : "Publish a site"}
+        </h2>
         <p className="mb-4 text-sm text-muted-foreground">
           Add a site to the public leaderboard. Connect Search Console to verify
           its clicks — until then, seed values are used.
