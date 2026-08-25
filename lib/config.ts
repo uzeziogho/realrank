@@ -12,7 +12,8 @@ export const siteConfig = {
   ogImage: "/og.png",
   twitter: "@organicrank",
   // How often the public data is refreshed by the cron job (used in copy only).
-  refreshCadenceHours: 6,
+  // Matches vercel.json (daily on Hobby; raise cadence + this value on Pro).
+  refreshCadenceHours: 24,
 } as const;
 
 /**
