@@ -1,6 +1,9 @@
 import type { MetadataRoute } from "next";
 import { siteConfig, categories } from "@/lib/config";
 import { getAllSiteSlugs } from "@/lib/site";
+import { articles } from "@/lib/articles";
+
+const LANDING_PAGES = ["lol-directories", "fastest-growing-saas-websites"];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
@@ -50,6 +53,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: "daily" as const,
       priority: 0.6,
+    })),
+    {
+      url: `${base}/blog`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.6,
+    },
+    ...articles.map((a) => ({
+      url: `${base}/blog/${a.slug}`,
+      lastModified: new Date(a.updated ?? a.date),
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    })),
+    ...LANDING_PAGES.map((slug) => ({
+      url: `${base}/best/${slug}`,
+      lastModified: now,
+      changeFrequency: "daily" as const,
+      priority: 0.7,
     })),
   ];
 }
