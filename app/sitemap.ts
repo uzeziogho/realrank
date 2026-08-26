@@ -1,9 +1,18 @@
 import type { MetadataRoute } from "next";
 import { siteConfig, categories } from "@/lib/config";
+import { getAllSiteSlugs } from "@/lib/site";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const base = siteConfig.url;
+
+  // Per-site profile pages (crawlable SEO surface). Capped for very large sets.
+  let siteSlugs: string[] = [];
+  try {
+    siteSlugs = (await getAllSiteSlugs()).slice(0, 5000);
+  } catch {
+    siteSlugs = [];
+  }
 
   return [
     {
@@ -35,6 +44,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: "daily" as const,
       priority: 0.7,
+    })),
+    ...siteSlugs.map((slug) => ({
+      url: `${base}/site/${slug}`,
+      lastModified: now,
+      changeFrequency: "daily" as const,
+      priority: 0.6,
     })),
   ];
 }

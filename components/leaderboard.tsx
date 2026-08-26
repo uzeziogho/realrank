@@ -62,15 +62,21 @@ function OrganicRowItem({ row, view }: { row: RankedSite; view: RankingView }) {
       {/* Site identity */}
       <div className="min-w-0">
         <div className="flex items-center gap-2">
+          <Link
+            href={`/site/${hostname(row.siteUrl).toLowerCase()}`}
+            className="truncate text-base font-semibold text-foreground hover:underline"
+          >
+            {row.displayName}
+          </Link>
           <a
             href={siteHref(row.siteUrl)}
             target="_blank"
             rel="noopener nofollow"
-            className="truncate text-base font-semibold text-foreground hover:underline"
+            aria-label={`Visit ${row.displayName}`}
+            className="shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
           >
-            {row.displayName}
+            <ArrowUpRight className="size-3.5" />
           </a>
-          <ArrowUpRight className="size-3.5 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
           {row.category && (
             <Badge variant="outline" className="hidden shrink-0 sm:inline-flex">
               {categoryLabel(row.category)}
