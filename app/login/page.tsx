@@ -12,12 +12,12 @@ export const metadata: Metadata = {
 };
 
 const ERROR_MESSAGES: Record<string, string> = {
-  not_configured: "Google sign-in isn't fully configured yet. Please try again shortly.",
+  not_configured: "The Google connection isn't fully configured yet. Please try again shortly.",
   start_failed: "Couldn't start the Google connection. Please try again.",
-  signin_failed: "Google sign-in didn't complete. Please try again.",
-  bad_state: "Your session expired. Please try connecting again.",
+  signin_failed: "The Google connection didn't complete. Please try again.",
+  bad_state: "This link expired. Please try connecting again.",
   exchange_failed: "Google authorization failed. Please try again.",
-  no_id_token: "Google didn't return an identity token. Please try again.",
+  no_id_token: "Google didn't return the expected details. Please try again.",
 };
 
 export default async function LoginPage({

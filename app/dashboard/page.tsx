@@ -64,7 +64,7 @@ export default async function DashboardPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Your sites</h1>
           <p className="mt-1 text-muted-foreground">
-            Signed in as <span className="text-foreground">{user.email}</span>
+            Connected as <span className="text-foreground">{user.email}</span>
           </p>
         </div>
         <span className="text-sm text-muted-foreground">

@@ -48,7 +48,7 @@ export function AuthNav() {
           <Link href="/dashboard">Dashboard</Link>
         </Button>
         <Button onClick={handleSignOut} variant="outline" size="sm">
-          Sign out
+          Disconnect
         </Button>
       </>
     );
