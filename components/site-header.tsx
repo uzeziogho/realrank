@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthNav } from "@/components/auth-nav";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { siteConfig } from "@/lib/config";
 
 /**
@@ -30,6 +31,7 @@ export function SiteHeader() {
           <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
             <Link href="/about">How it works</Link>
           </Button>
+          <ThemeToggle />
           <AuthNav />
         </nav>
       </div>
