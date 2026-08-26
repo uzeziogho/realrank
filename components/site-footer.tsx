@@ -14,7 +14,7 @@ export function SiteFooter() {
           <div>
             <p className="text-sm font-medium">Categories</p>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              {categories.slice(0, 5).map((c) => (
+              {categories.map((c) => (
                 <li key={c.slug}>
                   <Link href={`/category/${c.slug}`} className="hover:text-foreground">
                     {c.label}
@@ -26,10 +26,10 @@ export function SiteFooter() {
           <div>
             <p className="text-sm font-medium">Product</p>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/about" className="hover:text-foreground">How it works</Link></li>
-              <li><Link href="/stats" className="hover:text-foreground">Stats</Link></li>
-              <li><Link href="/dashboard" className="hover:text-foreground">Add your site</Link></li>
               <li><Link href="/#leaderboard" className="hover:text-foreground">Leaderboard</Link></li>
+              <li><Link href="/stats" className="hover:text-foreground">Stats</Link></li>
+              <li><Link href="/about" className="hover:text-foreground">How it works</Link></li>
+              <li><Link href="/login" className="hover:text-foreground">Connect Search Console</Link></li>
             </ul>
           </div>
           <div>
