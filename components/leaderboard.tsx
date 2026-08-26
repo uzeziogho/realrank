@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { ArrowUpRight, TrendingUp, TrendingDown, Minus, ChevronUp, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatCompact, formatGrowth, hostname, siteHref } from "@/lib/utils";
 import { categoryLabel, type RankingView } from "@/lib/config";
@@ -46,8 +46,8 @@ function OrganicRowItem({ row, view }: { row: RankedSite; view: RankingView }) {
 
   return (
     <li className="group grid grid-cols-[2.5rem_1fr] items-center gap-4 px-4 py-4 transition-colors hover:bg-accent/40 md:grid-cols-[3.5rem_1fr_7rem_7rem] md:px-5">
-      {/* Rank */}
-      <div className="flex items-center">
+      {/* Rank + movement */}
+      <div className="flex flex-col items-start">
         <span
           className={cn(
             "tabular-nums font-semibold",
@@ -56,6 +56,7 @@ function OrganicRowItem({ row, view }: { row: RankedSite; view: RankingView }) {
         >
           {row.rank}
         </span>
+        <RankDelta delta={row.rankDelta} />
       </div>
 
       {/* Site identity */}
@@ -159,6 +160,32 @@ function SponsoredRowItem({ row }: { row: SponsoredRow }) {
         </a>
       </div>
     </li>
+  );
+}
+
+function RankDelta({ delta }: { delta: number | null }) {
+  if (delta === null) {
+    return (
+      <span className="text-[10px] font-semibold uppercase tracking-wide text-primary">
+        New
+      </span>
+    );
+  }
+  if (delta === 0) {
+    return <span className="text-[10px] text-muted-foreground">—</span>;
+  }
+  const up = delta > 0;
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-0.5 text-[10px] font-medium tabular-nums",
+        up ? "text-success" : "text-danger",
+      )}
+      title={`${up ? "Up" : "Down"} ${Math.abs(delta)} since last refresh`}
+    >
+      {up ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />}
+      {Math.abs(delta)}
+    </span>
   );
 }
 

@@ -86,6 +86,8 @@ export interface Database {
           clicks_28d: number;
           momentum_score: number;
           growth_rate: number;
+          previous_momentum_score: number;
+          previous_clicks_28d: number;
           is_active: boolean;
           last_refreshed_at: string | null;
           created_at: string;
@@ -102,6 +104,8 @@ export interface Database {
           clicks_28d?: number;
           momentum_score?: number;
           growth_rate?: number;
+          previous_momentum_score?: number;
+          previous_clicks_28d?: number;
           is_active?: boolean;
           last_refreshed_at?: string | null;
           created_at?: string;
@@ -118,6 +122,8 @@ export interface Database {
           clicks_28d?: number;
           momentum_score?: number;
           growth_rate?: number;
+          previous_momentum_score?: number;
+          previous_clicks_28d?: number;
           is_active?: boolean;
           last_refreshed_at?: string | null;
           created_at?: string;

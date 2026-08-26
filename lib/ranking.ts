@@ -14,15 +14,31 @@ import type { RankingView } from "@/lib/config";
 export function rankSites(sites: PublishedSite[], view: RankingView): RankedSite[] {
   const active = sites.filter((s) => s.is_active);
 
+  const metric = (s: PublishedSite) =>
+    view === "volume" ? s.clicks_28d : s.momentum_score;
+  const prevMetric = (s: PublishedSite) =>
+    view === "volume" ? s.previous_clicks_28d : s.previous_momentum_score;
+
   const sorted = [...active].sort((a, b) => {
     if (view === "volume") {
       return b.clicks_28d - a.clicks_28d || b.momentum_score - a.momentum_score;
     }
-    // momentum (default)
     return b.momentum_score - a.momentum_score || b.clicks_7d - a.clicks_7d;
   });
 
-  return sorted.map((site, i) => toRankedSite(site, i + 1));
+  // Previous-period ranking over the same set, to compute movement.
+  const prevRank = new Map<string, number>();
+  [...active]
+    .sort((a, b) => prevMetric(b) - prevMetric(a))
+    .forEach((s, i) => prevRank.set(s.id, i + 1));
+
+  return sorted.map((site, i) => {
+    const rank = i + 1;
+    // A site with no prior value is a new entrant (no meaningful delta).
+    const hadPrev = prevMetric(site) > 0;
+    const rankDelta = hadPrev ? (prevRank.get(site.id) ?? rank) - rank : null;
+    return toRankedSite(site, rank, rankDelta);
+  });
 }
 
 /**

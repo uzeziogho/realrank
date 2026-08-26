@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
   // Pull active sites and the encrypted token for each owner.
   const { data: sites, error } = await supabase
     .from("published_sites")
-    .select("id, user_id, site_url")
+    .select("id, user_id, site_url, momentum_score, clicks_28d")
     .eq("is_active", true);
 
   if (error) {
@@ -54,6 +54,9 @@ export async function GET(req: NextRequest) {
         .from("published_sites")
         .update({
           ...metrics,
+          // Snapshot the outgoing values so the UI can show rank movement.
+          previous_momentum_score: site.momentum_score,
+          previous_clicks_28d: site.clicks_28d,
           last_refreshed_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })

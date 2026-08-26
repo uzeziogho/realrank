@@ -63,6 +63,8 @@ const REFRESHED_AT = "2026-08-24T06:00:00.000Z";
 
 export const DUMMY_SITES: PublishedSite[] = SEEDS.map((s, i) => {
   const { momentumScore, growthRate } = computeMomentum(s);
+  // Deterministic "previous" values so the preview shows realistic rank movement.
+  const wobble = 0.7 + ((i * 7) % 11) * 0.06; // ~0.7–1.3
   return {
     id: `seed-${String(i + 1).padStart(3, "0")}`,
     user_id: `user-${String((i % 9) + 1).padStart(3, "0")}`,
@@ -74,6 +76,8 @@ export const DUMMY_SITES: PublishedSite[] = SEEDS.map((s, i) => {
     clicks_28d: s.clicks_28d,
     momentum_score: momentumScore,
     growth_rate: growthRate,
+    previous_momentum_score: Math.round(momentumScore * wobble * 100) / 100,
+    previous_clicks_28d: Math.round(s.clicks_28d * wobble),
     is_active: true,
     last_refreshed_at: REFRESHED_AT,
     created_at: "2026-06-01T00:00:00.000Z",

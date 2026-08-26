@@ -92,12 +92,20 @@ create table if not exists public.published_sites (
   clicks_28d integer not null default 0,
   momentum_score numeric not null default 0,
   growth_rate numeric not null default 0,
+  previous_momentum_score numeric not null default 0,
+  previous_clicks_28d integer not null default 0,
   is_active boolean not null default true,
   last_refreshed_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (user_id, site_url)
 );
+
+-- Backfill columns on databases created before rank deltas were added.
+alter table public.published_sites
+  add column if not exists previous_momentum_score numeric not null default 0;
+alter table public.published_sites
+  add column if not exists previous_clicks_28d integer not null default 0;
 
 alter table public.published_sites enable row level security;
 

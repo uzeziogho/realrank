@@ -17,6 +17,8 @@ export interface RankedSite {
   momentumScore: number;
   growthRate: number;
   lastRefreshedAt: string | null;
+  /** Positions gained (+) or lost (−) since the previous refresh; null = new entrant. */
+  rankDelta: number | null;
 }
 
 /** A sponsored placement row, visually distinct and excluded from scoring. */
@@ -33,7 +35,11 @@ export interface SponsoredRow {
 
 export type LeaderboardRow = RankedSite | SponsoredRow;
 
-export function toRankedSite(site: PublishedSite, rank: number): RankedSite {
+export function toRankedSite(
+  site: PublishedSite,
+  rank: number,
+  rankDelta: number | null = null,
+): RankedSite {
   return {
     kind: "organic",
     rank,
@@ -47,6 +53,7 @@ export function toRankedSite(site: PublishedSite, rank: number): RankedSite {
     momentumScore: site.momentum_score,
     growthRate: site.growth_rate,
     lastRefreshedAt: site.last_refreshed_at,
+    rankDelta,
   };
 }
 
