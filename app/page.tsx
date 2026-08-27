@@ -184,6 +184,49 @@ export default async function HomePage({
         )}
       </section>
 
+      {/* Explore — internal links to landing pages + blog */}
+      <section className="border-t border-border/60">
+        <div className="container py-14">
+          <h2 className="text-xl font-semibold tracking-tight">Explore</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Guides and rankings on verified organic traffic and the .lol
+            leaderboard wave.
+          </p>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <ExploreCard
+              href="/best/fastest-growing-saas-websites"
+              title="Fastest-growing SaaS websites"
+              body="A live ranking of SaaS sites by verified organic momentum — not third-party estimates."
+            />
+            <ExploreCard
+              href="/best/lol-directories"
+              title="The best .lol directories"
+              body="outbid.lol, TrustMRR, and RealRank compared — what each ranks, and which to trust."
+            />
+            <ExploreCard
+              href="/blog/grow-saas-organic-traffic"
+              title="How to grow organic traffic"
+              body="A founder's playbook for the compounding channel that keeps paying after you stop."
+            />
+            <ExploreCard
+              href="/blog/verified-vs-estimated-traffic"
+              title="Verified vs estimated traffic"
+              body="Why SimilarWeb and Search Console disagree — and which number you can actually trust."
+            />
+            <ExploreCard
+              href="/blog/momentum-score-explained"
+              title="What's a good momentum score?"
+              body="How to read your ranking, why it moves week to week, and the honest ways to climb."
+            />
+            <ExploreCard
+              href="/blog"
+              title="All articles →"
+              body="Essays on verified traffic, the pay-to-rank craze, and what really moves rankings."
+            />
+          </div>
+        </div>
+      </section>
+
       {/* Conversion band */}
       <section className="border-t border-border/60 bg-card/40">
         <div className="container flex flex-col items-center gap-4 py-16 text-center">
@@ -200,6 +243,26 @@ export default async function HomePage({
         </div>
       </section>
     </>
+  );
+}
+
+function ExploreCard({
+  href,
+  title,
+  body,
+}: {
+  href: string;
+  title: string;
+  body: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary/50"
+    >
+      <p className="font-medium group-hover:text-primary">{title}</p>
+      <p className="mt-1.5 text-sm text-muted-foreground">{body}</p>
+    </Link>
   );
 }
 
