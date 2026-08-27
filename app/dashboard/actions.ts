@@ -9,7 +9,7 @@ import { computeMomentum } from "@/lib/momentum";
 import { categories } from "@/lib/config";
 import { hostname } from "@/lib/utils";
 import { fetchSiteMetrics } from "@/lib/google";
-import { getUserGscClient } from "@/lib/gsc-server";
+import { getUserGscClient, upsertSiteHistory } from "@/lib/gsc-server";
 
 export interface ActionState {
   error?: string;
@@ -161,6 +161,7 @@ export async function publishProperty(
     .eq("site_url", siteUrl)
     .maybeSingle();
 
+  let siteId = existing?.id ?? null;
   if (existing) {
     await supabase
       .from("published_sites")
@@ -168,16 +169,25 @@ export async function publishProperty(
       .eq("id", existing.id)
       .eq("user_id", user.id);
   } else {
-    const { error } = await supabase.from("published_sites").insert({
-      user_id: user.id,
-      site_url: siteUrl,
-      display_name: hostname(siteUrl),
-      ...metrics,
-      is_active: true,
-      last_refreshed_at: now,
-    });
+    const { data: inserted, error } = await supabase
+      .from("published_sites")
+      .insert({
+        user_id: user.id,
+        site_url: siteUrl,
+        display_name: hostname(siteUrl),
+        ...metrics,
+        is_active: true,
+        last_refreshed_at: now,
+      })
+      .select("id")
+      .single();
     if (error) return { error: error.message };
+    siteId = inserted?.id ?? null;
   }
+
+  // Backfill daily history now so the sparkline/timeline populate instantly,
+  // instead of waiting for the next scheduled refresh. Best-effort.
+  if (siteId) await upsertSiteHistory(siteId, client, siteUrl);
 
   revalidatePublic();
   return { success: `${hostname(siteUrl)} published.` };

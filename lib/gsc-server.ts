@@ -3,7 +3,7 @@ import "server-only";
 import type { OAuth2Client } from "google-auth-library";
 import { createServiceClient } from "@/lib/supabase/server";
 import { decryptToken } from "@/lib/crypto";
-import { clientFromRefreshToken, listProperties } from "@/lib/google";
+import { clientFromRefreshToken, listProperties, fetchDailyClicks } from "@/lib/google";
 
 /**
  * Builds a GSC-authorized OAuth client for a given user by reading their
@@ -25,6 +25,37 @@ export async function getUserGscClient(userId: string): Promise<OAuth2Client | n
     return clientFromRefreshToken(decryptToken(data.encrypted_refresh_token));
   } catch {
     return null;
+  }
+}
+
+/**
+ * Backfill/refresh a site's daily click history (last `days` days) from Search
+ * Console into site_click_history. Uses the service role (end users have no
+ * write policy on that table). Upserts on (site_id, date) so it's safe to call
+ * on every publish AND on every cron run. Never throws — logs and returns the
+ * number of days written so callers can proceed regardless.
+ */
+export async function upsertSiteHistory(
+  siteId: string,
+  client: OAuth2Client,
+  siteUrl: string,
+  days = 90,
+): Promise<number> {
+  try {
+    const daily = await fetchDailyClicks(client, siteUrl, days);
+    if (daily.length === 0) return 0;
+    const supabase = createServiceClient();
+    const { error } = await supabase
+      .from("site_click_history")
+      .upsert(
+        daily.map((d) => ({ site_id: siteId, date: d.date, clicks: d.clicks })),
+        { onConflict: "site_id,date" },
+      );
+    if (error) throw error;
+    return daily.length;
+  } catch (err) {
+    console.error("[gsc] history backfill failed:", err);
+    return 0;
   }
 }
 

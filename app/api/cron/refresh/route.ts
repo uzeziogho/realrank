@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
 import { decryptToken } from "@/lib/crypto";
-import { clientFromRefreshToken, fetchSiteMetrics, fetchDailyClicks } from "@/lib/google";
+import { clientFromRefreshToken, fetchSiteMetrics } from "@/lib/google";
+import { upsertSiteHistory } from "@/lib/gsc-server";
 import { categories } from "@/lib/config";
 import type { OAuth2Client } from "google-auth-library";
 
@@ -66,21 +67,8 @@ export async function GET(req: NextRequest) {
       updated += 1;
 
       // Backfill/refresh daily click history (last 90 days) for the timeline.
-      // Isolated: a history hiccup must not undo the metrics update above.
-      try {
-        const daily = await fetchDailyClicks(client, site.site_url, 90);
-        if (daily.length > 0) {
-          await supabase
-            .from("site_click_history")
-            .upsert(
-              daily.map((d) => ({ site_id: site.id, date: d.date, clicks: d.clicks })),
-              { onConflict: "site_id,date" },
-            );
-        }
-      } catch (histErr) {
-        const reason = histErr instanceof Error ? histErr.message : "unknown";
-        failures.push({ site: `${site.site_url} (history)`, reason });
-      }
+      // Best-effort inside upsertSiteHistory: never undoes the metrics update.
+      await upsertSiteHistory(site.id, client, site.site_url, 90);
 
       // Gentle pacing to respect GSC per-minute quotas.
       await sleep(150);
