@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { getSiteProfileBySlug } from "@/lib/site";
 import { siteConfig } from "@/lib/config";
-import { formatCompact, formatGrowth } from "@/lib/utils";
+import { formatCompact, formatGrowth, hostname } from "@/lib/utils";
 
 export const runtime = "nodejs";
 export const size = { width: 1200, height: 630 };
@@ -13,6 +13,27 @@ const BG = "#0a0a0b";
 const CARD = "#141416";
 const MUTED = "#a1a1aa";
 
+/**
+ * Fetch a site's favicon as a data URI so it can be embedded in the OG image.
+ * Returns null on any failure — Satori throws if a remote <img> can't load, so
+ * we never hand it a URL, only inlined bytes we've confirmed we have.
+ */
+async function faviconDataUri(siteUrl: string): Promise<string | null> {
+  try {
+    const host = hostname(siteUrl);
+    const res = await fetch(
+      `https://www.google.com/s2/favicons?sz=128&domain=${encodeURIComponent(host)}`,
+      { signal: AbortSignal.timeout(2500) },
+    );
+    if (!res.ok) return null;
+    const buf = Buffer.from(await res.arrayBuffer());
+    if (buf.length < 100) return null;
+    return `data:image/png;base64,${buf.toString("base64")}`;
+  } catch {
+    return null;
+  }
+}
+
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const profile = await getSiteProfileBySlug(slug);
@@ -22,6 +43,8 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const total = profile ? `of ${profile.totalSites}` : "";
   const growth = profile ? formatGrowth(profile.site.growthRate) : "";
   const clicks = profile ? `${formatCompact(profile.site.clicks28d)} clicks / 28d` : "";
+  const favicon = profile ? await faviconDataUri(profile.site.siteUrl) : null;
+  const monogram = (name.trim()[0] ?? "?").toUpperCase();
 
   return new ImageResponse(
     (
@@ -65,7 +88,34 @@ export default async function Image({ params }: { params: Promise<{ slug: string
             <div style={{ color: GREEN, fontSize: 140, fontWeight: 800, lineHeight: 1 }}>{rank}</div>
             <div style={{ color: MUTED, fontSize: 40 }}>{total}</div>
           </div>
-          <div style={{ color: "#fff", fontSize: 52, fontWeight: 700, marginTop: 8 }}>{name}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 20, marginTop: 8 }}>
+            {favicon ? (
+              <img
+                src={favicon}
+                width={64}
+                height={64}
+                style={{ borderRadius: 14, background: "#fff" }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: 14,
+                  background: CARD,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: MUTED,
+                  fontSize: 34,
+                  fontWeight: 700,
+                }}
+              >
+                {monogram}
+              </div>
+            )}
+            <div style={{ color: "#fff", fontSize: 52, fontWeight: 700 }}>{name}</div>
+          </div>
         </div>
 
         {/* Footer stats */}
