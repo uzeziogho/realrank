@@ -56,7 +56,10 @@ export function AuthNav() {
 
   return (
     <Button asChild size="sm">
-      <Link href="/login">Connect Search Console</Link>
+      <Link href="/login">
+        <span className="sm:hidden">Connect</span>
+        <span className="hidden sm:inline">Connect Search Console</span>
+      </Link>
     </Button>
   );
 }
