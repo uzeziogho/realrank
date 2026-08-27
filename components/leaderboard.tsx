@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight, TrendingUp, TrendingDown, Minus, ChevronUp, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Sparkline } from "@/components/sparkline";
 import { cn, formatCompact, formatGrowth, hostname, siteHref } from "@/lib/utils";
 import { categoryLabel, type RankingView } from "@/lib/config";
 import type { LeaderboardRow, RankedSite, SponsoredRow } from "@/lib/types";
@@ -15,9 +16,10 @@ export function Leaderboard({
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
       {/* Column header — hidden on mobile where rows stack */}
-      <div className="hidden grid-cols-[3.5rem_1fr_7rem_7rem] items-center gap-4 border-b border-border px-5 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground md:grid">
+      <div className="hidden grid-cols-[3.5rem_1fr_5.5rem_6rem_6rem] items-center gap-4 border-b border-border px-5 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground md:grid">
         <span>#</span>
         <span>Site</span>
+        <span className="text-right">Trend</span>
         <span className="text-right">
           {view === "momentum" ? "Momentum" : "28-day"}
         </span>
@@ -45,7 +47,7 @@ function OrganicRowItem({ row, view }: { row: RankedSite; view: RankingView }) {
   const primaryLabel = view === "momentum" ? "7d clicks" : "28d clicks";
 
   return (
-    <li className="group grid grid-cols-[2.5rem_1fr] items-center gap-4 px-4 py-4 transition-colors hover:bg-accent/40 md:grid-cols-[3.5rem_1fr_7rem_7rem] md:px-5">
+    <li className="group grid grid-cols-[2.5rem_1fr] items-center gap-4 px-4 py-4 transition-colors hover:bg-accent/40 md:grid-cols-[3.5rem_1fr_5.5rem_6rem_6rem] md:px-5">
       {/* Rank + movement */}
       <div className="flex flex-col items-start">
         <span
@@ -94,7 +96,13 @@ function OrganicRowItem({ row, view }: { row: RankedSite; view: RankingView }) {
           <span className="text-sm tabular-nums text-muted-foreground">
             {primary} <span className="text-xs">{primaryLabel}</span>
           </span>
+          <Sparkline data={row.spark} width={56} height={18} className="ml-auto" />
         </div>
+      </div>
+
+      {/* Trend sparkline (desktop) */}
+      <div className="hidden items-center justify-end md:flex">
+        <Sparkline data={row.spark} />
       </div>
 
       {/* Primary metric column (desktop) */}
@@ -134,7 +142,7 @@ function OrganicRowItem({ row, view }: { row: RankedSite; view: RankingView }) {
 
 function SponsoredRowItem({ row }: { row: SponsoredRow }) {
   return (
-    <li className="grid grid-cols-[2.5rem_1fr] items-center gap-4 bg-amber-500/[0.06] px-4 py-4 md:grid-cols-[3.5rem_1fr_7rem_7rem] md:px-5">
+    <li className="grid grid-cols-[2.5rem_1fr] items-center gap-4 bg-amber-500/[0.06] px-4 py-4 md:grid-cols-[3.5rem_1fr_5.5rem_6rem_6rem] md:px-5">
       <div className="flex items-center justify-center">
         <span className="text-xs font-medium text-amber-500/70">Ad</span>
       </div>
@@ -154,7 +162,7 @@ function SponsoredRowItem({ row }: { row: SponsoredRow }) {
         </div>
         <p className="truncate text-sm text-muted-foreground">{row.description}</p>
       </div>
-      <div className="col-span-2 md:col-span-2 md:col-start-3 md:flex md:items-center md:justify-end">
+      <div className="col-span-2 md:col-span-3 md:col-start-3 md:flex md:items-center md:justify-end">
         <a
           href={row.siteUrl}
           target="_blank"

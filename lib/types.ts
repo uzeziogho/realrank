@@ -19,6 +19,8 @@ export interface RankedSite {
   lastRefreshedAt: string | null;
   /** Positions gained (+) or lost (−) since the previous refresh; null = new entrant. */
   rankDelta: number | null;
+  /** Compact recent daily-click series for the row sparkline (ascending). */
+  spark: number[];
 }
 
 /** A sponsored placement row, visually distinct and excluded from scoring. */
@@ -54,6 +56,7 @@ export function toRankedSite(
     growthRate: site.growth_rate,
     lastRefreshedAt: site.last_refreshed_at,
     rankDelta,
+    spark: [],
   };
 }
 

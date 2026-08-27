@@ -7,7 +7,7 @@ import { RankingToggle } from "@/components/ranking-toggle";
 import { Leaderboard } from "@/components/leaderboard";
 import { LeaderboardJsonLd } from "@/components/json-ld";
 import { Pagination } from "@/components/pagination";
-import { getLeaderboardData } from "@/lib/data";
+import { getLeaderboardData, attachSparklines } from "@/lib/data";
 import { injectSponsored } from "@/lib/ranking";
 import { siteConfig, type RankingView } from "@/lib/config";
 import { formatCompact, timeAgo } from "@/lib/utils";
@@ -79,7 +79,8 @@ export default async function HomePage({
   const start = (page - 1) * PAGE_SIZE;
   const pageOrganic = data.organic.slice(start, start + PAGE_SIZE);
   // Re-inject sponsored slots for this page (they only match ranks #10/#20 → page 1).
-  const pageRows = injectSponsored(pageOrganic, data.sponsored);
+  // Attach sparklines for just this page's rows (one batched history query).
+  const pageRows = await attachSparklines(injectSponsored(pageOrganic, data.sponsored));
 
   return (
     <>

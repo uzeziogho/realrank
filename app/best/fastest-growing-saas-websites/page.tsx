@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Prose } from "@/components/prose";
 import { Leaderboard } from "@/components/leaderboard";
-import { getLeaderboardData } from "@/lib/data";
+import { getLeaderboardData, attachSparklines } from "@/lib/data";
 import { siteConfig } from "@/lib/config";
 import { formatCompact } from "@/lib/utils";
 
@@ -34,6 +34,7 @@ const FAQ = [
 
 export default async function FastestGrowingSaasPage() {
   const data = await getLeaderboardData("momentum", { category: "saas" });
+  const rows = await attachSparklines(data.rows);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -86,7 +87,7 @@ export default async function FastestGrowingSaasPage() {
             No SaaS sites published yet — <Link href="/login" className="text-primary hover:underline">be the first</Link>.
           </div>
         ) : (
-          <Leaderboard rows={data.rows} view="momentum" />
+          <Leaderboard rows={rows} view="momentum" />
         )}
       </div>
 

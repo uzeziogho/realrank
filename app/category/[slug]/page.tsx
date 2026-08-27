@@ -6,7 +6,7 @@ import { ChevronLeft } from "lucide-react";
 import { RankingToggle } from "@/components/ranking-toggle";
 import { Leaderboard } from "@/components/leaderboard";
 import { LeaderboardJsonLd } from "@/components/json-ld";
-import { getLeaderboardData } from "@/lib/data";
+import { getLeaderboardData, attachSparklines } from "@/lib/data";
 import {
   siteConfig,
   categories,
@@ -56,6 +56,7 @@ export default async function CategoryPage({
 
   const view = parseView((await searchParams).view);
   const data = await getLeaderboardData(view, { category: slug });
+  const rows = await attachSparklines(data.rows);
   const label = categoryLabel(slug);
 
   return (
@@ -94,7 +95,7 @@ export default async function CategoryPage({
       ) : (
         <>
           <LeaderboardJsonLd sites={data.organic} />
-          <Leaderboard rows={data.rows} view={view} />
+          <Leaderboard rows={rows} view={view} />
         </>
       )}
     </div>

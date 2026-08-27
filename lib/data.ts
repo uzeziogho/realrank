@@ -64,6 +64,62 @@ export async function getActiveSites(): Promise<{
   return { sites: sites.filter((s) => s.is_active), usingDummyData };
 }
 
+/**
+ * Attach a compact recent daily-click series to each organic row for the inline
+ * sparkline. One batched query for all visible rows (call it on a single page's
+ * rows, not the whole board). Falls back to a synthetic series in preview mode.
+ */
+export async function attachSparklines(
+  rows: LeaderboardRow[],
+  days = 21,
+): Promise<LeaderboardRow[]> {
+  const organic = rows.filter((r): r is RankedSite => r.kind === "organic");
+  if (organic.length === 0) return rows;
+
+  const map = new Map<string, number[]>();
+
+  if (!isSupabaseConfigured()) {
+    for (const s of organic) map.set(s.id, synthSpark(s.clicks7d, s.clicks28d, days));
+  } else {
+    try {
+      const since = new Date();
+      since.setUTCDate(since.getUTCDate() - days);
+      const supabase = createServiceClient();
+      const { data, error } = await supabase
+        .from("site_click_history")
+        .select("site_id, date, clicks")
+        .in("site_id", organic.map((s) => s.id))
+        .gte("date", since.toISOString().slice(0, 10))
+        .order("date", { ascending: true });
+      if (error) throw error;
+      for (const r of data ?? []) {
+        const arr = map.get(r.site_id) ?? [];
+        arr.push(r.clicks);
+        map.set(r.site_id, arr);
+      }
+    } catch (err) {
+      console.error("[data] sparkline read failed:", err);
+    }
+  }
+
+  return rows.map((r) =>
+    r.kind === "organic" ? { ...r, spark: map.get(r.id) ?? [] } : r,
+  );
+}
+
+/** Preview-only compact series from a site's totals. Never used live. */
+function synthSpark(clicks7d: number, clicks28d: number, days: number): number[] {
+  const dailyRecent = clicks7d / 7;
+  const dailyPrev = Math.max(clicks28d - clicks7d, 0) / 21;
+  const out: number[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const base = i < 7 ? dailyRecent : dailyPrev;
+    const wobble = 1 + 0.18 * Math.sin(i * 1.3);
+    out.push(Math.max(0, Math.round(base * wobble)));
+  }
+  return out;
+}
+
 async function loadRaw(): Promise<{
   sites: PublishedSite[];
   slots: SponsoredSlot[];
