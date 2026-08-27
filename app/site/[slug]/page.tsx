@@ -5,6 +5,7 @@ import { ChevronLeft, ExternalLink, TrendingUp, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BadgeEmbed } from "@/components/badge-embed";
+import { MomentumTimeline } from "@/components/momentum-timeline";
 import { getSiteProfileBySlug, siteSlug } from "@/lib/site";
 import { siteConfig, categoryLabel } from "@/lib/config";
 import { formatCompact, formatGrowth, hostname, siteHref, timeAgo } from "@/lib/utils";
@@ -34,7 +35,7 @@ export default async function SiteProfilePage({ params }: { params: Params }) {
   const profile = await getSiteProfileBySlug(slug);
   if (!profile) notFound();
 
-  const { site, volumeRank, totalSites, lastUpdated } = profile;
+  const { site, volumeRank, totalSites, lastUpdated, history, usingDummyData } = profile;
   const slugValue = siteSlug(site.siteUrl);
   const profileUrl = `${siteConfig.url}/site/${slugValue}`;
   const badgeUrl = `${siteConfig.url}/api/badge/${slugValue}.svg`;
@@ -92,6 +93,11 @@ export default async function SiteProfilePage({ params }: { params: Params }) {
         <Metric label="28-day clicks" value={formatCompact(site.clicks28d)} />
         <Metric label="Momentum score" value={site.momentumScore.toFixed(0)} />
       </div>
+
+      {/* Momentum timeline */}
+      <section className="mt-8">
+        <MomentumTimeline history={history} preview={usingDummyData} />
+      </section>
 
       {/* Share */}
       <section className="mt-8">

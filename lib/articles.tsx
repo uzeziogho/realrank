@@ -762,6 +762,98 @@ export const articles: Article[] = [
       </>
     ),
   },
+  {
+    slug: "measure-pay-to-rank-roi",
+    title: "Did your outbid.lol bid actually move your traffic? Measuring pay-to-rank ROI with verified data",
+    description:
+      "A pay-to-rank bid rents you attention for a few days. The real question is whether it left behind lasting organic growth. Here's how to measure that with verified Search Console data.",
+    date: "2026-08-27",
+    keywords: ["outbid.lol ROI", "pay to rank ROI", "referral vs organic traffic", "momentum timeline", "verified traffic"],
+    Body: () => (
+      <>
+        <p>
+          You paid to sit at #1 on <A href="https://outbid.lol/">outbid.lol</A>{" "}
+          (or one of its 170+ clones) for a day or two. Visitors came. Now the
+          honest question: <strong>was it worth it?</strong> The answer depends
+          entirely on which kind of traffic you&apos;re measuring — and most
+          people measure the wrong one.
+        </p>
+        <h2>Two very different kinds of traffic</h2>
+        <p>
+          A pay-to-rank spot sends you <strong>referral traffic</strong>: people
+          clicking straight from the board to your site while your bid is live.
+          It&apos;s real, but it&apos;s rented — it stops the moment someone
+          outbids you. You&apos;ll see it in your own analytics (Vercel
+          Analytics or Google Analytics) as a referral from the board&apos;s
+          domain.
+        </p>
+        <p>
+          What you actually want to know is whether that burst created{" "}
+          <strong>organic growth you keep</strong>: did the attention make people
+          Google your brand, link to you, and discover you through search
+          afterwards? That&apos;s the compounding kind — and it shows up in{" "}
+          <A href="https://search.google.com/search-console/about">Google Search Console</A>, not in referral logs.
+        </p>
+        <h2>Why the spike alone doesn&apos;t tell you anything</h2>
+        <p>
+          Every paid placement produces a spike. The spike is not the signal.
+          The signal is <em>what the line does after the spike</em>:
+        </p>
+        <ul>
+          <li>
+            <strong>Falls back to where it started</strong> → you rented
+            attention. Fine as a launch stunt, but zero lasting traffic ROI.
+          </li>
+          <li>
+            <strong>Settles at a higher baseline than before</strong> → the bid
+            seeded real demand: brand searches, links, word of mouth. That&apos;s
+            organic growth you didn&apos;t have to keep paying for.
+          </li>
+        </ul>
+        <p>
+          This is the whole difference between{" "}
+          <Link href="/blog/pay-to-rank-vs-earn-your-rank">pay-to-rank and earn-your-rank</Link>,
+          made visible.
+        </p>
+        <h2>How to measure it with RealRank</h2>
+        <p>
+          Every <Link href="/">RealRank</Link> site profile now shows a{" "}
+          <strong>momentum timeline</strong>: your daily organic clicks pulled
+          straight from Search Console, with the most recent 7 days highlighted.
+          To read your bid&apos;s real ROI:
+        </p>
+        <ol>
+          <li>
+            <Link href="/login">Connect Search Console</Link> and publish your
+            site (read-only; <Link href="/blog/connect-search-console-read-only-safe">here&apos;s exactly what that means</Link>).
+          </li>
+          <li>
+            Find the days around your bid on the timeline.
+          </li>
+          <li>
+            Compare the <em>after</em> baseline to the <em>before</em> baseline —
+            not the peak. If the recent-7-day pace stays above the prior line,
+            the bid bought you durable growth. If it snaps back, it didn&apos;t.
+          </li>
+        </ol>
+        <p>
+          Because the data is <Link href="/blog/verified-vs-estimated-traffic">verified, not estimated</Link>,
+          the comparison is trustworthy — you&apos;re looking at your actual
+          Google clicks, not a model&apos;s guess.
+        </p>
+        <h2>The smarter play</h2>
+        <p>
+          Pay-to-rank and verified rank aren&apos;t rivals — they&apos;re a
+          funnel. Use a bid for the spike, then use your{" "}
+          <Link href="/blog/momentum-score-explained">momentum score</Link> to
+          prove whether it converted into lasting organic traffic. Over time, the
+          growth that sticks is the growth that ranks you on RealRank for free.{" "}
+          <Link href="/login">Claim your profile</Link> and start watching the
+          line that actually matters.
+        </p>
+      </>
+    ),
+  },
 ];
 
 export function getArticle(slug: string): Article | undefined {

@@ -144,6 +144,37 @@ create index if not exists published_sites_volume_idx
 create index if not exists published_sites_category_idx
   on public.published_sites (category) where is_active;
 
+-- ── site_click_history ────────────────────────────────────────
+-- Daily organic-click history per site, backfilled from Search Console's
+-- date-dimensioned data. Powers the momentum timeline on /site/[slug] so a
+-- site owner can SEE whether a spike (e.g. a pay-to-rank bid) left behind any
+-- durable organic growth. One row per (site, day); upserted on refresh.
+create table if not exists public.site_click_history (
+  site_id uuid not null references public.published_sites(id) on delete cascade,
+  date date not null,
+  clicks integer not null default 0,
+  primary key (site_id, date)
+);
+
+alter table public.site_click_history enable row level security;
+
+-- PUBLIC READ: history for active sites is crawlable, like the board itself.
+drop policy if exists "anyone can read history of active sites" on public.site_click_history;
+create policy "anyone can read history of active sites"
+  on public.site_click_history for select
+  using (
+    exists (
+      select 1 from public.published_sites p
+      where p.id = site_id and p.is_active
+    )
+  );
+
+-- Writes happen server-side with the service role (cron), which bypasses RLS.
+-- No insert/update policy is granted to end users.
+
+create index if not exists site_click_history_site_date_idx
+  on public.site_click_history (site_id, date);
+
 -- ── sponsored_slots ───────────────────────────────────────────
 create table if not exists public.sponsored_slots (
   id uuid primary key default gen_random_uuid(),

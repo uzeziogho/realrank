@@ -131,6 +131,25 @@ export interface Database {
         };
         Relationships: [];
       };
+      site_click_history: {
+        Row: {
+          site_id: string;
+          /** ISO date (YYYY-MM-DD) of the click bucket. */
+          date: string;
+          clicks: number;
+        };
+        Insert: {
+          site_id: string;
+          date: string;
+          clicks?: number;
+        };
+        Update: {
+          site_id?: string;
+          date?: string;
+          clicks?: number;
+        };
+        Relationships: [];
+      };
       sponsored_slots: {
         Row: {
           id: string;
@@ -189,6 +208,7 @@ export interface Database {
 
 // Convenience row aliases used throughout the app.
 export type PublishedSite = Database["public"]["Tables"]["published_sites"]["Row"];
+export type SiteClickHistory = Database["public"]["Tables"]["site_click_history"]["Row"];
 export type SponsoredSlot = Database["public"]["Tables"]["sponsored_slots"]["Row"];
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type ConnectedAccount = Database["public"]["Tables"]["connected_accounts"]["Row"];

@@ -91,6 +91,45 @@ export async function fetchClicks(
   return Math.round(res.data.rows?.[0]?.clicks ?? 0);
 }
 
+export interface DailyClicks {
+  date: string; // YYYY-MM-DD
+  clicks: number;
+}
+
+/**
+ * Fetch per-day organic clicks for the last `days` days (Search web results),
+ * using the `date` dimension. Powers the momentum timeline. Returns rows sorted
+ * ascending by date; days Google has no data for are simply absent.
+ */
+export async function fetchDailyClicks(
+  client: OAuth2Client,
+  siteUrl: string,
+  days: number,
+): Promise<DailyClicks[]> {
+  const webmasters = google.webmasters({ version: "v3", auth: client });
+  const { startDate, endDate } = dateRange(days);
+
+  const res = await webmasters.searchanalytics.query({
+    siteUrl,
+    requestBody: {
+      startDate,
+      endDate,
+      dimensions: ["date"],
+      searchType: "web",
+      dataState: "all",
+      rowLimit: days + 5,
+    },
+  });
+
+  return (res.data.rows ?? [])
+    .map((r) => ({
+      date: String(r.keys?.[0] ?? ""),
+      clicks: Math.round(r.clicks ?? 0),
+    }))
+    .filter((r) => r.date)
+    .sort((a, b) => (a.date < b.date ? -1 : 1));
+}
+
 export interface SiteMetrics {
   clicks_7d: number;
   clicks_28d: number;
