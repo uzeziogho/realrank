@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BadgeEmbed } from "@/components/badge-embed";
 import { MomentumTimeline } from "@/components/momentum-timeline";
+import { SiteFavicon } from "@/components/site-favicon";
 import { getSiteProfileBySlug, siteSlug } from "@/lib/site";
 import { siteConfig, categoryLabel } from "@/lib/config";
 import { formatCompact, formatGrowth, hostname, siteHref, timeAgo } from "@/lib/utils";
@@ -54,7 +55,8 @@ export default async function SiteProfilePage({ params }: { params: Params }) {
       {/* Header */}
       <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <SiteFavicon url={site.siteUrl} name={site.displayName} size={28} />
             <h1 className="text-3xl font-bold tracking-tight">{site.displayName}</h1>
             {site.category && <Badge variant="outline">{categoryLabel(site.category)}</Badge>}
           </div>

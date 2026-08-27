@@ -44,3 +44,27 @@ export function WebsiteJsonLd() {
     />
   );
 }
+
+/**
+ * Organization markup. Google reads `logo` (and `name`) to show a brand logo
+ * and site name next to RealRank's search results, and `description`/`sameAs`
+ * for the knowledge panel. Logo must be a crawlable absolute URL.
+ */
+export function OrganizationJsonLd() {
+  const twitterHandle = siteConfig.twitter.replace(/^@/, "");
+  const json = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: siteConfig.name,
+    url: siteConfig.url,
+    logo: `${siteConfig.url}/logo-512.png`,
+    description: siteConfig.description,
+    sameAs: [`https://twitter.com/${twitterHandle}`],
+  };
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(json) }}
+    />
+  );
+}

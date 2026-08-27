@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowUpRight, TrendingUp, TrendingDown, Minus, ChevronUp, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Sparkline } from "@/components/sparkline";
+import { SiteFavicon } from "@/components/site-favicon";
 import { cn, formatCompact, formatGrowth, hostname, siteHref } from "@/lib/utils";
 import { categoryLabel, type RankingView } from "@/lib/config";
 import type { LeaderboardRow, RankedSite, SponsoredRow } from "@/lib/types";
@@ -64,6 +65,7 @@ function OrganicRowItem({ row, view }: { row: RankedSite; view: RankingView }) {
       {/* Site identity */}
       <div className="min-w-0">
         <div className="flex items-center gap-2">
+          <SiteFavicon url={row.siteUrl} name={row.displayName} />
           <Link
             href={`/site/${hostname(row.siteUrl).toLowerCase()}`}
             className="truncate text-base font-semibold text-foreground hover:underline"

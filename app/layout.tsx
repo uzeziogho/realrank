@@ -3,7 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { siteConfig } from "@/lib/config";
-import { WebsiteJsonLd } from "@/components/json-ld";
+import { WebsiteJsonLd, OrganizationJsonLd } from "@/components/json-ld";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Analytics } from "@vercel/analytics/next";
@@ -72,6 +72,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen font-sans antialiased">
         <WebsiteJsonLd />
+        <OrganizationJsonLd />
         <div className="flex min-h-screen flex-col">
           <SiteHeader />
           <main className="flex-1">{children}</main>
