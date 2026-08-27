@@ -45,6 +45,11 @@ export const metadata: Metadata = {
     follow: true,
     googleBot: { index: true, follow: true, "max-image-preview": "large" },
   },
+  // Renders <meta name="google-site-verification"> only when a token is set
+  // (via lib/config or the GOOGLE_SITE_VERIFICATION env var).
+  ...(siteConfig.googleSiteVerification
+    ? { verification: { google: siteConfig.googleSiteVerification } }
+    : {}),
 };
 
 export default function RootLayout({

@@ -9,6 +9,18 @@
  */
 const PRODUCTION_URL = "https://www.realrank.lol";
 
+/**
+ * Google Search Console site-verification token (the `content` value from the
+ * "HTML tag" verification method, WITHOUT the surrounding <meta> markup).
+ *
+ * Paste your token between the quotes below and it renders permanently into
+ * every page's <head> — surviving redeploys, unlike an uploaded HTML file.
+ * An env var (GOOGLE_SITE_VERIFICATION) overrides it if set. Leave blank if you
+ * verified via DNS TXT instead — no meta tag is needed then.
+ */
+const GOOGLE_SITE_VERIFICATION =
+  process.env.GOOGLE_SITE_VERIFICATION?.trim() || "";
+
 function resolveSiteUrl(): string {
   const explicit = process.env.NEXT_PUBLIC_SITE_URL?.trim();
   if (explicit) return explicit.replace(/\/+$/, "");
@@ -29,6 +41,8 @@ export const siteConfig = {
   url: resolveSiteUrl(),
   ogImage: "/og.png",
   twitter: "@realrank",
+  // Google Search Console "HTML tag" verification token (optional). See above.
+  googleSiteVerification: GOOGLE_SITE_VERIFICATION,
   // How often the public data is refreshed by the cron job (used in copy only).
   // Matches vercel.json (daily on Hobby; raise cadence + this value on Pro).
   refreshCadenceHours: 24,
