@@ -88,6 +88,7 @@ export interface Database {
           growth_rate: number;
           previous_momentum_score: number;
           previous_clicks_28d: number;
+          domain_rank: number | null;
           is_active: boolean;
           last_refreshed_at: string | null;
           created_at: string;
@@ -106,6 +107,7 @@ export interface Database {
           growth_rate?: number;
           previous_momentum_score?: number;
           previous_clicks_28d?: number;
+          domain_rank?: number | null;
           is_active?: boolean;
           last_refreshed_at?: string | null;
           created_at?: string;
@@ -124,6 +126,7 @@ export interface Database {
           growth_rate?: number;
           previous_momentum_score?: number;
           previous_clicks_28d?: number;
+          domain_rank?: number | null;
           is_active?: boolean;
           last_refreshed_at?: string | null;
           created_at?: string;

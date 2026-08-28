@@ -4,6 +4,8 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { decryptToken } from "@/lib/crypto";
 import { clientFromRefreshToken, fetchSiteMetrics } from "@/lib/google";
 import { upsertSiteHistory } from "@/lib/gsc-server";
+import { fetchDomainRanks } from "@/lib/openpagerank";
+import { hostname } from "@/lib/utils";
 import { categories } from "@/lib/config";
 import type { OAuth2Client } from "google-auth-library";
 
@@ -38,6 +40,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  // Domain authority (Open PageRank) for every active domain, one batched call.
+  // Empty map when the key isn't set or the API is down — leaves stored values.
+  const drMap = await fetchDomainRanks((sites ?? []).map((s) => hostname(s.site_url)));
+
   const clientCache = new Map<string, OAuth2Client | null>();
   let updated = 0;
   const failures: { site: string; reason: string }[] = [];
@@ -51,10 +57,13 @@ export async function GET(req: NextRequest) {
       }
 
       const metrics = await fetchSiteMetrics(client, site.site_url);
+      const dr = drMap.get(hostname(site.site_url));
       const { error: upErr } = await supabase
         .from("published_sites")
         .update({
           ...metrics,
+          // Only overwrite domain_rank when we actually got a fresh value.
+          ...(dr != null ? { domain_rank: dr } : {}),
           // Snapshot the outgoing values so the UI can show rank movement.
           previous_momentum_score: site.momentum_score,
           previous_clicks_28d: site.clicks_28d,

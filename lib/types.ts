@@ -21,6 +21,8 @@ export interface RankedSite {
   rankDelta: number | null;
   /** Compact recent daily-click series for the row sparkline (ascending). */
   spark: number[];
+  /** Domain authority (Open PageRank, 0–10). Third-party estimate; null if none. */
+  domainRank: number | null;
 }
 
 /** A sponsored placement row, visually distinct and excluded from scoring. */
@@ -57,6 +59,7 @@ export function toRankedSite(
     lastRefreshedAt: site.last_refreshed_at,
     rankDelta,
     spark: [],
+    domainRank: site.domain_rank ?? null,
   };
 }
 

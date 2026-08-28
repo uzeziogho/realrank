@@ -86,6 +86,14 @@ function OrganicRowItem({ row, view }: { row: RankedSite; view: RankingView }) {
               {categoryLabel(row.category)}
             </Badge>
           )}
+          {row.domainRank != null && (
+            <span
+              title="Domain authority (Open PageRank, 0–10)"
+              className="hidden shrink-0 rounded-full border border-border px-2 py-0.5 text-xs font-medium tabular-nums text-muted-foreground sm:inline-flex"
+            >
+              DR {row.domainRank.toFixed(1)}
+            </span>
+          )}
         </div>
         <p className="truncate text-sm text-muted-foreground">
           <span className="text-muted-foreground/70">{hostname(row.siteUrl)}</span>

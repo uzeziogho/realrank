@@ -78,6 +78,8 @@ export const DUMMY_SITES: PublishedSite[] = SEEDS.map((s, i) => {
     growth_rate: growthRate,
     previous_momentum_score: Math.round(momentumScore * wobble * 100) / 100,
     previous_clicks_28d: Math.round(s.clicks_28d * wobble),
+    // Synthetic domain authority for preview (0–10), scaled off 28d volume.
+    domain_rank: Math.min(9.2, Math.round((2 + Math.log10(s.clicks_28d + 1) * 1.35) * 10) / 10),
     is_active: true,
     last_refreshed_at: REFRESHED_AT,
     created_at: "2026-06-01T00:00:00.000Z",
