@@ -153,6 +153,117 @@ export interface Database {
         };
         Relationships: [];
       };
+      channels: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          slug: string;
+          destination_url: string;
+          archived: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          slug: string;
+          destination_url: string;
+          archived?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          slug?: string;
+          destination_url?: string;
+          archived?: boolean;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      channel_clicks: {
+        Row: {
+          id: string;
+          channel_id: string;
+          referrer: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          channel_id: string;
+          referrer?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          channel_id?: string;
+          referrer?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      channel_conversions: {
+        Row: {
+          id: string;
+          channel_id: string;
+          click_id: string | null;
+          user_id: string;
+          stripe_event_id: string;
+          type: string;
+          amount_cents: number;
+          currency: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          channel_id: string;
+          click_id?: string | null;
+          user_id: string;
+          stripe_event_id: string;
+          type?: string;
+          amount_cents?: number;
+          currency?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          channel_id?: string;
+          click_id?: string | null;
+          user_id?: string;
+          stripe_event_id?: string;
+          type?: string;
+          amount_cents?: number;
+          currency?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      stripe_connections: {
+        Row: {
+          user_id: string;
+          webhook_token: string;
+          encrypted_webhook_secret: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          webhook_token: string;
+          encrypted_webhook_secret: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          webhook_token?: string;
+          encrypted_webhook_secret?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       sponsored_slots: {
         Row: {
           id: string;
@@ -212,6 +323,9 @@ export interface Database {
 // Convenience row aliases used throughout the app.
 export type PublishedSite = Database["public"]["Tables"]["published_sites"]["Row"];
 export type SiteClickHistory = Database["public"]["Tables"]["site_click_history"]["Row"];
+export type Channel = Database["public"]["Tables"]["channels"]["Row"];
+export type ChannelClick = Database["public"]["Tables"]["channel_clicks"]["Row"];
+export type ChannelConversion = Database["public"]["Tables"]["channel_conversions"]["Row"];
 export type SponsoredSlot = Database["public"]["Tables"]["sponsored_slots"]["Row"];
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type ConnectedAccount = Database["public"]["Tables"]["connected_accounts"]["Row"];

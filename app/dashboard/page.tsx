@@ -67,9 +67,14 @@ export default async function DashboardPage() {
             Connected as <span className="text-foreground">{user.email}</span>
           </p>
         </div>
-        <span className="text-sm text-muted-foreground">
-          {liveCount} live · {mySites.length} total
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-muted-foreground">
+            {liveCount} live · {mySites.length} total
+          </span>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/dashboard/channels">Channels →</Link>
+          </Button>
+        </div>
       </div>
 
       {/* Connect Google Search Console */}

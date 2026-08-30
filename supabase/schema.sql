@@ -180,6 +180,98 @@ create policy "anyone can read history of active sites"
 create index if not exists site_click_history_site_date_idx
   on public.site_click_history (site_id, date);
 
+-- ── channels (private revenue attribution) ────────────────────
+-- "Channels" = per-founder marketing sources (X, Reddit, a directory, an
+-- outbid board…). Each gets a short tracking link; clicks are logged and Stripe
+-- revenue is attributed back so a founder can rank channels by what actually
+-- pays. This data is PRIVATE to its owner (unlike the public leaderboard).
+create table if not exists public.channels (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  name text not null,
+  slug text not null unique,           -- short code used in /go/<slug>
+  destination_url text not null,       -- where the link redirects
+  archived boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+alter table public.channels enable row level security;
+
+drop policy if exists "owner manages own channels" on public.channels;
+create policy "owner manages own channels"
+  on public.channels for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+create index if not exists channels_user_idx on public.channels (user_id) where not archived;
+
+-- Click events. Inserted by the /go redirect with the SERVICE ROLE (the visitor
+-- is anonymous), so no public insert policy. Owners can read their own via the
+-- channel join. The row id doubles as the click id passed downstream.
+create table if not exists public.channel_clicks (
+  id uuid primary key default gen_random_uuid(),
+  channel_id uuid not null references public.channels(id) on delete cascade,
+  referrer text,
+  created_at timestamptz not null default now()
+);
+
+alter table public.channel_clicks enable row level security;
+
+drop policy if exists "owner reads own clicks" on public.channel_clicks;
+create policy "owner reads own clicks"
+  on public.channel_clicks for select
+  using (exists (select 1 from public.channels c where c.id = channel_id and c.user_id = auth.uid()));
+
+create index if not exists channel_clicks_channel_idx on public.channel_clicks (channel_id, created_at);
+
+-- Attributed conversions. Inserted by the Stripe webhook (service role),
+-- idempotent on the Stripe event id. type 'customer' = a paid conversion.
+create table if not exists public.channel_conversions (
+  id uuid primary key default gen_random_uuid(),
+  channel_id uuid not null references public.channels(id) on delete cascade,
+  click_id uuid references public.channel_clicks(id) on delete set null,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  stripe_event_id text not null unique,
+  type text not null default 'customer', -- 'customer' | 'signup'
+  amount_cents integer not null default 0,
+  currency text not null default 'usd',
+  created_at timestamptz not null default now()
+);
+
+alter table public.channel_conversions enable row level security;
+
+drop policy if exists "owner reads own conversions" on public.channel_conversions;
+create policy "owner reads own conversions"
+  on public.channel_conversions for select
+  using (auth.uid() = user_id);
+
+create index if not exists channel_conversions_channel_idx on public.channel_conversions (channel_id, created_at);
+
+-- Per-user Stripe webhook connection. The signing secret is stored ENCRYPTED
+-- (see lib/crypto.ts) and never returned to the client. webhook_token is a
+-- random public path segment so /api/attribution/stripe/<token> maps to a user.
+create table if not exists public.stripe_connections (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  webhook_token text not null unique,
+  encrypted_webhook_secret text not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.stripe_connections enable row level security;
+
+-- Owner may see WHETHER they're connected (created_at/token), but never the
+-- secret column client-side. Inserts/updates happen server-side (service role).
+drop policy if exists "owner reads own stripe connection" on public.stripe_connections;
+create policy "owner reads own stripe connection"
+  on public.stripe_connections for select
+  using (auth.uid() = user_id);
+
+drop policy if exists "owner deletes own stripe connection" on public.stripe_connections;
+create policy "owner deletes own stripe connection"
+  on public.stripe_connections for delete
+  using (auth.uid() = user_id);
+
 -- ── sponsored_slots ───────────────────────────────────────────
 create table if not exists public.sponsored_slots (
   id uuid primary key default gen_random_uuid(),
