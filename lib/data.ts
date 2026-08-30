@@ -33,7 +33,15 @@ export async function getLeaderboardData(
     ? sites.filter((s) => s.category === opts.category)
     : sites;
 
-  const organic = rankSites(scoped, view);
+  // Only rank sites with traffic in the relevant window: momentum is "who's
+  // growing right now", so a site with 0 clicks this week has no momentum story
+  // (and showing "-100% · 0 clicks" reads as broken). Such a site can still
+  // appear on the volume board if it has 28-day clicks.
+  const withTraffic = scoped.filter((s) =>
+    view === "volume" ? s.clicks_28d > 0 : s.clicks_7d > 0,
+  );
+
+  const organic = rankSites(withTraffic, view);
   const rows = injectSponsored(organic, slots);
 
   const totalClicks28d = scoped.reduce(
