@@ -5,6 +5,7 @@ import { DUMMY_SITES, DUMMY_SPONSORED } from "@/lib/dummy-data";
 import { rankSites, injectSponsored, latestRefresh } from "@/lib/ranking";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createServiceClient } from "@/lib/supabase/server";
+import { hostname } from "@/lib/utils";
 import type { LeaderboardRow, RankedSite, RankingView } from "@/lib/types";
 
 export interface LeaderboardData {
@@ -126,6 +127,27 @@ function synthSpark(clicks7d: number, clicks28d: number, days: number): number[]
     out.push(Math.max(0, Math.round(base * wobble)));
   }
   return out;
+}
+
+export interface RecentSite {
+  displayName: string;
+  host: string;
+}
+
+/** Newest active sites, for the "recently joined" liveness strip on the home page. */
+export async function getRecentlyJoined(limit = 6): Promise<RecentSite[]> {
+  try {
+    const { sites } = await getActiveSites();
+    return [...sites]
+      .sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
+      .slice(0, limit)
+      .map((s) => ({
+        displayName: s.display_name,
+        host: hostname(s.site_url).toLowerCase(),
+      }));
+  } catch {
+    return [];
+  }
 }
 
 async function loadRaw(): Promise<{

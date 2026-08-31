@@ -180,6 +180,17 @@ create policy "anyone can read history of active sites"
 create index if not exists site_click_history_site_date_idx
   on public.site_click_history (site_id, date);
 
+-- ── waitlist (email capture for not-ready-to-connect visitors) ──
+create table if not exists public.waitlist (
+  id uuid primary key default gen_random_uuid(),
+  email text not null unique,
+  source text,
+  created_at timestamptz not null default now()
+);
+
+alter table public.waitlist enable row level security;
+-- Inserts happen server-side with the service role; no client policies granted.
+
 -- ── channels (private revenue attribution) ────────────────────
 -- "Channels" = per-founder marketing sources (X, Reddit, a directory, an
 -- outbid board…). Each gets a short tracking link; clicks are logged and Stripe

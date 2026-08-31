@@ -7,10 +7,12 @@ import { RankingToggle } from "@/components/ranking-toggle";
 import { Leaderboard } from "@/components/leaderboard";
 import { LeaderboardJsonLd } from "@/components/json-ld";
 import { Pagination } from "@/components/pagination";
-import { getLeaderboardData, attachSparklines } from "@/lib/data";
+import { getLeaderboardData, attachSparklines, getRecentlyJoined } from "@/lib/data";
 import { injectSponsored } from "@/lib/ranking";
+import { RankChecker } from "@/components/rank-checker";
+import { WaitlistForm } from "@/components/waitlist-form";
 import { siteConfig, type RankingView } from "@/lib/config";
-import { formatCompact, timeAgo } from "@/lib/utils";
+import { formatCompact, timeAgo, hostname } from "@/lib/utils";
 
 // Incremental Static Regeneration — full ranked list is in the initial HTML,
 // refreshed at most hourly (and on-demand after the cron writes new data).
@@ -73,6 +75,11 @@ export default async function HomePage({
   const sp = await searchParams;
   const view = parseView(sp.view);
   const data = await getLeaderboardData(view);
+  const recent = await getRecentlyJoined(6);
+
+  // For the rank checker: hostnames already on the board + the top volume.
+  const knownHosts = data.organic.map((s) => hostname(s.siteUrl).toLowerCase());
+  const topClicks = data.organic.reduce((m, s) => Math.max(m, s.clicks28d), 0);
 
   const totalPages = Math.max(1, Math.ceil(data.organic.length / PAGE_SIZE));
   const page = parsePage(sp.page, totalPages);
@@ -103,13 +110,15 @@ export default async function HomePage({
             so fast-growing sites can beat the giants — not just whoever&apos;s biggest.
           </p>
 
-          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
-            <Button asChild size="lg">
-              <Link href="/login">Connect Google Search Console</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <Link href="#leaderboard">View the leaderboard</Link>
-            </Button>
+          {/* Personalized entry point — check your domain, then connect. */}
+          <div className="mt-8 flex w-full flex-col items-center">
+            <RankChecker knownHosts={knownHosts} topClicks={topClicks} totalSites={data.totalSites} />
+            <p className="mt-3 text-sm text-muted-foreground">
+              or{" "}
+              <Link href="/login" className="text-primary hover:underline">connect Google Search Console</Link>
+              {" · "}
+              <Link href="#leaderboard" className="hover:text-foreground">view the leaderboard</Link>
+            </p>
           </div>
 
           {/* Aggregate stats */}
@@ -125,6 +134,22 @@ export default async function HomePage({
               icon={<RefreshCw className="size-4" />}
             />
           </dl>
+
+          {/* Liveness — recently joined sites */}
+          {recent.length > 0 && (
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
+              <span className="text-xs uppercase tracking-wider text-muted-foreground">Recently joined</span>
+              {recent.map((s) => (
+                <Link
+                  key={s.host}
+                  href={`/site/${s.host}`}
+                  className="rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {s.displayName}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -239,8 +264,14 @@ export default async function HomePage({
             properties to publish, and let real clicks decide your rank.
           </p>
           <Button asChild size="lg" className="mt-2">
-            <Link href="/dashboard">Connect Search Console</Link>
+            <Link href="/login">Connect Search Console</Link>
           </Button>
+
+          {/* Fallback for visitors not ready to connect Google yet. */}
+          <div className="mt-6 flex flex-col items-center gap-2 border-t border-border/60 pt-6">
+            <p className="text-sm text-muted-foreground">Not ready to connect? Get launch updates.</p>
+            <WaitlistForm source="home" />
+          </div>
         </div>
       </section>
     </>

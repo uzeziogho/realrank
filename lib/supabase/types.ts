@@ -153,6 +153,27 @@ export interface Database {
         };
         Relationships: [];
       };
+      waitlist: {
+        Row: {
+          id: string;
+          email: string;
+          source: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          source?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          source?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       channels: {
         Row: {
           id: string;
