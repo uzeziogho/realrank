@@ -116,6 +116,31 @@ export async function setSiteActive(formData: FormData): Promise<void> {
   revalidatePublic();
 }
 
+/** Edit a published site's public details (name, description, category). */
+export async function updateSiteDetails(formData: FormData): Promise<void> {
+  const { supabase, user } = await requireUser();
+  const id = String(formData.get("id"));
+  const display_name = String(formData.get("display_name") ?? "").trim().slice(0, 80);
+  const description = String(formData.get("description") ?? "").trim().slice(0, 200);
+  const categoryRaw = String(formData.get("category") ?? "").trim();
+  const category = (categorySlugs as readonly string[]).includes(categoryRaw) ? categoryRaw : null;
+
+  if (!display_name) return; // name is required; ignore an empty submit
+
+  await supabase
+    .from("published_sites")
+    .update({
+      display_name,
+      description: description || null,
+      category,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  revalidatePublic();
+}
+
 export async function deleteSite(formData: FormData): Promise<void> {
   const { supabase, user } = await requireUser();
   const id = String(formData.get("id"));

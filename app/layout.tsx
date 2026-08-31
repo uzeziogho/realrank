@@ -31,14 +31,14 @@ export const metadata: Metadata = {
     title: `${siteConfig.name} — The Organic Traffic Leaderboard`,
     description: siteConfig.description,
     siteName: siteConfig.name,
-    images: [{ url: siteConfig.ogImage, width: 1200, height: 630 }],
+    // Image comes from app/opengraph-image.tsx (generated) — no static file needed.
   },
   twitter: {
     card: "summary_large_image",
     title: `${siteConfig.name} — The Organic Traffic Leaderboard`,
     description: siteConfig.description,
     creator: siteConfig.twitter,
-    images: [siteConfig.ogImage],
+    // Image comes from app/twitter-image.tsx (generated).
   },
   robots: {
     index: true,
