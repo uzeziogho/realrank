@@ -35,16 +35,26 @@ export function trackingUrl(slug: string): string {
  * indie scale; revisit with SQL rollups if a user ever has huge volume).
  */
 export async function getChannelsWithStats(userId: string): Promise<ChannelStat[]> {
+  try {
+    return await loadChannels(userId);
+  } catch (err) {
+    console.error("[channels] getChannelsWithStats failed:", err);
+    return [];
+  }
+}
+
+async function loadChannels(userId: string): Promise<ChannelStat[]> {
   const supabase = await createClient();
 
-  const { data: channels } = await supabase
+  const { data: channels, error } = await supabase
     .from("channels")
     .select("id, name, slug, destination_url")
     .eq("user_id", userId)
     .eq("archived", false)
     .order("created_at", { ascending: false });
 
-  if (!channels || channels.length === 0) return [];
+  // Missing table / not-yet-migrated → treat as no channels rather than throwing.
+  if (error || !channels || channels.length === 0) return [];
 
   const ids = channels.map((c) => c.id);
 
@@ -104,16 +114,21 @@ export async function getChannelsWithStats(userId: string): Promise<ChannelStat[
 }
 
 export async function getStripeConnectionStatus(userId: string): Promise<StripeConnectionStatus> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("stripe_connections")
-    .select("webhook_token")
-    .eq("user_id", userId)
-    .maybeSingle();
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("stripe_connections")
+      .select("webhook_token")
+      .eq("user_id", userId)
+      .maybeSingle();
 
-  if (!data?.webhook_token) return { connected: false, webhookUrl: null };
-  return {
-    connected: true,
-    webhookUrl: `${siteConfig.url}/api/attribution/stripe/${data.webhook_token}`,
-  };
+    if (error || !data?.webhook_token) return { connected: false, webhookUrl: null };
+    return {
+      connected: true,
+      webhookUrl: `${siteConfig.url}/api/attribution/stripe/${data.webhook_token}`,
+    };
+  } catch (err) {
+    console.error("[channels] getStripeConnectionStatus failed:", err);
+    return { connected: false, webhookUrl: null };
+  }
 }
