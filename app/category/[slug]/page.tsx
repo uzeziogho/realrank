@@ -21,7 +21,8 @@ type Params = Promise<{ slug: string }>;
 type SearchParams = Promise<{ view?: string }>;
 
 function parseView(v?: string): RankingView {
-  return v === "volume" ? "volume" : "momentum";
+  // Volume is the default view (matches the homepage); momentum via ?view=momentum.
+  return v === "momentum" ? "momentum" : "volume";
 }
 
 export function generateStaticParams() {
