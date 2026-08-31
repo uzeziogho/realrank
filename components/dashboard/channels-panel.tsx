@@ -102,9 +102,10 @@ export function ChannelsPanel({
           </div>
         ) : (
           <div className="overflow-hidden rounded-xl border border-border bg-card">
-            <div className="hidden grid-cols-[1.6fr_5rem_5rem_6rem_6rem_auto] gap-3 border-b border-border px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground md:grid">
+            <div className="hidden grid-cols-[1.5fr_4rem_4.5rem_5rem_5.5rem_5rem_auto] gap-3 border-b border-border px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground md:grid">
               <span>Channel</span>
               <span className="text-right">Visits</span>
+              <span className="text-right">Signups</span>
               <span className="text-right">Customers</span>
               <span className="text-right">Revenue</span>
               <span className="text-right">Rev / visit</span>
@@ -112,7 +113,7 @@ export function ChannelsPanel({
             </div>
             <ol className="divide-y divide-border">
               {channels.map((c, i) => (
-                <li key={c.id} className="grid grid-cols-1 gap-3 px-4 py-4 md:grid-cols-[1.6fr_5rem_5rem_6rem_6rem_auto] md:items-center">
+                <li key={c.id} className="grid grid-cols-1 gap-3 px-4 py-4 md:grid-cols-[1.5fr_4rem_4.5rem_5rem_5.5rem_5rem_auto] md:items-center">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-semibold tabular-nums text-muted-foreground">{i + 1}</span>
@@ -125,11 +126,13 @@ export function ChannelsPanel({
                     {/* Mobile metrics */}
                     <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm md:hidden">
                       <span className="text-muted-foreground">{c.visits} visits</span>
+                      <span className="text-muted-foreground">{c.signups} signups</span>
                       <span className="text-muted-foreground">{c.customers} customers</span>
                       <span className="font-medium">{money(c.revenueCents, c.currency)}</span>
                     </div>
                   </div>
                   <span className="hidden text-right tabular-nums md:block">{c.visits}</span>
+                  <span className="hidden text-right tabular-nums text-muted-foreground md:block">{c.signups}</span>
                   <span className="hidden text-right tabular-nums md:block">{c.customers}</span>
                   <span className="hidden text-right font-semibold tabular-nums md:block">{money(c.revenueCents, c.currency)}</span>
                   <span className="hidden text-right tabular-nums text-muted-foreground md:block">
@@ -223,6 +226,18 @@ function StripeSetup({ stripe }: { stripe: StripeConnectionStatus }) {
 stripe.checkout.sessions.create({
   // …your line items…
   client_reference_id: rrClick, // the ?rr_click value from the visit
+})`}
+        </pre>
+        <p className="mt-4 font-medium text-foreground">Optional: track signups too</p>
+        <p className="mt-1">
+          Fire this when someone signs up (before they pay) to get the full
+          visits → signups → customers funnel:
+        </p>
+        <pre className="mt-3 overflow-x-auto rounded-lg bg-muted p-3 text-xs">
+{`fetch("https://www.realrank.lol/api/attribution/signup", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ rr_click: rrClick }),
 })`}
         </pre>
       </div>

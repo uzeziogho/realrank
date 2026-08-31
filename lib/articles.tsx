@@ -854,6 +854,75 @@ export const articles: Article[] = [
       </>
     ),
   },
+  {
+    slug: "introducing-channels",
+    title: "Introducing Channels: see which marketing actually brings paying customers",
+    description:
+      "RealRank Channels tracks which sources — X, Reddit, directories, even outbid boards — bring paying customers, ranked by revenue and efficiency. Attribution verified through Stripe.",
+    date: "2026-08-31",
+    keywords: ["channel attribution", "marketing ROI", "stripe attribution", "indie SaaS analytics", "RealRank Channels"],
+    Body: () => (
+      <>
+        <p>
+          RealRank started as a way to prove one thing with real data: which
+          websites are actually growing. Today it does the same for the question
+          every founder loses sleep over — <strong>which marketing is actually
+          working?</strong> Meet <strong>Channels</strong>, now built into your
+          RealRank dashboard.
+        </p>
+        <h2>The problem it kills</h2>
+        <p>
+          You post on X, drop links in three subreddits, submit to five
+          directories, maybe even bid on an <A href="https://outbid.lol/">outbid
+          board</A>. A week later you have a pile of visits and no idea which of
+          those actually produced <em>customers</em>. Google Analytics buries the
+          answer; most tools stop at pageviews. So you keep spending time on
+          channels that feel busy but pay nothing.
+        </p>
+        <h2>How Channels works</h2>
+        <p>
+          It&apos;s deliberately minimal — no multi-touch models, no bloated
+          funnels. Just the chain that matters:
+        </p>
+        <ul>
+          <li><strong>Create a tracking link</strong> for each channel (one for X, one for r/SaaS, one per directory).</li>
+          <li><strong>Share it.</strong> RealRank counts the visits and carries an attribution id through to your site.</li>
+          <li><strong>Connect Stripe</strong> (a webhook + one line in your checkout). Paid conversions map back to the channel that referred them.</li>
+          <li><strong>Read the ranking:</strong> visits → signups → customers → revenue → revenue per visit.</li>
+        </ul>
+        <p>
+          The board sorts by <strong>revenue, then efficiency</strong> — so the
+          channel quietly printing customers rises to the top, and the one
+          burning your evenings for zero sales sinks. Same philosophy as the
+          public leaderboard: <em>rank by what&apos;s real, not what&apos;s
+          loud.</em>
+        </p>
+        <h2>Verified, like everything else here</h2>
+        <p>
+          Revenue attribution comes straight from <strong>Stripe</strong> — not a
+          guess, not a self-reported number. It&apos;s the same
+          verification principle behind RealRank&apos;s{" "}
+          <Link href="/blog/verified-vs-estimated-traffic">verified traffic</Link>{" "}
+          and TrustMRR&apos;s <Link href="/blog/trustmrr-vs-realrank">verified revenue</Link>.
+        </p>
+        <h2>The perfect companion to your pay-to-rank ROI</h2>
+        <p>
+          We wrote about how to tell whether an{" "}
+          <Link href="/blog/measure-pay-to-rank-roi">outbid.lol bid actually moved
+          your traffic</Link>. Channels closes the loop: point a tracking link at
+          your bid and you&apos;ll see not just the clicks it sent, but whether
+          any of them <em>became paying customers</em>. That&apos;s the number
+          that decides if a channel deserves another dollar.
+        </p>
+        <p>
+          Channels is free while it&apos;s new.{" "}
+          <Link href="/login">Connect Search Console to open your dashboard</Link>{" "}
+          and create your first tracking link — then finally spend your time where
+          it actually pays.
+        </p>
+      </>
+    ),
+  },
 ];
 
 export function getArticle(slug: string): Article | undefined {

@@ -210,7 +210,7 @@ export interface Database {
           channel_id: string;
           click_id: string | null;
           user_id: string;
-          stripe_event_id: string;
+          stripe_event_id: string | null;
           type: string;
           amount_cents: number;
           currency: string;
@@ -221,7 +221,7 @@ export interface Database {
           channel_id: string;
           click_id?: string | null;
           user_id: string;
-          stripe_event_id: string;
+          stripe_event_id?: string | null;
           type?: string;
           amount_cents?: number;
           currency?: string;
@@ -232,7 +232,7 @@ export interface Database {
           channel_id?: string;
           click_id?: string | null;
           user_id?: string;
-          stripe_event_id?: string;
+          stripe_event_id?: string | null;
           type?: string;
           amount_cents?: number;
           currency?: string;

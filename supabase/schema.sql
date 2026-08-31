@@ -231,12 +231,19 @@ create table if not exists public.channel_conversions (
   channel_id uuid not null references public.channels(id) on delete cascade,
   click_id uuid references public.channel_clicks(id) on delete set null,
   user_id uuid not null references auth.users(id) on delete cascade,
-  stripe_event_id text not null unique,
+  stripe_event_id text unique,           -- null for 'signup' events (no Stripe id)
   type text not null default 'customer', -- 'customer' | 'signup'
   amount_cents integer not null default 0,
   currency text not null default 'usd',
   created_at timestamptz not null default now()
 );
+
+-- If an earlier version created this column NOT NULL, relax it (signups have no id).
+alter table public.channel_conversions alter column stripe_event_id drop not null;
+
+-- One signup per click (idempotent signup beacon).
+create unique index if not exists channel_conversions_signup_click_idx
+  on public.channel_conversions (click_id) where type = 'signup';
 
 alter table public.channel_conversions enable row level security;
 

@@ -10,6 +10,7 @@ export interface ChannelStat {
   destinationUrl: string;
   trackingUrl: string;
   visits: number;
+  signups: number;
   customers: number;
   revenueCents: number;
   currency: string;
@@ -58,11 +59,15 @@ export async function getChannelsWithStats(userId: string): Promise<ChannelStat[
   const visitsBy = new Map<string, number>();
   for (const c of clicks ?? []) visitsBy.set(c.channel_id, (visitsBy.get(c.channel_id) ?? 0) + 1);
 
+  const signupBy = new Map<string, number>();
   const custBy = new Map<string, number>();
   const revBy = new Map<string, number>();
   const curBy = new Map<string, string>();
   for (const c of conversions ?? []) {
-    if (c.type !== "customer") continue;
+    if (c.type === "signup") {
+      signupBy.set(c.channel_id, (signupBy.get(c.channel_id) ?? 0) + 1);
+      continue;
+    }
     custBy.set(c.channel_id, (custBy.get(c.channel_id) ?? 0) + 1);
     revBy.set(c.channel_id, (revBy.get(c.channel_id) ?? 0) + (c.amount_cents ?? 0));
     if (!curBy.has(c.channel_id)) curBy.set(c.channel_id, c.currency ?? "usd");
@@ -79,6 +84,7 @@ export async function getChannelsWithStats(userId: string): Promise<ChannelStat[
       destinationUrl: c.destination_url,
       trackingUrl: trackingUrl(c.slug),
       visits,
+      signups: signupBy.get(c.id) ?? 0,
       customers,
       revenueCents,
       currency: (curBy.get(c.id) ?? "usd").toUpperCase(),
