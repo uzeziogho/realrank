@@ -21,9 +21,7 @@ const PAGE_SIZE = 50;
 type SearchParams = Promise<{ view?: string; page?: string }>;
 
 function parseView(v?: string): RankingView {
-  // Volume is the default view for visitors (fuller, calmer board); momentum is
-  // opt-in via ?view=momentum.
-  return v === "momentum" ? "momentum" : "volume";
+  return v === "volume" ? "volume" : "momentum";
 }
 
 function parsePage(v: string | undefined, totalPages: number): number {
@@ -35,7 +33,7 @@ function parsePage(v: string | undefined, totalPages: number): number {
 /** Build a leaderboard URL preserving view + page params. */
 function leaderboardHref(view: RankingView, page: number): string {
   const params = new URLSearchParams();
-  if (view === "momentum") params.set("view", "momentum");
+  if (view === "volume") params.set("view", "volume");
   if (page > 1) params.set("page", String(page));
   const qs = params.toString();
   return qs ? `/?${qs}#leaderboard` : "/#leaderboard";
@@ -56,7 +54,7 @@ export async function generateMetadata({
   const title = page > 1 ? `${base} — Page ${page}` : base;
 
   const params = new URLSearchParams();
-  if (view === "momentum") params.set("view", "momentum");
+  if (view === "volume") params.set("view", "volume");
   if (page > 1) params.set("page", String(page));
   const qs = params.toString();
 

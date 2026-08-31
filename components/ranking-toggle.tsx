@@ -9,8 +9,7 @@ import type { RankingView } from "@/lib/config";
 /**
  * Momentum / Volume switch. Writes the choice to the `?view=` URL param so the
  * Server Component re-renders the ranked list — keeping both views crawlable and
- * shareable. Default (no param) is Volume, the fuller/calmer board for first
- * visits; Momentum is the explicit `?view=momentum`.
+ * shareable. Default (no param) is Momentum.
  */
 export function RankingToggle({ view }: { view: RankingView }) {
   const router = useRouter();
@@ -20,8 +19,8 @@ export function RankingToggle({ view }: { view: RankingView }) {
 
   function select(next: RankingView) {
     const params = new URLSearchParams(searchParams.toString());
-    if (next === "volume") {
-      params.delete("view"); // volume is the default → clean URL
+    if (next === "momentum") {
+      params.delete("view");
     } else {
       params.set("view", next);
     }
