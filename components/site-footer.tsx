@@ -42,8 +42,23 @@ export function SiteFooter() {
           </div>
         </div>
       </div>
-      <div className="container mt-8 border-t border-border/60 pt-6 text-sm text-muted-foreground">
-        © {new Date().getFullYear()} {siteConfig.name}. Rankings from verified Google Search Console data.
+      <div className="container mt-8 flex flex-col items-start gap-4 border-t border-border/60 pt-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+        <p>
+          © {new Date().getFullYear()} {siteConfig.name}. Rankings from verified Google Search Console data.
+        </p>
+        <a
+          href="https://marketingdb.live"
+          target="_blank"
+          rel="noopener noreferrer nofollow sponsored"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="https://marketingdb.live/badge-light.svg"
+            alt="Listed on MarketingDB"
+            width={190}
+            height={44}
+          />
+        </a>
       </div>
     </footer>
   );
