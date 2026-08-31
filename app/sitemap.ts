@@ -17,6 +17,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     siteSlugs = [];
   }
 
+  // Seed a bounded set of head-to-head compare pages (adjacent slugs). The page
+  // works for any pair on demand; this just gives crawlers a starting set.
+  const comparePairs: string[] = [];
+  for (let i = 0; i < Math.min(siteSlugs.length - 1, 40); i++) {
+    comparePairs.push(`${siteSlugs[i]}-vs-${siteSlugs[i + 1]}`);
+  }
+
   return [
     {
       url: base,
@@ -71,6 +78,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: "daily" as const,
       priority: 0.7,
+    })),
+    ...comparePairs.map((slug) => ({
+      url: `${base}/compare/${slug}`,
+      lastModified: now,
+      changeFrequency: "daily" as const,
+      priority: 0.5,
     })),
   ];
 }

@@ -11,7 +11,8 @@ import { getLeaderboardData, attachSparklines, getRecentlyJoined } from "@/lib/d
 import { injectSponsored } from "@/lib/ranking";
 import { RankChecker } from "@/components/rank-checker";
 import { WaitlistForm } from "@/components/waitlist-form";
-import { siteConfig, type RankingView } from "@/lib/config";
+import { LeaderboardSearch } from "@/components/leaderboard-search";
+import { siteConfig, categories, type RankingView } from "@/lib/config";
 import { formatCompact, timeAgo, hostname } from "@/lib/utils";
 
 // Incremental Static Regeneration — full ranked list is in the initial HTML,
@@ -20,7 +21,7 @@ export const revalidate = 3600;
 
 const PAGE_SIZE = 50;
 
-type SearchParams = Promise<{ view?: string; page?: string }>;
+type SearchParams = Promise<{ view?: string; page?: string; q?: string }>;
 
 function parseView(v?: string): RankingView {
   return v === "volume" ? "volume" : "momentum";
@@ -32,10 +33,11 @@ function parsePage(v: string | undefined, totalPages: number): number {
   return Math.min(n, Math.max(1, totalPages));
 }
 
-/** Build a leaderboard URL preserving view + page params. */
-function leaderboardHref(view: RankingView, page: number): string {
+/** Build a leaderboard URL preserving view + query + page params. */
+function leaderboardHref(view: RankingView, page: number, q = ""): string {
   const params = new URLSearchParams();
   if (view === "volume") params.set("view", "volume");
+  if (q) params.set("q", q);
   if (page > 1) params.set("page", String(page));
   const qs = params.toString();
   return qs ? `/?${qs}#leaderboard` : "/#leaderboard";
@@ -60,10 +62,15 @@ export async function generateMetadata({
   if (page > 1) params.set("page", String(page));
   const qs = params.toString();
 
+  // Search-result views point their canonical at the clean board and stay out
+  // of the index (avoids thin/duplicate query pages).
+  const searching = Boolean(sp.q?.trim());
+
   return {
     title,
     description: siteConfig.description,
-    alternates: { canonical: qs ? `/?${qs}` : "/" },
+    alternates: { canonical: searching ? "/" : qs ? `/?${qs}` : "/" },
+    ...(searching ? { robots: { index: false, follow: true } } : {}),
   };
 }
 
@@ -81,13 +88,25 @@ export default async function HomePage({
   const knownHosts = data.organic.map((s) => hostname(s.siteUrl).toLowerCase());
   const topClicks = data.organic.reduce((m, s) => Math.max(m, s.clicks28d), 0);
 
-  const totalPages = Math.max(1, Math.ceil(data.organic.length / PAGE_SIZE));
+  // Search filter (name or hostname). Kept server-side so results stay crawlable.
+  const query = (sp.q ?? "").trim().toLowerCase();
+  const filtered = query
+    ? data.organic.filter(
+        (s) =>
+          s.displayName.toLowerCase().includes(query) ||
+          hostname(s.siteUrl).toLowerCase().includes(query),
+      )
+    : data.organic;
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const page = parsePage(sp.page, totalPages);
   const start = (page - 1) * PAGE_SIZE;
-  const pageOrganic = data.organic.slice(start, start + PAGE_SIZE);
+  const pageOrganic = filtered.slice(start, start + PAGE_SIZE);
   // Re-inject sponsored slots for this page (they only match ranks #10/#20 → page 1).
-  // Attach sparklines for just this page's rows (one batched history query).
-  const pageRows = await attachSparklines(injectSponsored(pageOrganic, data.sponsored));
+  // Skip ads while searching. Attach sparklines for just this page's rows.
+  const pageRows = await attachSparklines(
+    query ? pageOrganic : injectSponsored(pageOrganic, data.sponsored),
+  );
 
   return (
     <>
@@ -167,9 +186,27 @@ export default async function HomePage({
                 : "Ranked by total organic clicks over the last 28 days."}
             </p>
           </div>
-          <Suspense fallback={null}>
-            <RankingToggle view={view} />
-          </Suspense>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <Suspense fallback={null}>
+              <LeaderboardSearch initialQuery={query} />
+            </Suspense>
+            <Suspense fallback={null}>
+              <RankingToggle view={view} />
+            </Suspense>
+          </div>
+        </div>
+
+        {/* Category filter */}
+        <div className="mb-6 flex flex-wrap gap-2">
+          {categories.map((c) => (
+            <Link
+              key={c.slug}
+              href={`/category/${c.slug}`}
+              className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
+            >
+              {c.label}
+            </Link>
+          ))}
         </div>
 
         {data.totalSites === 0 ? (
@@ -183,6 +220,14 @@ export default async function HomePage({
               <Link href="/dashboard">Add your site</Link>
             </Button>
           </div>
+        ) : filtered.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border bg-card/50 p-12 text-center">
+            <p className="text-lg font-medium">No sites match &ldquo;{query}&rdquo;</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Try a different name, or{" "}
+              <Link href="/#leaderboard" className="text-primary hover:underline">clear the search</Link>.
+            </p>
+          </div>
         ) : (
           <>
             <LeaderboardJsonLd sites={pageOrganic} />
@@ -191,12 +236,13 @@ export default async function HomePage({
             <Pagination
               currentPage={page}
               totalPages={totalPages}
-              buildHref={(p) => leaderboardHref(view, p)}
+              buildHref={(p) => leaderboardHref(view, p, query)}
             />
 
             <div className="mt-4 flex flex-col items-center justify-between gap-2 text-xs text-muted-foreground sm:flex-row">
               <p>
-                Showing {start + 1}–{start + pageOrganic.length} of {data.totalSites}.
+                Showing {start + 1}–{start + pageOrganic.length} of {filtered.length}
+                {query ? ` matching “${query}”` : ""}.
                 Last updated {data.lastUpdated ? timeAgo(data.lastUpdated) : "—"}; refreshes
                 every {siteConfig.refreshCadenceHours} hours.
               </p>

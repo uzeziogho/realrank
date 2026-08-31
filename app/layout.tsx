@@ -7,6 +7,7 @@ import { WebsiteJsonLd, OrganizationJsonLd } from "@/components/json-ld";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Analytics } from "@vercel/analytics/next";
+import { Clarity } from "@/components/clarity";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -79,6 +80,7 @@ export default function RootLayout({
           <SiteFooter />
         </div>
         <Analytics />
+        <Clarity />
       </body>
     </html>
   );
