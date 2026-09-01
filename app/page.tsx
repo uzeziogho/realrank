@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { RefreshCw, ShieldCheck, TrendingUp } from "lucide-react";
+import { RefreshCw, ShieldCheck, TrendingUp, LineChart, BarChart3, Award, GitCompare, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RankingToggle } from "@/components/ranking-toggle";
 import { Leaderboard } from "@/components/leaderboard";
@@ -256,6 +256,86 @@ export default async function HomePage({
         )}
       </section>
 
+      {/* Features — surface everything RealRank does */}
+      <section className="border-t border-border/60 bg-card/40">
+        <div className="container py-16">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+              Everything RealRank does
+            </h2>
+            <p className="mt-2 text-muted-foreground">
+              A verified leaderboard, plus the tools to prove and grow your traffic —
+              all free while it&apos;s new.
+            </p>
+          </div>
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <FeatureCard
+              icon={<TrendingUp className="size-5" />}
+              title="Momentum ranking"
+              body="Ranked by growth velocity — last 7 days vs. the prior 21 — so fast-rising sites beat flat giants."
+              href="/about"
+              cta="How it works"
+            />
+            <FeatureCard
+              icon={<ShieldCheck className="size-5" />}
+              title="Verified, not estimated"
+              body="Real organic clicks pulled from your Google Search Console (read-only). No guesses, no self-reported numbers."
+              href="/blog/verified-vs-estimated-traffic"
+              cta="Why it matters"
+            />
+            <FeatureCard
+              icon={<LineChart className="size-5" />}
+              title="Momentum timeline"
+              body="Every site gets a daily-clicks trend and row sparklines, so you can see who's heating up at a glance."
+              href="/blog/read-search-console-momentum"
+              cta="Read your trend"
+            />
+            <FeatureCard
+              icon={<Award className="size-5" />}
+              title="Profiles, rank cards & badges"
+              body="A shareable profile per site, dynamic rank cards for social, and an embeddable badge that updates itself."
+              href="/blog/rank-badge-social-proof"
+              cta="Turn rank into proof"
+            />
+            <FeatureCard
+              icon={<GitCompare className="size-5" />}
+              title="Head-to-head compare"
+              body="Put any two sites side by side — momentum, volume, growth and authority, with the leader highlighted."
+              href="/#leaderboard"
+              cta="Browse the board"
+            />
+            <FeatureCard
+              icon={<Radio className="size-5" />}
+              title="Channels — attribution"
+              body="Track which marketing channels actually bring paying customers, ranked by revenue and efficiency."
+              href="/blog/introducing-channels"
+              cta="Meet Channels"
+            />
+            <FeatureCard
+              icon={<BarChart3 className="size-5" />}
+              title="Domain authority (DR)"
+              body="A DR-style authority score shown alongside verified traffic — context, never a way to game the rank."
+              href="/best/lol-directories"
+              cta="See the board"
+            />
+            <FeatureCard
+              icon={<RefreshCw className="size-5" />}
+              title="Always fresh"
+              body="Numbers refresh automatically from Search Console, and new sites appear the moment they connect."
+              href="/login"
+              cta="Connect & claim"
+            />
+            <FeatureCard
+              icon={<ShieldCheck className="size-5" />}
+              title="Free to claim"
+              body="Connect Search Console, publish your verified properties, and let real growth decide your order."
+              href="/login"
+              cta="Get on the board"
+            />
+          </div>
+        </div>
+      </section>
+
       {/* Explore — internal links to landing pages + blog */}
       <section className="border-t border-border/60">
         <div className="container py-14">
@@ -321,6 +401,34 @@ export default async function HomePage({
         </div>
       </section>
     </>
+  );
+}
+
+function FeatureCard({
+  icon,
+  title,
+  body,
+  href,
+  cta,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  body: string;
+  href: string;
+  cta: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex flex-col rounded-xl border border-border bg-background p-5 transition-colors hover:border-primary/50"
+    >
+      <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        {icon}
+      </span>
+      <p className="mt-3 font-medium">{title}</p>
+      <p className="mt-1 flex-1 text-sm text-muted-foreground">{body}</p>
+      <span className="mt-3 text-sm font-medium text-primary group-hover:underline">{cta} →</span>
+    </Link>
   );
 }
 
