@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, ExternalLink, TrendingUp, BarChart3 } from "lucide-react";
+import { ChevronLeft, ExternalLink, TrendingUp, BarChart3, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BadgeEmbed } from "@/components/badge-embed";
@@ -36,7 +36,7 @@ export default async function SiteProfilePage({ params }: { params: Params }) {
   const profile = await getSiteProfileBySlug(slug);
   if (!profile) notFound();
 
-  const { site, volumeRank, totalSites, lastUpdated, history, usingDummyData } = profile;
+  const { site, volumeRank, totalSites, lastUpdated, history, usingDummyData, rival } = profile;
   const slugValue = siteSlug(site.siteUrl);
   const profileUrl = `${siteConfig.url}/site/${slugValue}`;
   const badgeUrl = `${siteConfig.url}/api/badge/${slugValue}.svg`;
@@ -88,6 +88,22 @@ export default async function SiteProfilePage({ params }: { params: Params }) {
           sub={`${formatCompact(site.clicks28d)} clicks / 28d`}
         />
       </div>
+
+      {/* Head-to-head compare CTA */}
+      {rival && (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-5 py-3 text-sm">
+          <span className="text-muted-foreground">
+            How does {site.displayName} stack up against{" "}
+            <span className="text-foreground">{rival.displayName}</span> (#{rival.rank})?
+          </span>
+          <Link
+            href={`/compare/${slugValue}-vs-${rival.slug}`}
+            className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+          >
+            Compare <ArrowUpRight className="size-3.5" />
+          </Link>
+        </div>
+      )}
 
       {/* Metrics */}
       <div

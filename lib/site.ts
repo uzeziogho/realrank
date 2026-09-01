@@ -12,6 +12,12 @@ export interface DailyPoint {
   clicks: number;
 }
 
+export interface SiteRival {
+  slug: string;
+  displayName: string;
+  rank: number;
+}
+
 export interface SiteProfile {
   site: RankedSite; // momentum-ranked entry (rank, delta, momentum, clicks…)
   volumeRank: number;
@@ -20,6 +26,8 @@ export interface SiteProfile {
   usingDummyData: boolean;
   /** Daily organic-click history (ascending). Empty until the first refresh. */
   history: DailyPoint[];
+  /** The site directly ahead by momentum (or just behind, for #1) — for the compare CTA. */
+  rival: SiteRival | null;
 }
 
 /** Slug used in /site/[slug] URLs: the clean hostname, lowercased. */
@@ -40,6 +48,13 @@ export async function getSiteProfileBySlug(slug: string): Promise<SiteProfile | 
 
   const volumeRank = volume.find((s) => s.id === site.id)?.rank ?? site.rank;
 
+  // Compare target: the site directly ahead by momentum; for #1, the runner-up.
+  const idx = momentum.findIndex((s) => s.id === site.id);
+  const rivalSite = idx > 0 ? momentum[idx - 1] : momentum[idx + 1];
+  const rival: SiteRival | null = rivalSite
+    ? { slug: siteSlug(rivalSite.siteUrl), displayName: rivalSite.displayName, rank: rivalSite.rank }
+    : null;
+
   const history = usingDummyData
     ? synthHistory(site.clicks7d, site.clicks28d)
     : await getSiteHistory(site.id, 60);
@@ -51,6 +66,7 @@ export async function getSiteProfileBySlug(slug: string): Promise<SiteProfile | 
     lastUpdated: latestRefresh(sites),
     usingDummyData,
     history,
+    rival,
   };
 }
 
