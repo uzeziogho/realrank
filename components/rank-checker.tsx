@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useActionState } from "react";
 import Link from "next/link";
-import { Search, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Search, ArrowRight, CheckCircle2, Bell, Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { joinWaitlist, type WaitlistState } from "@/app/waitlist/actions";
 
 /**
  * "Where do you rank?" — a domain input that personalizes the connect CTA.
@@ -85,6 +86,9 @@ export function RankChecker({
               <Button asChild className="mt-3">
                 <Link href="/login">Claim {result.host} <ArrowRight className="size-4" /></Link>
               </Button>
+
+              {/* Low-friction fallback — capture the high-intent moment without OAuth. */}
+              <NotifyInline host={result.host} />
             </div>
           )}
         </div>
@@ -95,6 +99,49 @@ export function RankChecker({
           {formatK(totalSites)} sites ranked so far · verified via Google Search Console
         </p>
       )}
+    </div>
+  );
+}
+
+const notifyInitial: WaitlistState = {};
+
+/**
+ * Inline "notify me" capture shown right after a domain check. Most first-time
+ * visitors won't connect Google on the spot, so this converts the high-intent
+ * moment into a lead instead of a bounce. The checked domain rides along in
+ * `source` so we know what they wanted to claim.
+ */
+function NotifyInline({ host }: { host: string }) {
+  const [state, formAction, pending] = useActionState(joinWaitlist, notifyInitial);
+
+  if (state.success) {
+    return (
+      <p className="mt-3 inline-flex items-center gap-2 border-t border-border pt-3 text-sm font-medium text-success">
+        <Check className="size-4" /> Done — we&apos;ll email you the moment {host} can claim its spot.
+      </p>
+    );
+  }
+
+  return (
+    <div className="mt-3 border-t border-border pt-3">
+      <p className="mb-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Bell className="size-3.5" /> Not ready to connect? Get notified when {host} can claim its spot.
+      </p>
+      <form action={formAction} className="flex flex-col gap-2 sm:flex-row">
+        <input type="hidden" name="source" value={`checker:${host}`.slice(0, 60)} />
+        <input
+          name="email"
+          type="email"
+          required
+          placeholder="you@company.com"
+          aria-label="Email"
+          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none ring-ring focus-visible:ring-2"
+        />
+        <Button type="submit" variant="outline" disabled={pending} className="shrink-0">
+          {pending ? <Loader2 className="size-4 animate-spin" /> : "Notify me"}
+        </Button>
+      </form>
+      {state.error && <p className="mt-1 text-sm text-danger">{state.error}</p>}
     </div>
   );
 }
