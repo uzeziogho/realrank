@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Analytics } from "@vercel/analytics/next";
 import { Clarity } from "@/components/clarity";
+import { Pulse } from "@/components/pulse";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -81,6 +82,7 @@ export default function RootLayout({
         </div>
         <Analytics />
         <Clarity />
+        <Pulse />
       </body>
     </html>
   );

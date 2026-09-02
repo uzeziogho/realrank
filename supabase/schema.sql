@@ -311,3 +311,41 @@ drop policy if exists "anyone can read active sponsored slots" on public.sponsor
 create policy "anyone can read active sponsored slots"
   on public.sponsored_slots for select
   using (is_active = true);
+
+-- ── site_traffic_daily ────────────────────────────────────────
+-- First-party, privacy-light traffic counter for RealRank itself. No PII is
+-- stored: the visitor/session ids live only in the visitor's own cookies and
+-- are never persisted — we keep counts only. One row per UTC day (bounded
+-- growth; also enables future trend charts). The homepage pill shows SUM totals.
+create table if not exists public.site_traffic_daily (
+  day date primary key default (now() at time zone 'utc')::date,
+  visitors bigint not null default 0,
+  sessions bigint not null default 0,
+  pageviews bigint not null default 0,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.site_traffic_daily enable row level security;
+-- No public policies: the /api/pulse beacon and the homepage loader read/write
+-- via the service role only. RLS on with no policy blocks anon/auth clients.
+
+-- Atomic increment for one page event. `new_visitor` = this browser's first
+-- ever visit; `new_session` = start of a new session; pageviews always +1.
+create or replace function public.bump_site_traffic(new_visitor boolean, new_session boolean)
+returns void
+language sql
+as $$
+  insert into public.site_traffic_daily as t (day, visitors, sessions, pageviews, updated_at)
+  values (
+    (now() at time zone 'utc')::date,
+    case when new_visitor then 1 else 0 end,
+    case when new_session then 1 else 0 end,
+    1,
+    now()
+  )
+  on conflict (day) do update set
+    visitors  = t.visitors  + excluded.visitors,
+    sessions  = t.sessions  + excluded.sessions,
+    pageviews = t.pageviews + excluded.pageviews,
+    updated_at = now();
+$$;

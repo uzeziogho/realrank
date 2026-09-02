@@ -137,6 +137,41 @@ function synthSpark(clicks7d: number, clicks28d: number, days: number): number[]
   return out;
 }
 
+export interface SiteTraffic {
+  visitors: number;
+  sessions: number;
+  pageviews: number;
+}
+
+/**
+ * All-time first-party traffic totals for RealRank itself (visitors, sessions,
+ * pageviews), summed from the daily counter. Powers the homepage activity pill.
+ * Returns zeros gracefully when Supabase isn't configured or on any error —
+ * traffic display must never break the page.
+ */
+export async function getSiteTraffic(): Promise<SiteTraffic> {
+  const empty: SiteTraffic = { visitors: 0, sessions: 0, pageviews: 0 };
+  if (!isSupabaseConfigured()) return empty;
+  try {
+    const supabase = createServiceClient();
+    const { data, error } = await supabase
+      .from("site_traffic_daily")
+      .select("visitors, sessions, pageviews");
+    if (error) throw error;
+    return (data ?? []).reduce<SiteTraffic>(
+      (acc, r) => ({
+        visitors: acc.visitors + Number(r.visitors),
+        sessions: acc.sessions + Number(r.sessions),
+        pageviews: acc.pageviews + Number(r.pageviews),
+      }),
+      empty,
+    );
+  } catch (err) {
+    console.error("[data] traffic read failed:", err);
+    return empty;
+  }
+}
+
 export interface MoversData {
   /** Sites that gained rank since the previous refresh (largest gain first). */
   climbers: RankedSite[];

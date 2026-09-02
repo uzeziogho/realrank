@@ -7,7 +7,7 @@ import { RankingToggle } from "@/components/ranking-toggle";
 import { Leaderboard } from "@/components/leaderboard";
 import { LeaderboardJsonLd } from "@/components/json-ld";
 import { Pagination } from "@/components/pagination";
-import { getLeaderboardData, attachSparklines, getRecentlyJoined, getMovers } from "@/lib/data";
+import { getLeaderboardData, attachSparklines, getRecentlyJoined, getMovers, getSiteTraffic } from "@/lib/data";
 import { MoversBand } from "@/components/movers";
 import { injectSponsored } from "@/lib/ranking";
 import { RankChecker } from "@/components/rank-checker";
@@ -85,6 +85,7 @@ export default async function HomePage({
   const data = await getLeaderboardData(view);
   const recent = await getRecentlyJoined(6);
   const movers = await getMovers(5);
+  const traffic = await getSiteTraffic();
 
   // For the rank checker: hostnames already on the board + the top volume.
   const knownHosts = data.organic.map((s) => hostname(s.siteUrl).toLowerCase());
@@ -115,17 +116,17 @@ export default async function HomePage({
       {/* Hero */}
       <section className="hero-glow border-b border-border/60">
         <div className="container flex flex-col items-center py-16 text-center sm:py-24">
-          {/* Live activity pill — makes the board feel active. */}
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3.5 py-1.5 text-sm">
+          {/* Live activity pill — real first-party numbers, makes the board feel active. */}
+          <div className="mb-5 inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-full border border-border bg-card px-3.5 py-1.5 text-sm">
             <span className="relative flex size-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
               <span className="relative inline-flex size-2 rounded-full bg-primary" />
             </span>
-            <span className="font-semibold tabular-nums text-foreground">{formatCompact(data.totalSites)}</span>
-            <span className="text-muted-foreground">sites</span>
+            <PillStat value={data.totalSites} label="websites" />
             <span className="text-border">·</span>
-            <span className="font-semibold tabular-nums text-foreground">{formatCompact(data.totalClicks28d)}</span>
-            <span className="text-muted-foreground">clicks tracked</span>
+            <PillStat value={traffic.sessions} label="sessions" />
+            <span className="text-border">·</span>
+            <PillStat value={traffic.visitors} label="visitors" />
             <span className="text-border">·</span>
             <Link href="/stats" className="font-medium text-primary hover:underline">stats →</Link>
           </div>
@@ -415,6 +416,15 @@ export default async function HomePage({
         </div>
       </section>
     </>
+  );
+}
+
+function PillStat({ value, label }: { value: number; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1">
+      <span className="font-semibold tabular-nums text-foreground">{formatCompact(value)}</span>
+      <span className="text-muted-foreground">{label}</span>
+    </span>
   );
 }
 

@@ -325,12 +325,39 @@ export interface Database {
         };
         Relationships: [];
       };
+      site_traffic_daily: {
+        Row: {
+          day: string;
+          visitors: number;
+          sessions: number;
+          pageviews: number;
+          updated_at: string;
+        };
+        Insert: {
+          day?: string;
+          visitors?: number;
+          sessions?: number;
+          pageviews?: number;
+          updated_at?: string;
+        };
+        Update: {
+          day?: string;
+          visitors?: number;
+          sessions?: number;
+          pageviews?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      bump_site_traffic: {
+        Args: { new_visitor: boolean; new_session: boolean };
+        Returns: undefined;
+      };
     };
     Enums: {
       [_ in never]: never;
