@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { TrendingUp, TrendingDown, Minus, ShieldCheck, ArrowUpRight } from "lucide-react";
 import { getStatsData } from "@/lib/stats";
+import { getSiteTraffic, getSiteTrafficSeries } from "@/lib/data";
+import { TrafficTrend } from "@/components/traffic-trend";
 import { siteConfig } from "@/lib/config";
 import { formatCompact, formatGrowth, siteHref, timeAgo } from "@/lib/utils";
 
@@ -16,6 +18,8 @@ export const metadata: Metadata = {
 
 export default async function StatsPage() {
   const stats = await getStatsData();
+  const traffic = await getSiteTraffic();
+  const trafficSeries = await getSiteTrafficSeries(30);
 
   return (
     <>
@@ -37,6 +41,21 @@ export default async function StatsPage() {
       </section>
 
       <div className="container max-w-4xl space-y-10 py-12">
+        {/* RealRank's own traffic — first-party counter */}
+        <section>
+          <SectionLabel>First-party analytics</SectionLabel>
+          <h2 className="mt-1 text-2xl font-semibold tracking-tight">
+            {siteConfig.name} traffic
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Real visits to {siteConfig.name} itself — counted first-party, no
+            third-party trackers. Cumulative since launch.
+          </p>
+          <div className="mt-4">
+            <TrafficTrend totals={traffic} days={trafficSeries} />
+          </div>
+        </section>
+
         {/* Organic Index */}
         <section>
           <SectionLabel>Anonymous benchmark</SectionLabel>

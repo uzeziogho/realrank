@@ -172,6 +172,41 @@ export async function getSiteTraffic(): Promise<SiteTraffic> {
   }
 }
 
+export interface TrafficDay {
+  day: string; // YYYY-MM-DD
+  visitors: number;
+  sessions: number;
+  pageviews: number;
+}
+
+/**
+ * Daily first-party traffic rows for the last `days` (ascending) — for the
+ * traffic trend chart on /stats. Empty when unconfigured or on error.
+ */
+export async function getSiteTrafficSeries(days = 30): Promise<TrafficDay[]> {
+  if (!isSupabaseConfigured()) return [];
+  try {
+    const since = new Date();
+    since.setUTCDate(since.getUTCDate() - days);
+    const supabase = createServiceClient();
+    const { data, error } = await supabase
+      .from("site_traffic_daily")
+      .select("day, visitors, sessions, pageviews")
+      .gte("day", since.toISOString().slice(0, 10))
+      .order("day", { ascending: true });
+    if (error) throw error;
+    return (data ?? []).map((r) => ({
+      day: r.day,
+      visitors: Number(r.visitors),
+      sessions: Number(r.sessions),
+      pageviews: Number(r.pageviews),
+    }));
+  } catch (err) {
+    console.error("[data] traffic series read failed:", err);
+    return [];
+  }
+}
+
 export interface MoversData {
   /** Sites that gained rank since the previous refresh (largest gain first). */
   climbers: RankedSite[];
