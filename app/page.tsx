@@ -155,20 +155,6 @@ export default async function HomePage({
             </p>
           </div>
 
-          {/* Aggregate stats */}
-          <dl className="mt-12 grid grid-cols-3 gap-8 sm:gap-16">
-            <Stat label="Sites ranked" value={formatCompact(data.totalSites)} />
-            <Stat
-              label="Organic clicks / 28d"
-              value={formatCompact(data.totalClicks28d)}
-            />
-            <Stat
-              label="Refreshed"
-              value={data.lastUpdated ? timeAgo(data.lastUpdated) : "—"}
-              icon={<RefreshCw className="size-4" />}
-            />
-          </dl>
-
           {/* Liveness — recently joined sites */}
           {recent.length > 0 && (
             <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
@@ -477,25 +463,5 @@ function ExploreCard({
       <p className="font-medium group-hover:text-primary">{title}</p>
       <p className="mt-1.5 text-sm text-muted-foreground">{body}</p>
     </Link>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  icon,
-}: {
-  label: string;
-  value: string;
-  icon?: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col items-center">
-      <dt className="order-2 mt-1 text-xs text-muted-foreground">{label}</dt>
-      <dd className="order-1 flex items-center gap-1.5 text-2xl font-bold tabular-nums sm:text-3xl">
-        {icon}
-        {value}
-      </dd>
-    </div>
   );
 }
