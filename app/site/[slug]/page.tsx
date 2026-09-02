@@ -5,6 +5,7 @@ import { ChevronLeft, ExternalLink, TrendingUp, BarChart3, ArrowUpRight } from "
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BadgeEmbed } from "@/components/badge-embed";
+import { ShareRank } from "@/components/share-rank";
 import { MomentumTimeline } from "@/components/momentum-timeline";
 import { SiteFavicon } from "@/components/site-favicon";
 import { getSiteProfileBySlug, siteSlug } from "@/lib/site";
@@ -41,9 +42,15 @@ export default async function SiteProfilePage({ params }: { params: Params }) {
   const profileUrl = `${siteConfig.url}/site/${slugValue}`;
   const badgeUrl = `${siteConfig.url}/api/badge/${slugValue}.svg`;
 
-  const shareText = `${site.displayName} is #${site.rank} on ${siteConfig.name} — ${formatGrowth(site.growthRate)} organic momentum 🚀`;
+  // Verified-flavored share copy — the ranking as proof, not hype. Include the
+  // week's climb when this site is a mover.
+  const climbLine =
+    site.rankDelta && site.rankDelta > 0 ? ` (up ${site.rankDelta} spots this week)` : "";
+  const shareText = `📈 ${site.displayName} is #${site.rank} of ${profile.totalSites} on ${siteConfig.name} by verified organic momentum${climbLine} — ${formatGrowth(site.growthRate)} growth, straight from Google Search Console (not estimates).`;
+  const shareCaption = `${shareText}\n\n${profileUrl}`;
   const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(profileUrl)}`;
   const liUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(profileUrl)}`;
+  const cardImageUrl = `/site/${slugValue}/opengraph-image`;
 
   return (
     <div className="container max-w-3xl py-12">
@@ -130,17 +137,19 @@ export default async function SiteProfilePage({ params }: { params: Params }) {
         <MomentumTimeline history={history} preview={usingDummyData} />
       </section>
 
-      {/* Share */}
-      <section className="mt-8">
-        <h2 className="text-lg font-semibold">Share this rank</h2>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <Button asChild variant="secondary">
-            <a href={xUrl} target="_blank" rel="noopener noreferrer">Share on X</a>
-          </Button>
-          <Button asChild variant="secondary">
-            <a href={liUrl} target="_blank" rel="noopener noreferrer">Share on LinkedIn</a>
-          </Button>
-        </div>
+      {/* Share your rank — turn the ranking into a post */}
+      <section id="share" className="mt-8 scroll-mt-20">
+        <h2 className="text-lg font-semibold">Share your rank</h2>
+        <p className="mb-4 mt-1 text-sm text-muted-foreground">
+          Your verified card, ready to post — attach the image, or paste the caption.
+        </p>
+        <ShareRank
+          cardImageUrl={cardImageUrl}
+          fileName={`${slugValue}-realrank.png`}
+          caption={shareCaption}
+          xUrl={xUrl}
+          linkedInUrl={liUrl}
+        />
       </section>
 
       {/* Badge embed */}

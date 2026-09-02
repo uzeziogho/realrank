@@ -1,4 +1,5 @@
-import { Globe, Eye, EyeOff, Trash2, Pencil } from "lucide-react";
+import Link from "next/link";
+import { Globe, Eye, EyeOff, Trash2, Pencil, Share2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SubmitButton } from "@/components/dashboard/submit-button";
 import { setSiteActive, deleteSite, updateSiteDetails } from "@/app/dashboard/actions";
@@ -48,6 +49,15 @@ export function SiteManager({ sites }: { sites: PublishedSite[] }) {
               </div>
 
               <div className="flex shrink-0 items-center gap-1">
+                {site.is_active && (
+                  <Link
+                    href={`/site/${hostname(site.site_url).toLowerCase()}#share`}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-sm font-medium text-primary hover:bg-accent"
+                    title="Share your rank"
+                  >
+                    <Share2 className="size-3.5" /> Share
+                  </Link>
+                )}
                 <form action={setSiteActive}>
                   <input type="hidden" name="id" value={site.id} />
                   <input type="hidden" name="active" value={site.is_active ? "false" : "true"} />
