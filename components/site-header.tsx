@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthNav } from "@/components/auth-nav";
+import { MobileNav } from "@/components/mobile-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { siteConfig } from "@/lib/config";
 
@@ -36,6 +37,7 @@ export function SiteHeader() {
           </Button>
           <ThemeToggle />
           <AuthNav />
+          <MobileNav />
         </nav>
       </div>
     </header>
