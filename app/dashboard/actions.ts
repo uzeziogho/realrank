@@ -1,9 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { LEADERBOARD_TAG } from "@/lib/data";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { computeMomentum } from "@/lib/momentum";
 import { categories } from "@/lib/config";
@@ -30,6 +31,7 @@ async function requireUser() {
 
 /** Revalidate every public surface a site change can affect. */
 function revalidatePublic() {
+  revalidateTag(LEADERBOARD_TAG); // bust the cached board read
   revalidatePath("/");
   revalidatePath("/dashboard");
   for (const c of categories) revalidatePath(`/category/${c.slug}`);

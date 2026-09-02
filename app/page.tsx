@@ -82,10 +82,14 @@ export default async function HomePage({
 }) {
   const sp = await searchParams;
   const view = parseView(sp.view);
-  const data = await getLeaderboardData(view);
-  const recent = await getRecentlyJoined(6);
-  const movers = await getMovers(5);
-  const traffic = await getSiteTraffic();
+  // Fetch concurrently — the board/recent/movers share one cached Supabase read
+  // (see loadRaw), so this is ~2 round-trips instead of the previous 7 in series.
+  const [data, recent, movers, traffic] = await Promise.all([
+    getLeaderboardData(view),
+    getRecentlyJoined(6),
+    getMovers(5),
+    getSiteTraffic(),
+  ]);
 
   // For the rank checker: hostnames already on the board + the top volume.
   const knownHosts = data.organic.map((s) => hostname(s.siteUrl).toLowerCase());

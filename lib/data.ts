@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import type { PublishedSite, SponsoredSlot } from "@/lib/supabase/types";
 import { DUMMY_SITES, DUMMY_SPONSORED } from "@/lib/dummy-data";
 import { rankSites, injectSponsored, latestRefresh } from "@/lib/ranking";
@@ -277,7 +279,35 @@ export async function getRecentlyJoined(limit = 6): Promise<RecentSite[]> {
   }
 }
 
-async function loadRaw(): Promise<{
+/**
+ * Cross-request cache of the active board (published sites + sponsored slots).
+ * The home page is dynamic, so without this every visit would hit Supabase;
+ * caching it makes the common case near-instant TTFB. Refreshes at most hourly
+ * (matching the refresh cron) and is busted immediately on any write via
+ * `revalidateTag(LEADERBOARD_TAG)`. Errors are NOT cached — they throw so the
+ * caller falls back for that request only and the next request retries.
+ */
+export const LEADERBOARD_TAG = "leaderboard";
+
+const readBoardRaw = unstable_cache(
+  async (): Promise<{ sites: PublishedSite[]; slots: SponsoredSlot[] }> => {
+    const supabase = createServiceClient();
+    const [sitesRes, slotsRes] = await Promise.all([
+      supabase.from("published_sites").select("*").eq("is_active", true),
+      supabase.from("sponsored_slots").select("*").eq("is_active", true),
+    ]);
+    if (sitesRes.error) throw sitesRes.error;
+    if (slotsRes.error) throw slotsRes.error;
+    return { sites: sitesRes.data ?? [], slots: slotsRes.data ?? [] };
+  },
+  ["board-raw-v1"],
+  { revalidate: 3600, tags: [LEADERBOARD_TAG] },
+);
+
+// Per-request memoized on top of the cross-request cache: the home page derives
+// the board, movers, and "recently joined" from the same read — `cache`
+// collapses those to ONE call per render instead of three.
+const loadRaw = cache(async function loadRaw(): Promise<{
   sites: PublishedSite[];
   slots: SponsoredSlot[];
   usingDummyData: boolean;
@@ -287,24 +317,13 @@ async function loadRaw(): Promise<{
   }
 
   try {
-    const supabase = createServiceClient();
-    const [sitesRes, slotsRes] = await Promise.all([
-      supabase.from("published_sites").select("*").eq("is_active", true),
-      supabase.from("sponsored_slots").select("*").eq("is_active", true),
-    ]);
-
-    if (sitesRes.error) throw sitesRes.error;
-
     // Supabase is connected: always show real data, never seed data — even when
     // the table is empty (the UI renders a proper empty state instead).
-    return {
-      sites: sitesRes.data ?? [],
-      slots: slotsRes.data ?? [],
-      usingDummyData: false,
-    };
+    const { sites, slots } = await readBoardRaw();
+    return { sites, slots, usingDummyData: false };
   } catch (err) {
     console.error("[data] Supabase read failed:", err);
     // Don't fall back to seed data on the live site — surface an empty board.
     return { sites: [], slots: [], usingDummyData: false };
   }
-}
+});

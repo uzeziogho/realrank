@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
+import { LEADERBOARD_TAG } from "@/lib/data";
 import { decryptToken } from "@/lib/crypto";
 import { clientFromRefreshToken, fetchSiteMetrics } from "@/lib/google";
 import { upsertSiteHistory } from "@/lib/gsc-server";
@@ -90,6 +91,7 @@ export async function GET(req: NextRequest) {
   }
 
   // On-demand revalidation so the public pages pick up fresh numbers immediately.
+  revalidateTag(LEADERBOARD_TAG); // bust the cached board read
   revalidatePath("/");
   for (const c of categories) revalidatePath(`/category/${c.slug}`);
 
