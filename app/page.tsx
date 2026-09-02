@@ -7,7 +7,8 @@ import { RankingToggle } from "@/components/ranking-toggle";
 import { Leaderboard } from "@/components/leaderboard";
 import { LeaderboardJsonLd } from "@/components/json-ld";
 import { Pagination } from "@/components/pagination";
-import { getLeaderboardData, attachSparklines, getRecentlyJoined } from "@/lib/data";
+import { getLeaderboardData, attachSparklines, getRecentlyJoined, getMovers } from "@/lib/data";
+import { MoversBand } from "@/components/movers";
 import { injectSponsored } from "@/lib/ranking";
 import { RankChecker } from "@/components/rank-checker";
 import { WaitlistForm } from "@/components/waitlist-form";
@@ -83,6 +84,7 @@ export default async function HomePage({
   const view = parseView(sp.view);
   const data = await getLeaderboardData(view);
   const recent = await getRecentlyJoined(6);
+  const movers = await getMovers(5);
 
   // For the rank checker: hostnames already on the board + the top volume.
   const knownHosts = data.organic.map((s) => hostname(s.siteUrl).toLowerCase());
@@ -184,6 +186,19 @@ export default async function HomePage({
           )}
         </div>
       </section>
+
+      {/* Movers & Shakers — this week's climbers, above the board for pull */}
+      {(movers.climbers.length > 0 || movers.newcomers.length > 0) && (
+        <section className="container -mt-8 sm:-mt-10">
+          <div className="mx-auto max-w-3xl">
+            <MoversBand
+              climbers={movers.climbers}
+              newcomers={movers.newcomers}
+              compact
+            />
+          </div>
+        </section>
+      )}
 
       {/* Leaderboard */}
       <section id="leaderboard" className="container scroll-mt-20 py-12">

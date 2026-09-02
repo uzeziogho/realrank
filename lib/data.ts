@@ -137,6 +137,55 @@ function synthSpark(clicks7d: number, clicks28d: number, days: number): number[]
   return out;
 }
 
+export interface MoversData {
+  /** Sites that gained rank since the previous refresh (largest gain first). */
+  climbers: RankedSite[];
+  /** Sites that lost rank since the previous refresh (largest drop first). */
+  fallers: RankedSite[];
+  /** New entrants this period (had no prior momentum score). */
+  newcomers: RankedSite[];
+  weekOf: string | null;
+  totalSites: number;
+  usingDummyData: boolean;
+}
+
+/**
+ * Week-over-week movement on the momentum board — the "who's heating up right
+ * now" story. Reuses the same ranking (and its per-site rankDelta) as the main
+ * leaderboard so the numbers always agree. Momentum-only: it *is* the growth view.
+ */
+export async function getMovers(limit = 5): Promise<MoversData> {
+  const { sites, usingDummyData } = await loadRaw();
+  // Same universe as the momentum board: active sites with clicks this week.
+  const withTraffic = sites.filter((s) => s.is_active && s.clicks_7d > 0);
+  const ranked = rankSites(withTraffic, "momentum");
+
+  const climbers = ranked
+    .filter((s) => s.rankDelta !== null && s.rankDelta > 0)
+    .sort((a, b) => (b.rankDelta ?? 0) - (a.rankDelta ?? 0))
+    .slice(0, limit);
+
+  const fallers = ranked
+    .filter((s) => s.rankDelta !== null && s.rankDelta < 0)
+    .sort((a, b) => (a.rankDelta ?? 0) - (b.rankDelta ?? 0))
+    .slice(0, limit);
+
+  // New entrants worth celebrating: no prior score, but a real foothold now.
+  const newcomers = ranked
+    .filter((s) => s.rankDelta === null)
+    .sort((a, b) => a.rank - b.rank)
+    .slice(0, limit);
+
+  return {
+    climbers,
+    fallers,
+    newcomers,
+    weekOf: latestRefresh(sites),
+    totalSites: ranked.length,
+    usingDummyData,
+  };
+}
+
 export interface RecentSite {
   displayName: string;
   host: string;
