@@ -95,7 +95,7 @@ export default async function CategoryPage({
       ) : (
         <>
           <LeaderboardJsonLd sites={data.organic} />
-          <Leaderboard rows={rows} view={view} />
+          <Leaderboard rows={rows} view={view} foundingCutoff={data.founding.cutoff} />
         </>
       )}
     </div>

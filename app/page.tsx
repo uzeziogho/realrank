@@ -230,14 +230,22 @@ export default async function HomePage({
 
         {data.totalSites === 0 ? (
           <div className="rounded-xl border border-dashed border-border bg-card/50 p-12 text-center">
-            <p className="text-lg font-medium">No sites on the board yet</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Be the first — connect Google Search Console and publish your site to
-              claim the top spot.
+            <span className="mb-3 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+              <Award className="size-3.5" /> Founding spots open
+            </span>
+            <p className="text-lg font-medium">Be founding site #1</p>
+            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+              The board is brand new. Connect Google Search Console, publish your
+              verified traffic, and claim the top spot with a permanent Founder badge.
             </p>
-            <Button asChild className="mt-5">
-              <Link href="/dashboard">Add your site</Link>
-            </Button>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+              <Button asChild>
+                <Link href="/login">Claim your spot</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/founding">How founding works</Link>
+              </Button>
+            </div>
           </div>
         ) : filtered.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border bg-card/50 p-12 text-center">
@@ -250,7 +258,7 @@ export default async function HomePage({
         ) : (
           <>
             <LeaderboardJsonLd sites={pageOrganic} />
-            <Leaderboard rows={pageRows} view={view} />
+            <Leaderboard rows={pageRows} view={view} foundingCutoff={data.founding.cutoff} />
 
             <Pagination
               currentPage={page}
@@ -401,6 +409,15 @@ export default async function HomePage({
       {/* Conversion band */}
       <section className="border-t border-border/60 bg-card/40">
         <div className="container flex flex-col items-center gap-4 py-16 text-center">
+          {data.founding.spotsLeft > 0 && (
+            <Link
+              href="/founding"
+              className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3.5 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-primary/15"
+            >
+              <Award className="size-4" />
+              First {data.founding.total} sites are founding members — {data.founding.spotsLeft} spots left →
+            </Link>
+          )}
           <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             Prove your growth. Get discovered.
           </h2>

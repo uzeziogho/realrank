@@ -30,6 +30,9 @@ export function SiteHeader() {
             <Link href="/movers">Movers</Link>
           </Button>
           <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+            <Link href="/founding">Founding</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
             <Link href="/stats">Stats</Link>
           </Button>
           <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">

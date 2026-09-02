@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, TrendingUp, TrendingDown, Minus, ChevronUp, ChevronDown } from "lucide-react";
+import { ArrowUpRight, TrendingUp, TrendingDown, Minus, ChevronUp, ChevronDown, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Sparkline } from "@/components/sparkline";
 import { SiteFavicon } from "@/components/site-favicon";
@@ -10,9 +10,12 @@ import type { LeaderboardRow, RankedSite, SponsoredRow } from "@/lib/types";
 export function Leaderboard({
   rows,
   view,
+  foundingCutoff = null,
 }: {
   rows: LeaderboardRow[];
   view: RankingView;
+  /** Sites joined on/before this date show a Founder badge. */
+  foundingCutoff?: string | null;
 }) {
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
@@ -32,7 +35,12 @@ export function Leaderboard({
       <ol className="divide-y divide-border">
         {rows.map((row) =>
           row.kind === "organic" ? (
-            <OrganicRowItem key={row.id} row={row} view={view} />
+            <OrganicRowItem
+              key={row.id}
+              row={row}
+              view={view}
+              founding={foundingCutoff !== null && row.createdAt <= foundingCutoff}
+            />
           ) : (
             <SponsoredRowItem key={row.id} row={row} />
           ),
@@ -42,7 +50,15 @@ export function Leaderboard({
   );
 }
 
-function OrganicRowItem({ row, view }: { row: RankedSite; view: RankingView }) {
+function OrganicRowItem({
+  row,
+  view,
+  founding = false,
+}: {
+  row: RankedSite;
+  view: RankingView;
+  founding?: boolean;
+}) {
   const primary =
     view === "momentum" ? formatCompact(row.clicks7d) : formatCompact(row.clicks28d);
   const primaryLabel = view === "momentum" ? "7d clicks" : "28d clicks";
@@ -81,6 +97,14 @@ function OrganicRowItem({ row, view }: { row: RankedSite; view: RankingView }) {
           >
             <ArrowUpRight className="size-3.5" />
           </a>
+          {founding && (
+            <span
+              title="Founding member — one of the first sites on RealRank"
+              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+            >
+              <Sparkles className="size-3" /> Founder
+            </span>
+          )}
           {row.category && (
             <Badge variant="outline" className="hidden shrink-0 sm:inline-flex">
               {categoryLabel(row.category)}

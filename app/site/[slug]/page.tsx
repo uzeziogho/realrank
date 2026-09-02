@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, ExternalLink, TrendingUp, BarChart3, ArrowUpRight } from "lucide-react";
+import { ChevronLeft, ExternalLink, TrendingUp, BarChart3, ArrowUpRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BadgeEmbed } from "@/components/badge-embed";
@@ -37,7 +37,7 @@ export default async function SiteProfilePage({ params }: { params: Params }) {
   const profile = await getSiteProfileBySlug(slug);
   if (!profile) notFound();
 
-  const { site, volumeRank, totalSites, lastUpdated, history, usingDummyData, rival } = profile;
+  const { site, volumeRank, totalSites, lastUpdated, history, usingDummyData, rival, founding } = profile;
   const slugValue = siteSlug(site.siteUrl);
   const profileUrl = `${siteConfig.url}/site/${slugValue}`;
   const badgeUrl = `${siteConfig.url}/api/badge/${slugValue}.svg`;
@@ -65,6 +65,14 @@ export default async function SiteProfilePage({ params }: { params: Params }) {
           <div className="flex flex-wrap items-center gap-2.5">
             <SiteFavicon url={site.siteUrl} name={site.displayName} size={28} />
             <h1 className="text-3xl font-bold tracking-tight">{site.displayName}</h1>
+            {founding && (
+              <span
+                title="Founding member — one of the first sites on RealRank"
+                className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
+              >
+                <Sparkles className="size-3.5" /> Founder
+              </span>
+            )}
             {site.category && <Badge variant="outline">{categoryLabel(site.category)}</Badge>}
           </div>
           <p className="mt-1 text-muted-foreground">{hostname(site.siteUrl)}</p>

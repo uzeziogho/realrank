@@ -17,6 +17,8 @@ export interface RankedSite {
   momentumScore: number;
   growthRate: number;
   lastRefreshedAt: string | null;
+  /** When the site first joined — used to mark founding members. */
+  createdAt: string;
   /** Positions gained (+) or lost (−) since the previous refresh; null = new entrant. */
   rankDelta: number | null;
   /** Compact recent daily-click series for the row sparkline (ascending). */
@@ -57,6 +59,7 @@ export function toRankedSite(
     momentumScore: site.momentum_score,
     growthRate: site.growth_rate,
     lastRefreshedAt: site.last_refreshed_at,
+    createdAt: site.created_at,
     rankDelta,
     spark: [],
     domainRank: site.domain_rank ?? null,

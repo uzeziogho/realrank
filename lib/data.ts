@@ -8,6 +8,7 @@ import { rankSites, injectSponsored, latestRefresh } from "@/lib/ranking";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createServiceClient } from "@/lib/supabase/server";
 import { hostname } from "@/lib/utils";
+import { siteConfig } from "@/lib/config";
 import type { LeaderboardRow, RankedSite, RankingView } from "@/lib/types";
 
 export interface LeaderboardData {
@@ -20,7 +21,35 @@ export interface LeaderboardData {
   totalClicks28d: number;
   /** How many sites qualify for each view (for the toggle counts). */
   counts: { momentum: number; volume: number };
+  /** Founding program: created_at cutoff (≤ = founding) and spots remaining. */
+  founding: FoundingInfo;
   usingDummyData: boolean;
+}
+
+export interface FoundingInfo {
+  /** created_at of the last founding site; a site is founding if created_at ≤ this. */
+  cutoff: string | null;
+  /** Founding spots still open (0 once the program is full). */
+  spotsLeft: number;
+  /** Founding spots already claimed. */
+  claimed: number;
+  /** Total founding spots in the program. */
+  total: number;
+}
+
+/** Compute founding status from all active sites (first N by join date). */
+export function computeFounding(sites: PublishedSite[]): FoundingInfo {
+  const total = siteConfig.foundingSpots;
+  const active = sites.filter((s) => s.is_active);
+  const byAge = [...active].sort((a, b) => (a.created_at < b.created_at ? -1 : 1));
+  const claimed = Math.min(active.length, total);
+  const cutoff = byAge.length > 0 ? byAge[Math.min(byAge.length, total) - 1].created_at : null;
+  return { cutoff, spotsLeft: Math.max(0, total - active.length), claimed, total };
+}
+
+/** Whether a site (by its join date) is a founding member. */
+export function isFounding(createdAt: string, cutoff: string | null): boolean {
+  return cutoff !== null && createdAt <= cutoff;
 }
 
 /**
@@ -59,6 +88,9 @@ export async function getLeaderboardData(
     volume: scoped.filter((s) => s.is_active && s.clicks_28d > 0).length,
   };
 
+  // Founding status is program-wide (all active sites), not category-scoped.
+  const founding = computeFounding(sites);
+
   return {
     rows,
     organic,
@@ -67,6 +99,7 @@ export async function getLeaderboardData(
     totalSites: organic.length,
     totalClicks28d,
     counts,
+    founding,
     usingDummyData,
   };
 }
@@ -81,6 +114,12 @@ export async function getActiveSites(): Promise<{
 }> {
   const { sites, usingDummyData } = await loadRaw();
   return { sites: sites.filter((s) => s.is_active), usingDummyData };
+}
+
+/** Founding-program status (spots claimed/left), for the /founding page. */
+export async function getFoundingInfo(): Promise<FoundingInfo> {
+  const { sites } = await getActiveSites();
+  return computeFounding(sites);
 }
 
 /**

@@ -46,6 +46,9 @@ export const siteConfig = {
   // How often the public data is refreshed by the cron job (used in copy only).
   // Matches vercel.json (daily on Hobby; raise cadence + this value on Pro).
   refreshCadenceHours: 24,
+  // Founding program: the first N sites to connect become founding members
+  // (permanent Founder badge). Powers the /founding recruitment page + scarcity.
+  foundingSpots: 50,
 } as const;
 
 /**

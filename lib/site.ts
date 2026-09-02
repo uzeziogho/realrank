@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getActiveSites } from "@/lib/data";
+import { getActiveSites, computeFounding, isFounding } from "@/lib/data";
 import { rankSites, latestRefresh } from "@/lib/ranking";
 import { hostname } from "@/lib/utils";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -28,6 +28,8 @@ export interface SiteProfile {
   history: DailyPoint[];
   /** The site directly ahead by momentum (or just behind, for #1) — for the compare CTA. */
   rival: SiteRival | null;
+  /** Whether this site is a founding member (one of the first to join). */
+  founding: boolean;
 }
 
 /** Slug used in /site/[slug] URLs: the clean hostname, lowercased. */
@@ -59,6 +61,8 @@ export async function getSiteProfileBySlug(slug: string): Promise<SiteProfile | 
     ? synthHistory(site.clicks7d, site.clicks28d)
     : await getSiteHistory(site.id, 60);
 
+  const founding = isFounding(site.createdAt, computeFounding(sites).cutoff);
+
   return {
     site,
     volumeRank,
@@ -67,6 +71,7 @@ export async function getSiteProfileBySlug(slug: string): Promise<SiteProfile | 
     usingDummyData,
     history,
     rival,
+    founding,
   };
 }
 
