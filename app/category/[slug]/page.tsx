@@ -81,7 +81,7 @@ export default async function CategoryPage({
           </p>
         </div>
         <Suspense fallback={null}>
-          <RankingToggle view={view} />
+          <RankingToggle view={view} counts={data.counts} />
         </Suspense>
       </div>
 

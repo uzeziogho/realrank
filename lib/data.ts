@@ -16,6 +16,8 @@ export interface LeaderboardData {
   lastUpdated: string | null;
   totalSites: number;
   totalClicks28d: number;
+  /** How many sites qualify for each view (for the toggle counts). */
+  counts: { momentum: number; volume: number };
   usingDummyData: boolean;
 }
 
@@ -50,6 +52,11 @@ export async function getLeaderboardData(
     0,
   );
 
+  const counts = {
+    momentum: scoped.filter((s) => s.is_active && s.clicks_7d > 0).length,
+    volume: scoped.filter((s) => s.is_active && s.clicks_28d > 0).length,
+  };
+
   return {
     rows,
     organic,
@@ -57,6 +64,7 @@ export async function getLeaderboardData(
     lastUpdated: latestRefresh(scoped),
     totalSites: organic.length,
     totalClicks28d,
+    counts,
     usingDummyData,
   };
 }

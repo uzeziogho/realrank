@@ -113,13 +113,20 @@ export default async function HomePage({
       {/* Hero */}
       <section className="hero-glow border-b border-border/60">
         <div className="container flex flex-col items-center py-16 text-center sm:py-24">
-          <Link
-            href="/about"
-            className="mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <ShieldCheck className="size-3.5 text-primary" />
-            Every ranking verified via Google Search Console
-          </Link>
+          {/* Live activity pill — makes the board feel active. */}
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3.5 py-1.5 text-sm">
+            <span className="relative flex size-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+              <span className="relative inline-flex size-2 rounded-full bg-primary" />
+            </span>
+            <span className="font-semibold tabular-nums text-foreground">{formatCompact(data.totalSites)}</span>
+            <span className="text-muted-foreground">sites</span>
+            <span className="text-border">·</span>
+            <span className="font-semibold tabular-nums text-foreground">{formatCompact(data.totalClicks28d)}</span>
+            <span className="text-muted-foreground">clicks tracked</span>
+            <span className="text-border">·</span>
+            <Link href="/stats" className="font-medium text-primary hover:underline">stats →</Link>
+          </div>
 
           <h1 className="max-w-3xl text-balance text-4xl font-bold tracking-tight sm:text-6xl">
             The organic traffic leaderboard for the whole web
@@ -128,6 +135,12 @@ export default async function HomePage({
             {siteConfig.tagline} Ranked by <strong className="text-foreground">momentum</strong>{" "}
             so fast-growing sites can beat the giants — not just whoever&apos;s biggest.
           </p>
+
+          {/* Positioning — you climb with traffic, not a bigger bid. */}
+          <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
+            <TrendingUp className="size-4" />
+            Rank at $0 — no bidding, no pay-to-win. Real traffic decides.
+          </div>
 
           {/* Personalized entry point — check your domain, then connect. */}
           <div className="mt-8 flex w-full flex-col items-center">
@@ -191,7 +204,7 @@ export default async function HomePage({
               <LeaderboardSearch initialQuery={query} />
             </Suspense>
             <Suspense fallback={null}>
-              <RankingToggle view={view} />
+              <RankingToggle view={view} counts={data.counts} />
             </Suspense>
           </div>
         </div>

@@ -11,7 +11,13 @@ import type { RankingView } from "@/lib/config";
  * Server Component re-renders the ranked list — keeping both views crawlable and
  * shareable. Default (no param) is Momentum.
  */
-export function RankingToggle({ view }: { view: RankingView }) {
+export function RankingToggle({
+  view,
+  counts,
+}: {
+  view: RankingView;
+  counts?: { momentum: number; volume: number };
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -44,12 +50,14 @@ export function RankingToggle({ view }: { view: RankingView }) {
         onClick={() => select("momentum")}
         icon={<TrendingUp className="size-4" />}
         label="Momentum"
+        count={counts?.momentum}
       />
       <ToggleItem
         active={view === "volume"}
         onClick={() => select("volume")}
         icon={<BarChart3 className="size-4" />}
         label="Volume"
+        count={counts?.volume}
       />
     </div>
   );
@@ -60,11 +68,13 @@ function ToggleItem({
   onClick,
   icon,
   label,
+  count,
 }: {
   active: boolean;
   onClick: () => void;
   icon: React.ReactNode;
   label: string;
+  count?: number;
 }) {
   return (
     <button
@@ -80,6 +90,16 @@ function ToggleItem({
     >
       {icon}
       {label}
+      {typeof count === "number" && (
+        <span
+          className={cn(
+            "rounded-full px-1.5 text-xs tabular-nums",
+            active ? "bg-primary-foreground/20" : "bg-muted",
+          )}
+        >
+          {count}
+        </span>
+      )}
     </button>
   );
 }
