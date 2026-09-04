@@ -22,6 +22,198 @@ const A = (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
 
 export const articles: Article[] = [
   {
+    slug: "prove-your-site-gets-traffic",
+    title: "Anyone can vibe-code a site now. Proving it gets traffic is the new flex.",
+    description:
+      "AI made shipping a website trivial, so \"I built it\" stopped being impressive. The scarce, valuable thing now is verified proof that your site actually gets organic traffic. Here's why, and how to show it.",
+    date: "2026-09-04",
+    keywords: [
+      "vibe coding",
+      "AI built websites",
+      "verified organic traffic",
+      "proof of traffic",
+      "indie hackers",
+    ],
+    Body: () => (
+      <>
+        <p>
+          Eighteen months ago, shipping a polished web app took a small team and a
+          few weeks. Today one person and an AI ship one before lunch. That is
+          genuinely wonderful — and it has quietly broken something.
+        </p>
+        <p>
+          When everyone can ship, <strong>&quot;I built it&quot; stops being
+          impressive.</strong> Your timeline is full of launches. Half of them look
+          identical because they came out of the same tools. The scarce thing is no
+          longer the build. It&apos;s the answer to the only question that matters:{" "}
+          <em>does anyone actually show up?</em>
+        </p>
+        <h2>Screenshots are noise now</h2>
+        <p>
+          The old flex was a dashboard screenshot — &quot;we hit 100k visitors 🚀&quot;.
+          Nobody believes those anymore, and they&apos;re right not to. A screenshot
+          is a cropped, best-day, un-auditable image. Third-party estimators like
+          SimilarWeb or Ahrefs aren&apos;t much better; they model traffic from
+          sampled panels and are routinely off by{" "}
+          <Link href="/is-my-traffic-real">30–80% in either direction</Link>. When the
+          number can&apos;t be checked, a skeptical reader rounds it down to zero.
+        </p>
+        <h2>Why organic traffic is the honest signal</h2>
+        <p>
+          Paid traffic can be bought. A viral spike is a moment, not a trend. But
+          organic search traffic is <strong>durable demand</strong> — real people
+          searching for the thing you made, and finding you, week after week. It&apos;s
+          the closest thing to proof that your product has a reason to exist. And
+          crucially, it&apos;s <strong>verifiable</strong>: Google Search Console is
+          Google&apos;s own count of the clicks your pages earned from search. You
+          can&apos;t inflate your own Search Console.
+        </p>
+        <h2>The new flex: a rank you can&apos;t fake</h2>
+        <p>
+          That&apos;s the whole idea behind RealRank. You connect Search Console
+          (read-only), and your <em>verified</em> organic clicks rank you on a public
+          board. No screenshots, no estimates, no paying for position. And because the
+          board is ranked by <Link href="/momentum-score">momentum</Link> — how fast
+          you&apos;re growing, not how big you are — a two-week-old app that&apos;s
+          climbing can sit above a bloated incumbent that&apos;s flat.
+        </p>
+        <p>
+          If you&apos;re shipping fast, this is the receipt. Curious where you&apos;d
+          land? <Link href="/momentum-score">Check your momentum score</Link> in ten
+          seconds, or{" "}
+          <Link href="/login">connect Search Console</Link> and claim a{" "}
+          <Link href="/founding">founding spot</Link> while the board is still small.
+          In a web full of sites that look real, being the one that can prove it is the
+          only flex left.
+        </p>
+      </>
+    ),
+  },
+  {
+    slug: "your-traffic-screenshot-means-nothing",
+    title: "Your traffic screenshot means nothing (and everyone already knows it)",
+    description:
+      "A cropped analytics screenshot proves nothing — it's the easiest number in tech to fake or cherry-pick. Here's why verified traffic is becoming the only metric people trust, and what to show instead.",
+    date: "2026-09-03",
+    keywords: [
+      "verified traffic",
+      "traffic screenshot",
+      "similarweb accuracy",
+      "google search console",
+      "proof of traffic",
+    ],
+    Body: () => (
+      <>
+        <p>
+          You&apos;ve seen the post: a founder drops a screenshot of a spiky analytics
+          chart, &quot;insane month 🤯&quot;, thousands of likes. Be honest about your
+          first reaction. It probably wasn&apos;t admiration — it was{" "}
+          <em>&quot;sure, on your best day, with bots, and which tool is that
+          anyway?&quot;</em>
+        </p>
+        <p>
+          That reflex is correct, and it&apos;s why screenshots have quietly stopped
+          working as proof.
+        </p>
+        <h2>A screenshot is the easiest number to fake</h2>
+        <p>
+          Not even fake, usually — just <em>flattered</em>. You can pick the best
+          7-day window. You can show sessions instead of users, or lump direct and
+          referral in with organic. You can screenshot a tool that counts bot hits. And
+          if someone really wants to lie, editing a number in dev tools takes fifteen
+          seconds. The reader knows all of this, so a screenshot carries almost no
+          weight in the moments that count — raising, selling, landing a big customer,
+          getting a partner to take you seriously.
+        </p>
+        <h2>Estimates aren&apos;t proof either</h2>
+        <p>
+          &quot;Fine,&quot; you say, &quot;SimilarWeb says I get 40k a month.&quot; But
+          SimilarWeb, Ahrefs and Semrush don&apos;t see your traffic — they model it
+          from clickstream panels and keyword math, then extrapolate. For small and
+          mid-size sites those guesses swing wildly. Enter your real numbers next to
+          theirs and{" "}
+          <Link href="/is-my-traffic-real">watch the gap</Link>; it&apos;s often 50%+.
+          An estimate is someone else&apos;s guess about you. That&apos;s not evidence.
+        </p>
+        <h2>What actually counts as proof</h2>
+        <p>
+          One number can&apos;t be flattered or guessed: the clicks Google itself
+          recorded for you. Google Search Console is Google&apos;s own ledger of how
+          many times someone clicked through to your site from search. Pull it
+          read-only and you have a figure you can put in front of an investor or an
+          acquirer without a caveat — the same way{" "}
+          <A href="https://trustmrr.com/">TrustMRR</A> made verified Stripe revenue the
+          norm for founders who used to just claim an MRR.
+        </p>
+        <h2>Show a badge, not a screenshot</h2>
+        <p>
+          RealRank turns that verified number into something you can actually show:
+          a public rank and a{" "}
+          <Link href="/#leaderboard">live badge</Link> that updates itself and links
+          back to a profile anyone can inspect. It&apos;s the difference between
+          telling someone you&apos;re growing and letting them check.{" "}
+          <Link href="/login">Connect Search Console</Link>, publish your verified
+          traffic, and stop asking people to take your word for it.
+        </p>
+      </>
+    ),
+  },
+  {
+    slug: "best-time-to-join-a-leaderboard-is-when-its-empty",
+    title: "The best time to get on a leaderboard is while it's empty",
+    description:
+      "Everyone waits for a leaderboard to be big before they join. That's backwards. The empty board is the opportunity — here's the case for going early.",
+    date: "2026-09-02",
+    keywords: [
+      "founding member",
+      "early adopter",
+      "leaderboard",
+      "indie hacker growth",
+      "first mover",
+    ],
+    Body: () => (
+      <>
+        <p>
+          There&apos;s a instinct that kicks in when you land on a new leaderboard with
+          a handful of sites on it: <em>&quot;I&apos;ll come back when it&apos;s
+          bigger.&quot;</em> It feels sensible. It&apos;s exactly backwards.
+        </p>
+        <h2>Empty is leverage, not a red flag</h2>
+        <p>
+          A full board is a crowded race — hundreds of sites, and cracking the top is
+          hard. An empty one is wide open. The same effort that buys you rank #340 in a
+          year buys you <strong>rank #3 today</strong>. And on a board ranked by{" "}
+          <Link href="/momentum-score">momentum</Link> rather than raw size, you
+          don&apos;t even need big numbers — you need to be moving. A small site
+          growing fast wins now.
+        </p>
+        <h2>Early status compounds</h2>
+        <p>
+          Being early isn&apos;t just an easier climb; it&apos;s a permanent marker.
+          The first sites on RealRank become{" "}
+          <Link href="/founding">founding members</Link> with a badge that sticks — the
+          &quot;I was here first&quot; that you can&apos;t buy later at any price.
+          And every visitor the board picks up as it grows discovers <em>you</em>,
+          sitting near the top, for free.
+        </p>
+        <h2>The honest version</h2>
+        <p>
+          Yes, the board is small right now. That&apos;s the trade: you get in before
+          it&apos;s obvious, the way the good spots always work. The people who joined
+          the directories, communities and boards that later mattered didn&apos;t wait
+          for proof they were worth joining — they were early, and that&apos;s why it
+          paid.
+        </p>
+        <p>
+          If your site gets any organic traffic at all, you can be on the board in
+          about a minute. <Link href="/login">Connect Search Console</Link>, claim a{" "}
+          <Link href="/founding">founding spot</Link>, and let a quiet board do the
+          quiet work of putting you near the top before everyone else shows up.
+        </p>
+      </>
+    ),
+  },
+  {
     slug: "outbid-lol-explained",
     title: "Outbid.lol, explained: the $178K pay-to-rank board that started the .lol craze",
     description:

@@ -136,17 +136,18 @@ export default async function HomePage({
           </div>
 
           <h1 className="max-w-3xl text-balance text-4xl font-bold tracking-tight sm:text-6xl">
-            The organic traffic leaderboard for the whole web
+            Anyone can ship a site now. RealRank shows which ones get traffic.
           </h1>
           <p className="mt-5 max-w-2xl text-balance text-lg text-muted-foreground">
-            {siteConfig.tagline} Ranked by <strong className="text-foreground">momentum</strong>{" "}
-            so fast-growing sites can beat the giants — not just whoever&apos;s biggest.
+            The public leaderboard of <strong className="text-foreground">verified</strong> organic
+            traffic — real Google Search Console clicks, ranked by momentum so fast-growing sites
+            beat the giants. Proof, not screenshots.
           </p>
 
-          {/* Positioning — you climb with traffic, not a bigger bid. */}
+          {/* Positioning — verified proof is the wedge now, not the anti-bid angle. */}
           <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-            <TrendingUp className="size-4" />
-            Rank at $0 — no bidding, no pay-to-win. Real traffic decides.
+            <ShieldCheck className="size-4" />
+            Verified by Google Search Console — real clicks, not vibes.
           </div>
 
           {/* Personalized entry point — check your domain, then connect. */}
