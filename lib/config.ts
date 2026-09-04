@@ -71,3 +71,61 @@ export function categoryLabel(slug: string): string {
 }
 
 export type RankingView = "momentum" | "volume";
+
+export interface NavLink {
+  href: string;
+  label: string;
+  /** Short blurb, shown in the header "Tools" dropdown and the mobile menu. */
+  description?: string;
+}
+
+/** Primary top-level nav shown as inline links in the header. */
+export const primaryNav: NavLink[] = [
+  { href: "/#leaderboard", label: "Leaderboard" },
+  { href: "/movers", label: "Movers" },
+  { href: "/founding", label: "Founding" },
+  { href: "/stats", label: "Stats" },
+  { href: "/blog", label: "Blog" },
+  { href: "/about", label: "How it works" },
+];
+
+/**
+ * Every interactive tool RealRank ships. Surfaced in the header "Tools"
+ * dropdown, the mobile menu, and the footer so nothing built stays hidden.
+ */
+export const toolLinks: NavLink[] = [
+  {
+    href: "/momentum-score",
+    label: "Momentum calculator",
+    description: "Estimate your momentum score from your 7- and 28-day clicks.",
+  },
+  {
+    href: "/organic-growth-grade",
+    label: "Growth grader",
+    description: "Get a letter grade for how fast your organic traffic is growing.",
+  },
+  {
+    href: "/is-my-traffic-real",
+    label: "Is my traffic real?",
+    description: "Check whether your traffic is genuine organic search demand.",
+  },
+  {
+    href: "/dashboard/channels",
+    label: "Channels",
+    description: "Track which marketing channels bring paying customers.",
+  },
+];
+
+/** Guides and curated rankings — evergreen landing pages. */
+export const guideLinks: NavLink[] = [
+  {
+    href: "/best/fastest-growing-saas-websites",
+    label: "Fastest-growing SaaS",
+    description: "A live ranking of SaaS sites by verified organic momentum.",
+  },
+  {
+    href: "/best/lol-directories",
+    label: "Best .lol directories",
+    description: "The .lol leaderboards compared — and which to trust.",
+  },
+];

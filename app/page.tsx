@@ -342,8 +342,8 @@ export default async function HomePage({
               icon={<Radio className="size-5" />}
               title="Channels — attribution"
               body="Track which marketing channels actually bring paying customers, ranked by revenue and efficiency."
-              href="/blog/introducing-channels"
-              cta="Meet Channels"
+              href="/dashboard/channels"
+              cta="Open Channels"
             />
             <FeatureCard
               icon={<BarChart3 className="size-5" />}
