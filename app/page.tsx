@@ -13,6 +13,7 @@ import { injectSponsored } from "@/lib/ranking";
 import { RankChecker } from "@/components/rank-checker";
 import { WaitlistForm } from "@/components/waitlist-form";
 import { LeaderboardSearch } from "@/components/leaderboard-search";
+import { RankingExplainer } from "@/components/ranking-explainer";
 import { siteConfig, categories, type RankingView } from "@/lib/config";
 import { formatCompact, timeAgo, hostname } from "@/lib/utils";
 
@@ -214,6 +215,11 @@ export default async function HomePage({
               <RankingToggle view={view} counts={data.counts} />
             </Suspense>
           </div>
+        </div>
+
+        {/* Plain-English explainer: momentum vs volume vs pending */}
+        <div className="mb-6">
+          <RankingExplainer />
         </div>
 
         {/* Category filter */}
