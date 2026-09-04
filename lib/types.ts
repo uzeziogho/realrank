@@ -25,6 +25,12 @@ export interface RankedSite {
   spark: number[];
   /** Domain authority (Open PageRank, 0–10). Third-party estimate; null if none. */
   domainRank: number | null;
+  /**
+   * True when the site has no clicks in the current view's window, so it's shown
+   * at the bottom of the board in a "no clicks yet / pending data" state rather
+   * than hidden. Pending rows carry no numeric rank (rank === 0).
+   */
+  pending: boolean;
 }
 
 /** A sponsored placement row, visually distinct and excluded from scoring. */
@@ -45,6 +51,7 @@ export function toRankedSite(
   site: PublishedSite,
   rank: number,
   rankDelta: number | null = null,
+  pending = false,
 ): RankedSite {
   return {
     kind: "organic",
@@ -63,6 +70,7 @@ export function toRankedSite(
     rankDelta,
     spark: [],
     domainRank: site.domain_rank ?? null,
+    pending,
   };
 }
 

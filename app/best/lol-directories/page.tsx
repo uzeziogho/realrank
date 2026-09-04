@@ -38,7 +38,9 @@ const FAQ = [
 
 export default async function LolDirectoriesPage() {
   const data = await getLeaderboardData("momentum");
-  const leaders = data.organic.slice(0, 5);
+  // Only ranked sites here — pending (no-traffic) rows have no rank or growth.
+  const ranked = data.organic.filter((s) => !s.pending);
+  const leaders = ranked.slice(0, 5);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -114,7 +116,7 @@ export default async function LolDirectoriesPage() {
           ))}
         </ol>
         <p className="mt-3 text-xs text-muted-foreground">
-          {formatCompact(data.totalSites)} sites ranked · updated hourly.{" "}
+          {formatCompact(ranked.length)} sites ranked · updated hourly.{" "}
           <Link href="/" className="text-primary hover:underline">See the full board →</Link>
         </p>
       </section>
