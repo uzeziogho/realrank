@@ -114,6 +114,11 @@ export const toolLinks: NavLink[] = [
     label: "Channels",
     description: "Track which marketing channels bring paying customers.",
   },
+  {
+    href: "/dashboard/leaks",
+    label: "Search leaks",
+    description: "Find where organic clicks — and revenue — leak before reaching your site.",
+  },
 ];
 
 /** Guides and curated rankings — evergreen landing pages. */
