@@ -5,13 +5,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { toolLinks, guideLinks } from "@/lib/config";
+import { toolLinks, guideLinks, learnLinks } from "@/lib/config";
 
 /**
- * Header "Tools" dropdown — surfaces every tool and guide page that isn't a
- * primary nav link, so nothing RealRank ships stays hard to find. Desktop only
- * (hidden below `sm`, where MobileNav lists the same links). Closes on outside
- * click, Escape, and route change.
+ * Header "More" dropdown — surfaces every tool, guide, and learn page that
+ * isn't a primary nav link, so the top bar stays uncrowded and nothing RealRank
+ * ships is hard to find. Desktop only (hidden below `sm`, where MobileNav lists
+ * the same links). Closes on outside click, Escape, and route change.
  */
 export function FeaturesMenu() {
   const [open, setOpen] = useState(false);
@@ -45,7 +45,7 @@ export function FeaturesMenu() {
         onClick={() => setOpen((v) => !v)}
         className="inline-flex h-9 items-center gap-1 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
       >
-        Tools
+        More
         <ChevronDown
           className={cn("size-4 transition-transform", open && "rotate-180")}
         />
@@ -54,11 +54,13 @@ export function FeaturesMenu() {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 mt-2 w-80 overflow-hidden rounded-xl border border-border bg-card p-2 shadow-lg"
+          className="absolute right-0 mt-2 max-h-[80vh] w-80 overflow-y-auto rounded-xl border border-border bg-card p-2 shadow-lg"
         >
           <MenuSection label="Tools" links={toolLinks} />
           <div className="my-1 border-t border-border" />
           <MenuSection label="Guides" links={guideLinks} />
+          <div className="my-1 border-t border-border" />
+          <MenuSection label="Learn" links={learnLinks} />
         </div>
       )}
     </div>

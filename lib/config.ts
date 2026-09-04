@@ -79,14 +79,30 @@ export interface NavLink {
   description?: string;
 }
 
-/** Primary top-level nav shown as inline links in the header. */
+/**
+ * Primary top-level nav shown as inline links in the header. Kept short — the
+ * live product surfaces only — so the bar stays uncrowded; everything else
+ * lives under the header "More" dropdown (and the mobile menu).
+ */
 export const primaryNav: NavLink[] = [
   { href: "/#leaderboard", label: "Leaderboard" },
   { href: "/movers", label: "Movers" },
   { href: "/founding", label: "Founding" },
   { href: "/stats", label: "Stats" },
-  { href: "/blog", label: "Blog" },
-  { href: "/about", label: "How it works" },
+];
+
+/** Learn/marketing pages — folded into the header "More" dropdown. */
+export const learnLinks: NavLink[] = [
+  {
+    href: "/about",
+    label: "How it works",
+    description: "How momentum ranking and verified traffic work.",
+  },
+  {
+    href: "/blog",
+    label: "Blog",
+    description: "Essays on verified organic traffic and growth.",
+  },
 ];
 
 /**

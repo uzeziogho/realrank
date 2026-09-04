@@ -36,6 +36,8 @@ export function SiteHeader() {
             </Button>
           ))}
           <FeaturesMenu />
+          {/* Divider between navigation and account/theme actions (desktop) */}
+          <span className="mx-1 hidden h-5 w-px bg-border sm:block" aria-hidden="true" />
           <ThemeToggle />
           <AuthNav />
           <MobileNav />
