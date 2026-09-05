@@ -14,7 +14,6 @@ import { RankChecker } from "@/components/rank-checker";
 import { WaitlistForm } from "@/components/waitlist-form";
 import { LeaderboardSearch } from "@/components/leaderboard-search";
 import { RankingExplainer } from "@/components/ranking-explainer";
-import { BadgeMarquee } from "@/components/badge-marquee";
 import { siteConfig, categories, type RankingView } from "@/lib/config";
 import { formatCompact, timeAgo, hostname } from "@/lib/utils";
 
@@ -453,9 +452,6 @@ export default async function HomePage({
           </div>
         </div>
       </section>
-
-      {/* Featured-on badges — scrolling marquee */}
-      <BadgeMarquee />
     </>
   );
 }
