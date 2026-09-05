@@ -11,6 +11,8 @@ interface Badge {
   alt: string;
   width: number;
   height: number;
+  /** Link rel; defaults to "noopener". Kept per-badge so sponsored links stay disclosed. */
+  rel?: string;
 }
 
 const BADGES: Badge[] = [
@@ -35,6 +37,21 @@ const BADGES: Badge[] = [
     width: 250,
     height: 54,
   },
+  {
+    href: "https://www.tinyshelf.co/?ref=realrank.lol",
+    src: "https://www.tinyshelf.co/badge/tinyshelf-badge-dark-f4d1216a.svg",
+    alt: "Featured on tinyshelf",
+    width: 216,
+    height: 64,
+  },
+  {
+    href: "https://marketingdb.live",
+    src: "https://marketingdb.live/badge-light.svg",
+    alt: "Listed on MarketingDB",
+    width: 190,
+    height: 44,
+    rel: "noopener noreferrer nofollow sponsored",
+  },
 ];
 
 function BadgeGroup({ ariaHidden = false }: { ariaHidden?: boolean }) {
@@ -45,7 +62,7 @@ function BadgeGroup({ ariaHidden = false }: { ariaHidden?: boolean }) {
     >
       {BADGES.map((b) => (
         <li key={b.href} className="shrink-0">
-          <a href={b.href} target="_blank" rel="noopener">
+          <a href={b.href} target="_blank" rel={b.rel ?? "noopener"}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={b.src}
