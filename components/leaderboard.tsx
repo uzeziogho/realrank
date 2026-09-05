@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, TrendingUp, TrendingDown, Minus, ChevronUp, ChevronDown, Sparkles } from "lucide-react";
+import { ArrowUpRight, TrendingUp, TrendingDown, Minus, ChevronUp, ChevronDown, Sparkles, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Sparkline } from "@/components/sparkline";
 import { SiteFavicon } from "@/components/site-favicon";
@@ -63,19 +63,42 @@ function OrganicRowItem({
     view === "momentum" ? formatCompact(row.clicks7d) : formatCompact(row.clicks28d);
   const primaryLabel = view === "momentum" ? "7d clicks" : "28d clicks";
 
+  // Pending = no clicks in the current window. A site that has 28-day traffic but
+  // none this week is "quiet this week"; one with no clicks at all is awaiting its
+  // first data. Either way it's shown, not hidden, with a muted state and no rank.
+  const pending = row.pending;
+  const pendingLabel =
+    view === "momentum" && row.clicks28d > 0 ? "No clicks this week" : "No clicks yet";
+
   return (
-    <li className="group grid grid-cols-[2.5rem_1fr] items-center gap-4 px-4 py-4 transition-colors hover:bg-accent/40 md:grid-cols-[3.5rem_1fr_5.5rem_6rem_6rem] md:px-5">
+    <li
+      className={cn(
+        "group grid grid-cols-[2.5rem_1fr] items-center gap-4 px-4 py-4 transition-colors hover:bg-accent/40 md:grid-cols-[3.5rem_1fr_5.5rem_6rem_6rem] md:px-5",
+        pending && "bg-muted/20",
+      )}
+    >
       {/* Rank + movement */}
       <div className="flex flex-col items-start">
-        <span
-          className={cn(
-            "tabular-nums font-semibold",
-            row.rank <= 3 ? "text-2xl text-foreground" : "text-lg text-muted-foreground",
-          )}
-        >
-          {row.rank}
-        </span>
-        <RankDelta delta={row.rankDelta} />
+        {pending ? (
+          <span
+            className="text-lg font-semibold text-muted-foreground/50"
+            title="Not ranked yet — awaiting traffic data"
+          >
+            —
+          </span>
+        ) : (
+          <>
+            <span
+              className={cn(
+                "tabular-nums font-semibold",
+                row.rank <= 3 ? "text-2xl text-foreground" : "text-lg text-muted-foreground",
+              )}
+            >
+              {row.rank}
+            </span>
+            <RankDelta delta={row.rankDelta} />
+          </>
+        )}
       </div>
 
       {/* Site identity */}
@@ -97,6 +120,14 @@ function OrganicRowItem({
           >
             <ArrowUpRight className="size-3.5" />
           </a>
+          {pending && (
+            <span
+              title="This site has connected but has no verified clicks in this window yet."
+              className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground"
+            >
+              <Clock className="size-3" /> {pendingLabel}
+            </span>
+          )}
           {founding && (
             <span
               title="Founding member — one of the first sites on RealRank"
@@ -126,22 +157,34 @@ function OrganicRowItem({
         </p>
         {/* Mobile metrics */}
         <div className="mt-2 flex items-center gap-3 md:hidden">
-          <GrowthPill ratio={row.growthRate} />
-          <span className="text-sm tabular-nums text-muted-foreground">
-            {primary} <span className="text-xs">{primaryLabel}</span>
-          </span>
-          <Sparkline data={row.spark} width={56} height={18} className="ml-auto" />
+          {pending ? (
+            <span className="text-sm text-muted-foreground">Awaiting verified traffic</span>
+          ) : (
+            <>
+              <GrowthPill ratio={row.growthRate} />
+              <span className="text-sm tabular-nums text-muted-foreground">
+                {primary} <span className="text-xs">{primaryLabel}</span>
+              </span>
+              <Sparkline data={row.spark} width={56} height={18} className="ml-auto" />
+            </>
+          )}
         </div>
       </div>
 
       {/* Trend sparkline (desktop) */}
       <div className="hidden items-center justify-end md:flex">
-        <Sparkline data={row.spark} />
+        {pending ? (
+          <span className="text-sm text-muted-foreground/50">—</span>
+        ) : (
+          <Sparkline data={row.spark} />
+        )}
       </div>
 
       {/* Primary metric column (desktop) */}
       <div className="hidden flex-col items-end md:flex">
-        {view === "momentum" ? (
+        {pending ? (
+          <span className="text-sm text-muted-foreground/50 tabular-nums">—</span>
+        ) : view === "momentum" ? (
           <>
             <span className="text-xl font-semibold tabular-nums text-foreground">
               {row.momentumScore.toFixed(0)}
@@ -157,7 +200,9 @@ function OrganicRowItem({
 
       {/* Secondary metric column (desktop) */}
       <div className="hidden flex-col items-end md:flex">
-        {view === "momentum" ? (
+        {pending ? (
+          <span className="text-sm text-muted-foreground/50 tabular-nums">—</span>
+        ) : view === "momentum" ? (
           <span className="text-xl font-semibold tabular-nums text-foreground">
             {formatCompact(row.clicks7d)}
           </span>

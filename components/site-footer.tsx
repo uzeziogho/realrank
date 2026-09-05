@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { siteConfig, categories } from "@/lib/config";
+import { siteConfig, categories, guideLinks } from "@/lib/config";
 
 export function SiteFooter() {
   return (
@@ -10,7 +10,7 @@ export function SiteFooter() {
           <p className="mt-2 text-sm text-muted-foreground">{siteConfig.tagline}</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
           <div>
             <p className="text-sm font-medium">Categories</p>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
@@ -33,10 +33,23 @@ export function SiteFooter() {
               <li><Link href="/organic-growth-grade" className="hover:text-foreground">Growth grader</Link></li>
               <li><Link href="/is-my-traffic-real" className="hover:text-foreground">Is my traffic real?</Link></li>
               <li><Link href="/stats" className="hover:text-foreground">Stats</Link></li>
-              <li><Link href="/blog/introducing-channels" className="hover:text-foreground">Channels</Link></li>
+              <li><Link href="/dashboard/channels" className="hover:text-foreground">Channels</Link></li>
               <li><Link href="/blog" className="hover:text-foreground">Blog</Link></li>
               <li><Link href="/about" className="hover:text-foreground">How it works</Link></li>
               <li><Link href="/login" className="hover:text-foreground">Connect Search Console</Link></li>
+            </ul>
+          </div>
+          <div>
+            <p className="text-sm font-medium">Guides</p>
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+              {guideLinks.map((l) => (
+                <li key={l.href}>
+                  <Link href={l.href} className="hover:text-foreground">
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+              <li><Link href="/blog/introducing-channels" className="hover:text-foreground">Channels: intro</Link></li>
             </ul>
           </div>
           <div>
@@ -48,36 +61,10 @@ export function SiteFooter() {
           </div>
         </div>
       </div>
-      <div className="container mt-8 flex flex-col items-start gap-4 border-t border-border/60 pt-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+      <div className="container mt-8 border-t border-border/60 pt-6 text-sm text-muted-foreground">
         <p>
           © {new Date().getFullYear()} {siteConfig.name}. Rankings from verified Google Search Console data.
         </p>
-        <div className="flex flex-wrap items-center gap-4">
-          {/* tinyshelf badge — anchor kept exactly as required by their checker
-              (landing-page href with ?ref, no rel). eslint-disable-next-line @next/next/no-img-element */}
-          <a href="https://www.tinyshelf.co/?ref=realrank.lol" title="Featured on tinyshelf">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://www.tinyshelf.co/badge/tinyshelf-badge-dark-f4d1216a.svg"
-              alt="Featured on tinyshelf"
-              width={216}
-              height={64}
-            />
-          </a>
-          <a
-            href="https://marketingdb.live"
-            target="_blank"
-            rel="noopener noreferrer nofollow sponsored"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://marketingdb.live/badge-light.svg"
-              alt="Listed on MarketingDB"
-              width={190}
-              height={44}
-            />
-          </a>
-        </div>
       </div>
     </footer>
   );

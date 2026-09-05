@@ -3,8 +3,9 @@ import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthNav } from "@/components/auth-nav";
 import { MobileNav } from "@/components/mobile-nav";
+import { FeaturesMenu } from "@/components/features-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { siteConfig } from "@/lib/config";
+import { siteConfig, primaryNav } from "@/lib/config";
 
 /**
  * Static server component — no per-request data — so every page that uses the
@@ -23,24 +24,20 @@ export function SiteHeader() {
         </Link>
 
         <nav className="flex items-center gap-1 sm:gap-2">
-          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-            <Link href="/#leaderboard">Leaderboard</Link>
-          </Button>
-          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-            <Link href="/movers">Movers</Link>
-          </Button>
-          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-            <Link href="/founding">Founding</Link>
-          </Button>
-          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-            <Link href="/stats">Stats</Link>
-          </Button>
-          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-            <Link href="/blog">Blog</Link>
-          </Button>
-          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-            <Link href="/about">How it works</Link>
-          </Button>
+          {primaryNav.map((l) => (
+            <Button
+              key={l.href}
+              asChild
+              variant="ghost"
+              size="sm"
+              className="hidden sm:inline-flex"
+            >
+              <Link href={l.href}>{l.label}</Link>
+            </Button>
+          ))}
+          <FeaturesMenu />
+          {/* Divider between navigation and account/theme actions (desktop) */}
+          <span className="mx-1 hidden h-5 w-px bg-border sm:block" aria-hidden="true" />
           <ThemeToggle />
           <AuthNav />
           <MobileNav />

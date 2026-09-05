@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { RefreshCw, ShieldCheck, TrendingUp, LineChart, BarChart3, Award, GitCompare, Radio } from "lucide-react";
+import { RefreshCw, ShieldCheck, TrendingUp, LineChart, BarChart3, Award, GitCompare, Radio, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RankingToggle } from "@/components/ranking-toggle";
 import { Leaderboard } from "@/components/leaderboard";
@@ -13,6 +13,8 @@ import { injectSponsored } from "@/lib/ranking";
 import { RankChecker } from "@/components/rank-checker";
 import { WaitlistForm } from "@/components/waitlist-form";
 import { LeaderboardSearch } from "@/components/leaderboard-search";
+import { RankingExplainer } from "@/components/ranking-explainer";
+import { BadgeMarquee } from "@/components/badge-marquee";
 import { siteConfig, categories, type RankingView } from "@/lib/config";
 import { formatCompact, timeAgo, hostname } from "@/lib/utils";
 
@@ -141,7 +143,8 @@ export default async function HomePage({
           <p className="mt-5 max-w-2xl text-balance text-lg text-muted-foreground">
             The public leaderboard of <strong className="text-foreground">verified</strong> organic
             traffic — real Google Search Console clicks, ranked by momentum so fast-growing sites
-            beat the giants. Proof, not screenshots.
+            beat the giants. Proof, not screenshots — and the tools to find where you&apos;re
+            leaking clicks and win them back.
           </p>
 
           {/* Positioning — verified proof is the wedge now, not the anti-bid angle. */}
@@ -214,6 +217,11 @@ export default async function HomePage({
               <RankingToggle view={view} counts={data.counts} />
             </Suspense>
           </div>
+        </div>
+
+        {/* Plain-English explainer: momentum vs volume vs pending */}
+        <div className="mb-6">
+          <RankingExplainer />
         </div>
 
         {/* Category filter */}
@@ -312,6 +320,13 @@ export default async function HomePage({
               cta="Why it matters"
             />
             <FeatureCard
+              icon={<Search className="size-5" />}
+              title="Search-leak finder"
+              body="See the searches where you rank but don't get the click, plus the near-page-1 queries worth chasing — recover traffic you've already earned."
+              href="/dashboard/leaks"
+              cta="Find your leaks"
+            />
+            <FeatureCard
               icon={<LineChart className="size-5" />}
               title="Momentum timeline"
               body="Every site gets a daily-clicks trend and row sparklines, so you can see who's heating up at a glance."
@@ -335,9 +350,9 @@ export default async function HomePage({
             <FeatureCard
               icon={<Radio className="size-5" />}
               title="Channels — attribution"
-              body="Track which marketing channels actually bring paying customers, ranked by revenue and efficiency."
-              href="/blog/introducing-channels"
-              cta="Meet Channels"
+              body="See which marketing channels actually bring paying customers — ranked by revenue, so you spend where it pays."
+              href="/dashboard/channels"
+              cta="Open Channels"
             />
             <FeatureCard
               icon={<BarChart3 className="size-5" />}
@@ -420,11 +435,12 @@ export default async function HomePage({
             </Link>
           )}
           <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            Prove your growth. Get discovered.
+            See where you&apos;re losing clicks. Win them back.
           </h2>
           <p className="max-w-xl text-muted-foreground">
-            Connect Google Search Console (read-only), pick which verified
-            properties to publish, and let real clicks decide your rank.
+            Connect Google Search Console (read-only) and publish your verified
+            traffic — then get a ranked list of the searches you&apos;re leaking
+            clicks on, and climb the board with proof, not guesses.
           </p>
           <Button asChild size="lg" className="mt-2">
             <Link href="/login">Connect Search Console</Link>
@@ -437,6 +453,9 @@ export default async function HomePage({
           </div>
         </div>
       </section>
+
+      {/* Featured-on badges — scrolling marquee */}
+      <BadgeMarquee />
     </>
   );
 }
