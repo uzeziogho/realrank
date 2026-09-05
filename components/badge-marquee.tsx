@@ -13,6 +13,13 @@ interface Badge {
   height: number;
   /** Link rel; defaults to "noopener". Kept per-badge so sponsored links stay disclosed. */
   rel?: string;
+  /** Optional title attribute (e.g. tinyshelf's verification checker looks for it). */
+  title?: string;
+  /**
+   * Render a bare anchor with no `rel`/`target` — some directories' badge
+   * verification checkers require the exact link form (e.g. tinyshelf).
+   */
+  plain?: boolean;
 }
 
 const BADGES: Badge[] = [
@@ -43,6 +50,9 @@ const BADGES: Badge[] = [
     alt: "Featured on tinyshelf",
     width: 216,
     height: 64,
+    title: "Featured on tinyshelf",
+    // tinyshelf's checker requires the bare anchor (href with ?ref, no rel/target).
+    plain: true,
   },
   {
     href: "https://marketingdb.live",
@@ -62,7 +72,12 @@ function BadgeGroup({ ariaHidden = false }: { ariaHidden?: boolean }) {
     >
       {BADGES.map((b) => (
         <li key={b.href} className="shrink-0">
-          <a href={b.href} target="_blank" rel={b.rel ?? "noopener"}>
+          <a
+            href={b.href}
+            title={b.title}
+            target={b.plain ? undefined : "_blank"}
+            rel={b.plain ? undefined : b.rel ?? "noopener"}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={b.src}

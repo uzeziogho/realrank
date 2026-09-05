@@ -61,36 +61,10 @@ export function SiteFooter() {
           </div>
         </div>
       </div>
-      <div className="container mt-8 flex flex-col items-start gap-4 border-t border-border/60 pt-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+      <div className="container mt-8 border-t border-border/60 pt-6 text-sm text-muted-foreground">
         <p>
           © {new Date().getFullYear()} {siteConfig.name}. Rankings from verified Google Search Console data.
         </p>
-        <div className="flex flex-wrap items-center gap-4">
-          {/* tinyshelf badge — anchor kept exactly as required by their checker
-              (landing-page href with ?ref, no rel). eslint-disable-next-line @next/next/no-img-element */}
-          <a href="https://www.tinyshelf.co/?ref=realrank.lol" title="Featured on tinyshelf">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://www.tinyshelf.co/badge/tinyshelf-badge-dark-f4d1216a.svg"
-              alt="Featured on tinyshelf"
-              width={216}
-              height={64}
-            />
-          </a>
-          <a
-            href="https://marketingdb.live"
-            target="_blank"
-            rel="noopener noreferrer nofollow sponsored"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://marketingdb.live/badge-light.svg"
-              alt="Listed on MarketingDB"
-              width={190}
-              height={44}
-            />
-          </a>
-        </div>
       </div>
     </footer>
   );
