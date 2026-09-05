@@ -34,6 +34,7 @@ export function SiteFooter() {
               <li><Link href="/is-my-traffic-real" className="hover:text-foreground">Is my traffic real?</Link></li>
               <li><Link href="/stats" className="hover:text-foreground">Stats</Link></li>
               <li><Link href="/dashboard/channels" className="hover:text-foreground">Channels</Link></li>
+              <li><Link href="/agent-visibility" className="hover:text-foreground">Agent visibility</Link></li>
               <li><Link href="/blog" className="hover:text-foreground">Blog</Link></li>
               <li><Link href="/about" className="hover:text-foreground">How it works</Link></li>
               <li><Link href="/login" className="hover:text-foreground">Connect Search Console</Link></li>

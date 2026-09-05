@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { RefreshCw, ShieldCheck, TrendingUp, LineChart, BarChart3, Award, GitCompare, Radio, Search } from "lucide-react";
+import { RefreshCw, ShieldCheck, TrendingUp, LineChart, BarChart3, Award, GitCompare, Radio, Search, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RankingToggle } from "@/components/ranking-toggle";
 import { Leaderboard } from "@/components/leaderboard";
@@ -318,6 +318,13 @@ export default async function HomePage({
               body="Real organic clicks pulled from your Google Search Console (read-only). No guesses, no self-reported numbers."
               href="/blog/verified-vs-estimated-traffic"
               cta="Why it matters"
+            />
+            <FeatureCard
+              icon={<Bot className="size-5" />}
+              title="Agent visibility"
+              body="Your verified momentum is queryable by AI assistants via MCP — the longer you're verified, the stronger your signal when an agent compares you to rivals."
+              href="/agent-visibility"
+              cta="How agents see you"
             />
             <FeatureCard
               icon={<Search className="size-5" />}
