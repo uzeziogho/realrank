@@ -72,6 +72,9 @@ export default async function DashboardPage() {
             {liveCount} live · {mySites.length} total
           </span>
           <Button asChild variant="outline" size="sm">
+            <Link href="/dashboard/leaks">Search leaks →</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
             <Link href="/dashboard/channels">Channels →</Link>
           </Button>
         </div>

@@ -9,6 +9,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createServiceClient } from "@/lib/supabase/server";
 import { hostname } from "@/lib/utils";
 import { siteConfig } from "@/lib/config";
+import { toRankedSite } from "@/lib/types";
 import type { LeaderboardRow, RankedSite, RankingView } from "@/lib/types";
 
 export interface LeaderboardData {
@@ -19,7 +20,11 @@ export interface LeaderboardData {
   lastUpdated: string | null;
   totalSites: number;
   totalClicks28d: number;
-  /** How many sites qualify for each view (for the toggle counts). */
+  /**
+   * How many sites appear on each view's board (for the toggle counts). Both
+   * views now list every active site — ranked ones plus pending (no-traffic)
+   * rows — so these match the number of rows shown.
+   */
   counts: { momentum: number; volume: number };
   /** Founding program: created_at cutoff (≤ = founding) and spots remaining. */
   founding: FoundingInfo;
@@ -67,15 +72,25 @@ export async function getLeaderboardData(
     ? sites.filter((s) => s.category === opts.category)
     : sites;
 
-  // Only rank sites with traffic in the relevant window: momentum is "who's
+  // Rank sites with traffic in the relevant window first: momentum is "who's
   // growing right now", so a site with 0 clicks this week has no momentum story
-  // (and showing "-100% · 0 clicks" reads as broken). Such a site can still
-  // appear on the volume board if it has 28-day clicks.
-  const withTraffic = scoped.filter((s) =>
-    view === "volume" ? s.clicks_28d > 0 : s.clicks_7d > 0,
-  );
+  // (showing "-100% · 0 clicks" would read as broken). Sites with no clicks in
+  // the window aren't hidden — they're appended below the ranked list in a
+  // "no clicks yet / pending data" state so newly joined sites are still visible.
+  const hasTraffic = (s: PublishedSite) =>
+    view === "volume" ? s.clicks_28d > 0 : s.clicks_7d > 0;
 
-  const organic = rankSites(withTraffic, view);
+  const withTraffic = scoped.filter((s) => s.is_active && hasTraffic(s));
+  const pending = scoped.filter((s) => s.is_active && !hasTraffic(s));
+
+  const ranked = rankSites(withTraffic, view);
+  // Pending rows sit after the ranked list, newest first, with no numeric rank
+  // (rank 0) — the leaderboard renders them in a muted "pending" state.
+  const pendingRows = [...pending]
+    .sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
+    .map((s) => toRankedSite(s, 0, null, true));
+
+  const organic = [...ranked, ...pendingRows];
   const rows = injectSponsored(organic, slots);
 
   const totalClicks28d = scoped.reduce(
@@ -83,10 +98,10 @@ export async function getLeaderboardData(
     0,
   );
 
-  const counts = {
-    momentum: scoped.filter((s) => s.is_active && s.clicks_7d > 0).length,
-    volume: scoped.filter((s) => s.is_active && s.clicks_28d > 0).length,
-  };
+  // Both views now list every active site (ranked + pending), so the toggle
+  // counts reflect the full board rather than only sites with recent traffic.
+  const activeInScope = scoped.filter((s) => s.is_active).length;
+  const counts = { momentum: activeInScope, volume: activeInScope };
 
   // Founding status is program-wide (all active sites), not category-scoped.
   const founding = computeFounding(sites);

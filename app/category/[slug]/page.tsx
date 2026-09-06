@@ -7,6 +7,7 @@ import { RankingToggle } from "@/components/ranking-toggle";
 import { Leaderboard } from "@/components/leaderboard";
 import { LeaderboardJsonLd } from "@/components/json-ld";
 import { getLeaderboardData, attachSparklines } from "@/lib/data";
+import { RankingExplainer } from "@/components/ranking-explainer";
 import {
   siteConfig,
   categories,
@@ -95,6 +96,9 @@ export default async function CategoryPage({
       ) : (
         <>
           <LeaderboardJsonLd sites={data.organic} />
+          <div className="mb-6">
+            <RankingExplainer />
+          </div>
           <Leaderboard rows={rows} view={view} foundingCutoff={data.founding.cutoff} />
         </>
       )}

@@ -6,14 +6,17 @@ import type { RankedSite } from "@/lib/types";
  * ranked list. Rendered inside the server component -> present in initial HTML.
  */
 export function LeaderboardJsonLd({ sites }: { sites: RankedSite[] }) {
+  // Only ranked sites belong in the structured list — pending (no-traffic) rows
+  // carry no numeric rank, so a position of 0 would be invalid ItemList markup.
+  const ranked = sites.filter((s) => !s.pending);
   const json = {
     "@context": "https://schema.org",
     "@type": "ItemList",
     name: `${siteConfig.name} — Organic Traffic Leaderboard`,
     description: siteConfig.description,
-    numberOfItems: sites.length,
+    numberOfItems: ranked.length,
     itemListOrder: "https://schema.org/ItemListOrderDescending",
-    itemListElement: sites.slice(0, 30).map((s) => ({
+    itemListElement: ranked.slice(0, 30).map((s) => ({
       "@type": "ListItem",
       position: s.rank,
       url: s.siteUrl,

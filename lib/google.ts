@@ -130,6 +130,55 @@ export async function fetchDailyClicks(
     .sort((a, b) => (a.date < b.date ? -1 : 1));
 }
 
+export interface SearchAnalyticsRow {
+  /** The query text or page URL (depending on the requested dimension). */
+  key: string;
+  clicks: number;
+  impressions: number;
+  /** Click-through rate as a 0–1 ratio. */
+  ctr: number;
+  /** Average position in search results (1 = top). */
+  position: number;
+}
+
+/**
+ * Per-query (or per-page) Search Console metrics for a property over the last
+ * `days` days — clicks, impressions, CTR and average position. Powers the
+ * Search-leak analyzer. Returns rows sorted by impressions (desc).
+ */
+export async function fetchSearchAnalytics(
+  client: OAuth2Client,
+  siteUrl: string,
+  opts: { dimension: "query" | "page"; days?: number; rowLimit?: number },
+): Promise<SearchAnalyticsRow[]> {
+  const { dimension, days = 28, rowLimit = 500 } = opts;
+  const webmasters = google.webmasters({ version: "v3", auth: client });
+  const { startDate, endDate } = dateRange(days);
+
+  const res = await webmasters.searchanalytics.query({
+    siteUrl,
+    requestBody: {
+      startDate,
+      endDate,
+      dimensions: [dimension],
+      searchType: "web",
+      dataState: "all",
+      rowLimit,
+    },
+  });
+
+  return (res.data.rows ?? [])
+    .map((r) => ({
+      key: String(r.keys?.[0] ?? ""),
+      clicks: Math.round(r.clicks ?? 0),
+      impressions: Math.round(r.impressions ?? 0),
+      ctr: r.ctr ?? 0,
+      position: r.position ?? 0,
+    }))
+    .filter((r) => r.key)
+    .sort((a, b) => b.impressions - a.impressions);
+}
+
 export interface SiteMetrics {
   clicks_7d: number;
   clicks_28d: number;
