@@ -41,6 +41,7 @@ export default async function SiteProfilePage({ params }: { params: Params }) {
   const slugValue = siteSlug(site.siteUrl);
   const profileUrl = `${siteConfig.url}/site/${slugValue}`;
   const badgeUrl = `${siteConfig.url}/api/badge/${slugValue}.svg`;
+  const embedUrl = `${siteConfig.url}/api/embed/${slugValue}`;
 
   // Verified-flavored share copy — the ranking as proof, not hype. Include the
   // week's climb when this site is a mover.
@@ -111,12 +112,20 @@ export default async function SiteProfilePage({ params }: { params: Params }) {
             How does {site.displayName} stack up against{" "}
             <span className="text-foreground">{rival.displayName}</span> (#{rival.rank})?
           </span>
-          <Link
-            href={`/compare/${slugValue}-vs-${rival.slug}`}
-            className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
-          >
-            Compare <ArrowUpRight className="size-3.5" />
-          </Link>
+          <span className="inline-flex items-center gap-3">
+            <Link
+              href={`/compare/${slugValue}-vs-${rival.slug}`}
+              className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+            >
+              Compare <ArrowUpRight className="size-3.5" />
+            </Link>
+            <Link
+              href={`/alternatives/${slugValue}`}
+              className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+            >
+              Alternatives <ArrowUpRight className="size-3.5" />
+            </Link>
+          </span>
         </div>
       )}
 
@@ -160,13 +169,14 @@ export default async function SiteProfilePage({ params }: { params: Params }) {
         />
       </section>
 
-      {/* Badge embed */}
+      {/* Badge / widget embed */}
       <section className="mt-8">
-        <h2 className="text-lg font-semibold">Embed your badge</h2>
+        <h2 className="text-lg font-semibold">Embed your rank</h2>
         <p className="mb-4 mt-1 text-sm text-muted-foreground">
-          Show your rank on your own site. The badge links back here and updates automatically.
+          Show your rank on your own site — a static badge or a live widget. Both link back here
+          and update automatically.
         </p>
-        <BadgeEmbed profileUrl={profileUrl} badgeUrl={badgeUrl} />
+        <BadgeEmbed profileUrl={profileUrl} badgeUrl={badgeUrl} embedUrl={embedUrl} />
       </section>
 
       <p className="mt-10 text-center text-xs text-muted-foreground">

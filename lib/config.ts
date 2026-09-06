@@ -126,6 +126,11 @@ export const toolLinks: NavLink[] = [
     description: "Check whether your traffic is genuine organic search demand.",
   },
   {
+    href: "/report-card",
+    label: "Traffic report card",
+    description: "Grade any domain's verified organic traffic — instant, shareable.",
+  },
+  {
     href: "/dashboard/channels",
     label: "Channels",
     description: "Track which marketing channels bring paying customers.",
