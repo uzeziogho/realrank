@@ -93,7 +93,7 @@ export default async function AlternativesPage({ params }: { params: Params }) {
           decide where you rank against {target.displayName} and the rest.
         </p>
         <Button asChild size="lg" className="mt-1">
-          <Link href="/login">Claim your verified spot</Link>
+          <Link href="/login">Claim my verified spot</Link>
         </Button>
       </div>
     </div>

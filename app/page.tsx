@@ -252,7 +252,7 @@ export default async function HomePage({
             </p>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
               <Button asChild>
-                <Link href="/login">Claim your spot</Link>
+                <Link href="/login">Claim my spot</Link>
               </Button>
               <Button asChild variant="outline">
                 <Link href="/founding">How founding works</Link>

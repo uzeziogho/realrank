@@ -53,7 +53,7 @@ export default function ReportCardLanding() {
             the public board.
           </p>
           <Link href="/login" className="mt-4 inline-block text-sm font-medium text-primary hover:underline">
-            Connect Search Console →
+            Connect my Search Console →
           </Link>
         </div>
       </div>
