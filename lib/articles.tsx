@@ -242,8 +242,8 @@ export const articles: Article[] = [
           The numbers got absurd fast. Multiple write-ups reported roughly{" "}
           <strong>$178,000 in 77 hours</strong> (
           <A href="https://superframeworks.com/articles/outbid-lol-viral-launch">SuperFrameworks</A>
-          ), ten-thousand-plus visitors within twelve hours, and an unsolicited
-          six-figure acquisition offer before day one was over (
+          ), more than 200,000 visitors in the first 24 hours, and an unsolicited
+          acquisition offer before day one was over (
           <A href="https://automatio.ai/articles/dev-tools/inside-outbid-lol-the-pay-to-rank-board-taking-over-tech">automatio.ai</A>
           ).
         </p>
@@ -336,9 +336,9 @@ export const articles: Article[] = [
       <>
         <p>
           In late 2025, reacting to the flood of faked MRR screenshots, Marc Lou
-          built <A href="https://trustmrr.com/">TrustMRR</A> in about 48 hours: a
-          directory where founders connect Stripe, LemonSqueezy, or Polar to
-          publish <strong>tamper-proof revenue</strong>. It now lists 800+
+          built <A href="https://trustmrr.com/">TrustMRR</A> reportedly in a couple
+          of days: a directory where founders connect Stripe, LemonSqueezy, or Polar
+          to publish <strong>tamper-proof revenue</strong>. It now lists hundreds of
           startups and draws serious traffic (
           <A href="https://aiso.blog/trustmrr-review/">review</A>). The lesson was
           simple and powerful: <em>people trust rankings built on verified data,
@@ -730,7 +730,7 @@ export const articles: Article[] = [
           <li>
             <strong><A href="https://trustmrr.com/">TrustMRR</A></strong> (Marc
             Lou) ranks startups by <em>Stripe-verified revenue</em> - connect
-            your payment provider, publish tamper-proof MRR. 800+ startups and a{" "}
+            your payment provider, publish tamper-proof MRR. Hundreds of startups and a{" "}
             <A href="https://trustmrr.com/special-category/lol">.lol category</A>{" "}
             of its own.
           </li>
