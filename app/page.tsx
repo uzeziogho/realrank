@@ -162,6 +162,9 @@ export default async function HomePage({
               {" · "}
               <Link href="#leaderboard" className="hover:text-foreground">view the leaderboard</Link>
             </p>
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              Read-only access · free · about 30 seconds
+            </p>
           </div>
 
           {/* Liveness — recently joined sites */}
@@ -442,16 +445,20 @@ export default async function HomePage({
             </Link>
           )}
           <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            See where you&apos;re losing clicks. Win them back.
+            You&apos;re leaving verified clicks on the table.
           </h2>
           <p className="max-w-xl text-muted-foreground">
-            Connect Google Search Console (read-only) and publish your verified
-            traffic — then get a ranked list of the searches you&apos;re leaking
-            clicks on, and climb the board with proof, not guesses.
+            You rank for searches you never get the click on, and your real growth
+            gets lost next to sites that just buy attention. Connect Google Search
+            Console and RealRank shows the exact searches you&apos;re leaking — and
+            ranks you by real momentum, so growth decides your spot, not budget.
           </p>
           <Button asChild size="lg" className="mt-2">
-            <Link href="/login">Connect Search Console</Link>
+            <Link href="/login">Show me my leaks</Link>
           </Button>
+          <p className="text-xs text-muted-foreground">
+            Read-only access · free · about 30 seconds
+          </p>
 
           {/* Fallback for visitors not ready to connect Google yet. */}
           <div className="mt-6 flex flex-col items-center gap-2 border-t border-border/60 pt-6">
