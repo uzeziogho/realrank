@@ -24,13 +24,6 @@ interface Badge {
 
 const BADGES: Badge[] = [
   {
-    href: "https://startuptrusted.com?ref=realrank.lol",
-    src: "https://startuptrusted.com/api/badge?type=featured&style=light",
-    alt: "RealRank on StartupTrusted",
-    width: 240,
-    height: 54,
-  },
-  {
     href: "https://nicklaunches.com/products/realrank/?utm_source=realrank.lol&utm_medium=badge&utm_campaign=featured",
     src: "https://nicklaunches.com/badges/featured.png",
     alt: "RealRank on Nick Launches",
