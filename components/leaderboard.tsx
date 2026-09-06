@@ -103,23 +103,27 @@ function OrganicRowItem({
 
       {/* Site identity */}
       <div className="min-w-0">
-        <div className="flex items-center gap-2">
-          <SiteFavicon url={row.siteUrl} name={row.displayName} />
-          <Link
-            href={`/site/${hostname(row.siteUrl).toLowerCase()}`}
-            className="truncate text-base font-semibold text-foreground hover:underline"
-          >
-            {row.displayName}
-          </Link>
-          <a
-            href={siteHref(row.siteUrl)}
-            target="_blank"
-            rel="noopener nofollow"
-            aria-label={`Visit ${row.displayName}`}
-            className="shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
-          >
-            <ArrowUpRight className="size-3.5" />
-          </a>
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          {/* Favicon + name + visit link stay together and truncate as a unit,
+              so the badges below can't crush the name down to one letter. */}
+          <div className="flex min-w-0 items-center gap-2">
+            <SiteFavicon url={row.siteUrl} name={row.displayName} />
+            <Link
+              href={`/site/${hostname(row.siteUrl).toLowerCase()}`}
+              className="truncate text-base font-semibold text-foreground hover:underline"
+            >
+              {row.displayName}
+            </Link>
+            <a
+              href={siteHref(row.siteUrl)}
+              target="_blank"
+              rel="noopener nofollow"
+              aria-label={`Visit ${row.displayName}`}
+              className="shrink-0 text-muted-foreground opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
+            >
+              <ArrowUpRight className="size-3.5" />
+            </a>
+          </div>
           {pending && (
             <span
               title="This site has connected but has no verified clicks in this window yet."
