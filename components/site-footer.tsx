@@ -26,7 +26,7 @@ export function SiteFooter() {
           <div>
             <p className="text-sm font-medium">Product</p>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/#leaderboard" className="hover:text-foreground">Leaderboard</Link></li>
+              <li><Link href="/leaderboard" className="hover:text-foreground">Leaderboard</Link></li>
               <li><Link href="/movers" className="hover:text-foreground">Movers &amp; Shakers</Link></li>
               <li><Link href="/founding" className="hover:text-foreground">Founding sites</Link></li>
               <li><Link href="/momentum-score" className="hover:text-foreground">Momentum calculator</Link></li>

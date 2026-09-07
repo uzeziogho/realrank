@@ -85,7 +85,7 @@ export interface NavLink {
  * lives under the header "More" dropdown (and the mobile menu).
  */
 export const primaryNav: NavLink[] = [
-  { href: "/#leaderboard", label: "Leaderboard" },
+  { href: "/leaderboard", label: "Leaderboard" },
   { href: "/movers", label: "Movers" },
   { href: "/founding", label: "Founding" },
   { href: "/stats", label: "Stats" },

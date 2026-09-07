@@ -1,28 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
 import { RefreshCw, ShieldCheck, TrendingUp, LineChart, BarChart3, Award, GitCompare, Radio, Search, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { RankingToggle } from "@/components/ranking-toggle";
-import { Leaderboard } from "@/components/leaderboard";
-import { LeaderboardJsonLd, FaqJsonLd } from "@/components/json-ld";
-import { Pagination } from "@/components/pagination";
-import { getLeaderboardData, attachSparklines, getRecentlyJoined, getMovers, getSiteTraffic } from "@/lib/data";
+import { FaqJsonLd } from "@/components/json-ld";
+import { LeaderboardSection } from "@/components/leaderboard-section";
+import { getLeaderboardData, getRecentlyJoined, getMovers, getSiteTraffic } from "@/lib/data";
 import { MoversBand } from "@/components/movers";
-import { injectSponsored } from "@/lib/ranking";
 import { RankChecker } from "@/components/rank-checker";
 import { WaitlistForm } from "@/components/waitlist-form";
-import { LeaderboardSearch } from "@/components/leaderboard-search";
-import { RankingExplainer } from "@/components/ranking-explainer";
 import { BadgeMarquee } from "@/components/badge-marquee";
-import { siteConfig, categories, type RankingView } from "@/lib/config";
-import { formatCompact, timeAgo, hostname } from "@/lib/utils";
+import { siteConfig } from "@/lib/config";
+import { formatCompact, hostname } from "@/lib/utils";
 
 // Incremental Static Regeneration — full ranked list is in the initial HTML,
 // refreshed at most hourly (and on-demand after the cron writes new data).
 export const revalidate = 3600;
-
-const PAGE_SIZE = 50;
 
 /** Homepage FAQ: rendered visibly and mirrored into FAQPage structured data. */
 const FAQ_ITEMS: { q: string; a: string }[] = [
@@ -48,70 +40,20 @@ const FAQ_ITEMS: { q: string; a: string }[] = [
   },
 ];
 
-type SearchParams = Promise<{ view?: string; page?: string; q?: string }>;
+export const metadata: Metadata = {
+  title: "Fastest-Growing Websites by Organic Traffic",
+  description: siteConfig.description,
+  alternates: { canonical: "/" },
+};
 
-function parseView(v?: string): RankingView {
-  return v === "volume" ? "volume" : "momentum";
-}
-
-function parsePage(v: string | undefined, totalPages: number): number {
-  const n = Number.parseInt(v ?? "1", 10);
-  if (Number.isNaN(n) || n < 1) return 1;
-  return Math.min(n, Math.max(1, totalPages));
-}
-
-/** Build a leaderboard URL preserving view + query + page params. */
-function leaderboardHref(view: RankingView, page: number, q = ""): string {
-  const params = new URLSearchParams();
-  if (view === "volume") params.set("view", "volume");
-  if (q) params.set("q", q);
-  if (page > 1) params.set("page", String(page));
-  const qs = params.toString();
-  return qs ? `/?${qs}#leaderboard` : "/#leaderboard";
-}
-
-export async function generateMetadata({
-  searchParams,
-}: {
-  searchParams: SearchParams;
-}): Promise<Metadata> {
-  const sp = await searchParams;
-  const view = parseView(sp.view);
-  const page = Number.parseInt(sp.page ?? "1", 10) || 1;
-  const base =
-    view === "volume"
-      ? "Top Websites by Organic Traffic Volume"
-      : "Fastest-Growing Websites by Organic Traffic";
-  const title = page > 1 ? `${base} — Page ${page}` : base;
-
-  const params = new URLSearchParams();
-  if (view === "volume") params.set("view", "volume");
-  if (page > 1) params.set("page", String(page));
-  const qs = params.toString();
-
-  // Search-result views point their canonical at the clean board and stay out
-  // of the index (avoids thin/duplicate query pages).
-  const searching = Boolean(sp.q?.trim());
-
-  return {
-    title,
-    description: siteConfig.description,
-    alternates: { canonical: searching ? "/" : qs ? `/?${qs}` : "/" },
-    ...(searching ? { robots: { index: false, follow: true } } : {}),
-  };
-}
-
-export default async function HomePage({
-  searchParams,
-}: {
-  searchParams: SearchParams;
-}) {
-  const sp = await searchParams;
-  const view = parseView(sp.view);
+export default async function HomePage() {
+  // No searchParams here: the homepage renders the default momentum board so it
+  // prerenders (ISR) and serves cached HTML. Search, the volume toggle, and
+  // pagination live on /leaderboard, which is server-rendered per request.
   // Fetch concurrently — the board/recent/movers share one cached Supabase read
   // (see loadRaw), so this is ~2 round-trips instead of the previous 7 in series.
   const [data, recent, movers, traffic] = await Promise.all([
-    getLeaderboardData(view),
+    getLeaderboardData("momentum"),
     getRecentlyJoined(6),
     getMovers(5),
     getSiteTraffic(),
@@ -120,26 +62,6 @@ export default async function HomePage({
   // For the rank checker: hostnames already on the board + the top volume.
   const knownHosts = data.organic.map((s) => hostname(s.siteUrl).toLowerCase());
   const topClicks = data.organic.reduce((m, s) => Math.max(m, s.clicks28d), 0);
-
-  // Search filter (name or hostname). Kept server-side so results stay crawlable.
-  const query = (sp.q ?? "").trim().toLowerCase();
-  const filtered = query
-    ? data.organic.filter(
-        (s) =>
-          s.displayName.toLowerCase().includes(query) ||
-          hostname(s.siteUrl).toLowerCase().includes(query),
-      )
-    : data.organic;
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const page = parsePage(sp.page, totalPages);
-  const start = (page - 1) * PAGE_SIZE;
-  const pageOrganic = filtered.slice(start, start + PAGE_SIZE);
-  // Re-inject sponsored slots for this page (they only match ranks #10/#20 → page 1).
-  // Skip ads while searching. Attach sparklines for just this page's rows.
-  const pageRows = await attachSparklines(
-    query ? pageOrganic : injectSponsored(pageOrganic, data.sponsored),
-  );
 
   return (
     <>
@@ -222,102 +144,15 @@ export default async function HomePage({
         </section>
       )}
 
-      {/* Leaderboard */}
-      <section id="leaderboard" className="container scroll-mt-20 py-12">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 className="text-2xl font-semibold tracking-tight">
-              {view === "momentum" ? "Momentum leaders" : "Volume leaders"}
-            </h2>
-            <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
-              <TrendingUp className="size-4" />
-              {view === "momentum"
-                ? "Ranked by growth velocity — last 7 days vs. the prior 21."
-                : "Ranked by total organic clicks over the last 28 days."}
-            </p>
-          </div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <Suspense fallback={null}>
-              <LeaderboardSearch initialQuery={query} />
-            </Suspense>
-            <Suspense fallback={null}>
-              <RankingToggle view={view} counts={data.counts} />
-            </Suspense>
-          </div>
-        </div>
-
-        {/* Plain-English explainer: momentum vs volume vs pending */}
-        <div className="mb-6">
-          <RankingExplainer />
-        </div>
-
-        {/* Category filter */}
-        <div className="mb-6 flex flex-wrap gap-2">
-          {categories.map((c) => (
-            <Link
-              key={c.slug}
-              href={`/category/${c.slug}`}
-              className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
-            >
-              {c.label}
-            </Link>
-          ))}
-        </div>
-
-        {data.totalSites === 0 ? (
-          <div className="rounded-xl border border-dashed border-border bg-card/50 p-12 text-center">
-            <span className="mb-3 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-              <Award className="size-3.5" /> Founding spots open
-            </span>
-            <p className="text-lg font-medium">Be founding site #1</p>
-            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              The board is brand new. Connect Google Search Console, publish your
-              verified traffic, and claim the top spot with a permanent Founder badge.
-            </p>
-            <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-              <Button asChild>
-                <Link href="/login">Claim my spot</Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link href="/founding">How founding works</Link>
-              </Button>
-            </div>
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border bg-card/50 p-12 text-center">
-            <p className="text-lg font-medium">No sites match &ldquo;{query}&rdquo;</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Try a different name, or{" "}
-              <Link href="/#leaderboard" className="text-primary hover:underline">clear the search</Link>.
-            </p>
-          </div>
-        ) : (
-          <>
-            <LeaderboardJsonLd sites={pageOrganic} />
-            <Leaderboard rows={pageRows} view={view} foundingCutoff={data.founding.cutoff} />
-
-            <Pagination
-              currentPage={page}
-              totalPages={totalPages}
-              buildHref={(p) => leaderboardHref(view, p, query)}
-            />
-
-            <div className="mt-4 flex flex-col items-center justify-between gap-2 text-xs text-muted-foreground sm:flex-row">
-              <p>
-                Showing {start + 1}–{start + pageOrganic.length} of {filtered.length}
-                {query ? ` matching “${query}”` : ""}.
-                Last updated {data.lastUpdated ? timeAgo(data.lastUpdated) : "—"}; refreshes
-                every {siteConfig.refreshCadenceHours} hours.
-              </p>
-              {data.usingDummyData && (
-                <p className="rounded-full border border-border px-2 py-0.5">
-                  Preview data — connect a site to publish real numbers
-                </p>
-              )}
-            </div>
-          </>
-        )}
-      </section>
+      {/* Leaderboard preview: default momentum view, static.
+          Search, the volume toggle, and pagination live on /leaderboard. */}
+      <LeaderboardSection
+        data={data}
+        view="momentum"
+        query=""
+        page={1}
+        interactive={false}
+      />
 
       {/* Features — surface everything RealRank does */}
       <section className="border-t border-border/60 bg-card/40">
