@@ -86,6 +86,14 @@ const BADGES: Badge[] = [
     width: 148,
     height: 40,
   },
+  {
+    href: "https://tools.launchllama.co?utm_source=badge&utm_medium=referral",
+    src: "https://tools.launchllama.co/featured-badge-white.png?v=2",
+    alt: "As seen on Launch Llama Newsletter",
+    width: 200,
+    height: 50,
+    rel: "noopener noreferrer",
+  },
 ];
 
 function BadgeGroup({ ariaHidden = false }: { ariaHidden?: boolean }) {

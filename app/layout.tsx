@@ -27,6 +27,14 @@ export const metadata: Metadata = {
   ],
   applicationName: siteConfig.name,
   alternates: { canonical: "/" },
+  icons: {
+    icon: [
+      { url: "/logo.svg", type: "image/svg+xml" },
+      { url: "/logo-120.png", type: "image/png", sizes: "120x120" },
+    ],
+    shortcut: "/logo-120.png",
+    apple: "/logo-120.png",
+  },
   openGraph: {
     type: "website",
     url: siteConfig.url,

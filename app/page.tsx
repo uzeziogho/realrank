@@ -5,7 +5,7 @@ import { RefreshCw, ShieldCheck, TrendingUp, LineChart, BarChart3, Award, GitCom
 import { Button } from "@/components/ui/button";
 import { RankingToggle } from "@/components/ranking-toggle";
 import { Leaderboard } from "@/components/leaderboard";
-import { LeaderboardJsonLd } from "@/components/json-ld";
+import { LeaderboardJsonLd, FaqJsonLd } from "@/components/json-ld";
 import { Pagination } from "@/components/pagination";
 import { getLeaderboardData, attachSparklines, getRecentlyJoined, getMovers, getSiteTraffic } from "@/lib/data";
 import { MoversBand } from "@/components/movers";
@@ -23,6 +23,30 @@ import { formatCompact, timeAgo, hostname } from "@/lib/utils";
 export const revalidate = 3600;
 
 const PAGE_SIZE = 50;
+
+/** Homepage FAQ: rendered visibly and mirrored into FAQPage structured data. */
+const FAQ_ITEMS: { q: string; a: string }[] = [
+  {
+    q: "What is RealRank?",
+    a: "RealRank is a public leaderboard of websites ranked by verified organic search traffic. Sites connect Google Search Console (read-only) and their real click totals decide the order, so the ranking cannot be faked with screenshots or third-party estimates.",
+  },
+  {
+    q: "How does the ranking work?",
+    a: "The default sort is momentum, which compares a site's last 7 days of organic clicks against the prior 21 days, weighted by a logarithm of volume so a fast-growing small site can outrank a large flat one. A volume view (total clicks over 28 days) is also available. Rankings refresh hourly.",
+  },
+  {
+    q: "Is RealRank free?",
+    a: "Yes. Connecting a site and claiming a verified rank is free. The public leaderboard and the tools around it (report card, momentum calculator, traffic reality check) are free to use with no login required to browse.",
+  },
+  {
+    q: "Is it safe to connect Google Search Console?",
+    a: "RealRank requests a single read-only scope (webmasters.readonly). It can read search-performance data for properties you already own, but it cannot change settings, submit or remove URLs, or write anything. Nothing is public until you choose to publish a property, and you can revoke access anytime from your Google account permissions.",
+  },
+  {
+    q: "Can I fake my traffic to rank higher?",
+    a: "No. Click totals are read straight from Google Search Console, so the only way to climb is real organic growth. Nobody types in a number and nobody uploads a screenshot.",
+  },
+];
 
 type SearchParams = Promise<{ view?: string; page?: string; q?: string }>;
 
@@ -467,6 +491,29 @@ export default async function HomePage({
           </div>
         </div>
       </section>
+
+      {/* FAQ: visible answers, mirrored into FAQPage structured data below. */}
+      <section className="border-t border-border/60">
+        <div className="container max-w-3xl py-14">
+          <h2 className="text-center text-2xl font-semibold tracking-tight sm:text-3xl">
+            Frequently asked questions
+          </h2>
+          <div className="mt-8 divide-y divide-border/60 rounded-2xl border border-border bg-card">
+            {FAQ_ITEMS.map((item) => (
+              <details key={item.q} className="group px-5 py-4">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium">
+                  {item.q}
+                  <span className="text-muted-foreground transition-transform group-open:rotate-45">
+                    +
+                  </span>
+                </summary>
+                <p className="mt-3 text-sm text-muted-foreground">{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+      <FaqJsonLd items={FAQ_ITEMS} />
 
       {/* Featured-on badges — scrolling marquee */}
       <BadgeMarquee />
