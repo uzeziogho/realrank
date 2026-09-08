@@ -40,7 +40,7 @@ export const siteConfig = {
     "The public organic traffic leaderboard. Sites ranked by verified Google Search Console clicks — momentum-first, so fast-growing sites can beat the giants.",
   url: resolveSiteUrl(),
   ogImage: "/og.png",
-  twitter: "@realrank",
+  twitter: "@biznessbud",
   // Google Search Console "HTML tag" verification token (optional). See above.
   googleSiteVerification: GOOGLE_SITE_VERIFICATION,
   // How often the public data is refreshed by the cron job (used in copy only).

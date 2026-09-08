@@ -67,6 +67,11 @@ function OrganicRowItem({
   // none this week is "quiet this week"; one with no clicks at all is awaiting its
   // first data. Either way it's shown, not hidden, with a muted state and no rank.
   const pending = row.pending;
+  // A brand-new site has never recorded a verified click; a site with 28-day
+  // traffic but none this week is just quiet this week. Only the former gets the
+  // encouraging "New / warming up" treatment so connecting never feels like a
+  // dead end.
+  const isNew = pending && row.clicks28d === 0;
   const pendingLabel =
     view === "momentum" && row.clicks28d > 0 ? "No clicks this week" : "No clicks yet";
 
@@ -80,12 +85,21 @@ function OrganicRowItem({
       {/* Rank + movement */}
       <div className="flex flex-col items-start">
         {pending ? (
-          <span
-            className="text-lg font-semibold text-muted-foreground/50"
-            title="Not ranked yet — awaiting traffic data"
-          >
-            —
-          </span>
+          isNew ? (
+            <span
+              className="text-xs font-semibold uppercase tracking-wide text-primary"
+              title="Verified and connected — your first momentum ranking lands within about 7 days"
+            >
+              New
+            </span>
+          ) : (
+            <span
+              className="text-lg font-semibold text-muted-foreground/50"
+              title="No clicks in this window yet"
+            >
+              —
+            </span>
+          )
         ) : (
           <>
             <span
@@ -162,7 +176,9 @@ function OrganicRowItem({
         {/* Mobile metrics */}
         <div className="mt-2 flex items-center gap-3 md:hidden">
           {pending ? (
-            <span className="text-sm text-muted-foreground">Awaiting verified traffic</span>
+            <span className="text-sm text-muted-foreground">
+              {isNew ? "Verified · first ranking in ~7 days" : pendingLabel}
+            </span>
           ) : (
             <>
               <GrowthPill ratio={row.growthRate} />
@@ -187,7 +203,16 @@ function OrganicRowItem({
       {/* Primary metric column (desktop) */}
       <div className="hidden flex-col items-end md:flex">
         {pending ? (
-          <span className="text-sm text-muted-foreground/50 tabular-nums">—</span>
+          isNew ? (
+            <span
+              className="text-xs font-medium text-primary"
+              title="Your first momentum ranking lands within about 7 days"
+            >
+              ~7 days
+            </span>
+          ) : (
+            <span className="text-sm text-muted-foreground/50 tabular-nums">—</span>
+          )
         ) : view === "momentum" ? (
           <>
             <span className="text-xl font-semibold tabular-nums text-foreground">
