@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/components/logo";
 import { siteConfig, categories, guideLinks } from "@/lib/config";
 
 export function SiteFooter() {
@@ -6,8 +7,8 @@ export function SiteFooter() {
     <footer className="border-t border-border/60 py-10">
       <div className="container flex flex-col gap-8 md:flex-row md:justify-between">
         <div className="max-w-xs">
-          <p className="font-semibold">{siteConfig.name}</p>
-          <p className="mt-2 text-sm text-muted-foreground">{siteConfig.tagline}</p>
+          <Logo markSize={22} />
+          <p className="mt-3 text-sm text-muted-foreground">{siteConfig.tagline}</p>
           <a
             href={`https://x.com/${siteConfig.twitter.replace(/^@/, "")}`}
             target="_blank"
