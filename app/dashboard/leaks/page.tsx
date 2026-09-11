@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ChevronLeft, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LeaksPanel } from "@/components/dashboard/leaks-panel";
+import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
 import { getSearchLeaks } from "@/lib/leaks";
 import { listUserProperties } from "@/lib/gsc-server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -34,16 +34,10 @@ export default async function LeaksPage({
   const leaks = selected ? await getSearchLeaks(user.id, selected) : null;
 
   return (
-    <div className="container max-w-4xl py-12">
-      <Link
-        href="/dashboard"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ChevronLeft className="size-4" />
-        Dashboard
-      </Link>
+    <div className="container max-w-5xl py-10">
+      <DashboardTabs />
 
-      <div className="mt-4 mb-8">
+      <div className="mt-8 mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Search leaks</h1>
         <p className="mt-1 text-muted-foreground">
           Where organic traffic — and the revenue behind it — leaks before it
