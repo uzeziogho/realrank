@@ -94,6 +94,14 @@ const BADGES: Badge[] = [
     height: 50,
     rel: "noopener noreferrer",
   },
+  {
+    href: "https://www.superlaun.ch/products/3418",
+    src: "https://www.superlaun.ch/badge.png",
+    alt: "Featured on Super Launch",
+    width: 300,
+    height: 300,
+    rel: "noopener",
+  },
 ];
 
 function BadgeGroup({ ariaHidden = false }: { ariaHidden?: boolean }) {

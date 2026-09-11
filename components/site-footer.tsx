@@ -20,6 +20,25 @@ export function SiteFooter() {
             </svg>
             Follow on X ({siteConfig.twitter})
           </a>
+
+          {/* Live Domain Rating badge (FrogDR). The badge art is white, so it
+              sits on a fixed dark chip to stay legible in both themes. */}
+          <a
+            href="https://frogdr.com/realrank.lol?utm_source=realrank.lol"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-flex w-fit rounded-lg bg-[#0a0a0b] px-3 py-2"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://frogdr.com/realrank.lol/badge-white.svg"
+              alt="Monitor your Domain Rating with FrogDR"
+              width={250}
+              height={54}
+              className="h-7 w-auto"
+              loading="lazy"
+            />
+          </a>
         </div>
 
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
