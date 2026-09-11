@@ -11,7 +11,7 @@ import { Pagination } from "@/components/pagination";
 import { attachSparklines, type LeaderboardData } from "@/lib/data";
 import { injectSponsored } from "@/lib/ranking";
 import { siteConfig, categories, type RankingView } from "@/lib/config";
-import { cn, timeAgo } from "@/lib/utils";
+import { cn, hostname, timeAgo } from "@/lib/utils";
 
 const PAGE_SIZE = 50;
 
@@ -54,7 +54,7 @@ export async function LeaderboardSection({
     ? data.organic.filter(
         (s) =>
           s.displayName.toLowerCase().includes(query) ||
-          s.siteUrl.toLowerCase().includes(query),
+          hostname(s.siteUrl).toLowerCase().includes(query),
       )
     : data.organic;
 

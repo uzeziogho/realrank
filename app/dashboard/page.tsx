@@ -25,7 +25,7 @@ import { siteConfig } from "@/lib/config";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 import { getOptionalUser } from "@/lib/auth";
-import { formatCompact, formatGrowth, hostname } from "@/lib/utils";
+import { formatCompact, formatGrowth, hostname, siteHref } from "@/lib/utils";
 import type { PublishedSite } from "@/lib/supabase/types";
 import type { RankedSite } from "@/lib/types";
 
@@ -128,15 +128,15 @@ export default async function DashboardPage() {
               icon={<Trophy className="size-4 text-muted-foreground" />}
             />
             <StatCard
-              label="Verified clicks"
+              label="Clicks (7d)"
               value={formatCompact(clicks7d)}
-              sub="last 7 days"
+              sub="verified, last 7 days"
               icon={<MousePointerClick className="size-4 text-muted-foreground" />}
             />
             <StatCard
-              label="Verified clicks"
+              label="Clicks (28d)"
               value={formatCompact(clicks28d)}
-              sub="last 28 days"
+              sub="verified, last 28 days"
               icon={<TrendingUp className="size-4 text-muted-foreground" />}
             />
           </section>
@@ -332,7 +332,7 @@ function SiteOverviewCard({ row }: { row: RankedSite }) {
           Find leaks →
         </Link>
         <a
-          href={row.siteUrl}
+          href={siteHref(row.siteUrl)}
           target="_blank"
           rel="noopener nofollow"
           className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"

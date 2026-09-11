@@ -62,8 +62,6 @@ export default async function HomePage() {
   // For the rank checker: hostnames already on the board + the top volume.
   const knownHosts = data.organic.map((s) => hostname(s.siteUrl).toLowerCase());
   const topClicks = data.organic.reduce((m, s) => Math.max(m, s.clicks28d), 0);
-  // Founding-cohort framing: turns a small board into scarcity, not weakness.
-  const foundingClaimed = data.founding.total - data.founding.spotsLeft;
 
   return (
     <>
@@ -81,7 +79,7 @@ export default async function HomePage() {
               className="font-medium text-foreground hover:text-primary"
               title={`The first ${data.founding.total} verified sites get permanent founder status`}
             >
-              Founding {foundingClaimed}/{data.founding.total}
+              Founding {data.founding.claimed}/{data.founding.total}
             </Link>
             <span className="text-border">·</span>
             <PillStat value={traffic.sessions} label="sessions" />
