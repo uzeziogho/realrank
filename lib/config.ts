@@ -86,6 +86,7 @@ export interface NavLink {
  */
 export const primaryNav: NavLink[] = [
   { href: "/leaderboard", label: "Leaderboard" },
+  { href: "/launches", label: "Launches" },
   { href: "/movers", label: "Movers" },
   { href: "/founding", label: "Founding" },
   { href: "/stats", label: "Stats" },
