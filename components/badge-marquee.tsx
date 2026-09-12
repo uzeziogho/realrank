@@ -24,13 +24,6 @@ interface Badge {
 
 const BADGES: Badge[] = [
   {
-    href: "https://startuptrusted.com?ref=realrank.lol",
-    src: "https://startuptrusted.com/api/badge?type=featured&style=light",
-    alt: "RealRank on StartupTrusted",
-    width: 240,
-    height: 54,
-  },
-  {
     href: "https://nicklaunches.com/products/realrank/?utm_source=realrank.lol&utm_medium=badge&utm_campaign=featured",
     src: "https://nicklaunches.com/badges/featured.png",
     alt: "RealRank on Nick Launches",
@@ -61,6 +54,53 @@ const BADGES: Badge[] = [
     width: 190,
     height: 44,
     rel: "noopener noreferrer nofollow sponsored",
+  },
+  {
+    href: "https://buildrship.xyz/products/realrank",
+    src: "https://buildrship.xyz/assets/featured-on-buildrship.png",
+    alt: "Featured on Buildrship",
+    width: 153,
+    height: 54,
+    rel: "dofollow",
+  },
+  {
+    href: "https://findly.tools/realrank?utm_source=realrank",
+    src: "https://findly.tools/badges/findly-tools-badge-light.svg",
+    alt: "Featured on Findly.tools",
+    width: 175,
+    height: 55,
+    rel: "noopener noreferrer",
+  },
+  {
+    href: "https://dang.ai",
+    src: "https://assets.dang.ai/badges/dang-verified-light.png",
+    alt: "Verified on DANG!",
+    width: 260,
+    height: 94,
+    rel: "dofollow noopener",
+  },
+  {
+    href: "https://twelve.tools",
+    src: "https://twelve.tools/badge0-white.svg",
+    alt: "Featured on Twelve Tools",
+    width: 148,
+    height: 40,
+  },
+  {
+    href: "https://tools.launchllama.co?utm_source=badge&utm_medium=referral",
+    src: "https://tools.launchllama.co/featured-badge-white.png?v=2",
+    alt: "As seen on Launch Llama Newsletter",
+    width: 200,
+    height: 50,
+    rel: "noopener noreferrer",
+  },
+  {
+    href: "https://www.superlaun.ch/products/3418",
+    src: "https://www.superlaun.ch/badge.png",
+    alt: "Featured on Super Launch",
+    width: 300,
+    height: 300,
+    rel: "noopener",
   },
 ];
 

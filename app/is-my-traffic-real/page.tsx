@@ -82,7 +82,7 @@ export default function TrafficRealityPage() {
                 href="/login"
                 className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
               >
-                <TrendingUp className="size-4" /> Get your verified rank
+                <TrendingUp className="size-4" /> Get my verified rank
               </Link>
               <Link
                 href="/momentum-score"
