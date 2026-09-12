@@ -112,6 +112,8 @@ export default async function HomePage() {
               or{" "}
               <Link href="/login" className="text-primary hover:underline">connect Google Search Console</Link>
               {" · "}
+              <Link href="/launches" className="hover:text-foreground">see what&apos;s launching</Link>
+              {" · "}
               <Link href="#leaderboard" className="hover:text-foreground">view the leaderboard</Link>
             </p>
             <p className="mt-1.5 text-xs text-muted-foreground">
@@ -141,7 +143,7 @@ export default async function HomePage() {
           {/* Liveness — recently joined sites */}
           {recent.length > 0 && (
             <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
-              <span className="text-xs uppercase tracking-wider text-muted-foreground">Recently joined</span>
+              <Link href="/launches" className="text-xs uppercase tracking-wider text-muted-foreground hover:text-foreground">Recently launched →</Link>
               {recent.map((s) => (
                 <Link
                   key={s.host}
