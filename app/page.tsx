@@ -119,6 +119,25 @@ export default async function HomePage() {
             </p>
           </div>
 
+          {/* What you get when you connect — the sign-up drivers, front and centre. */}
+          <div className="mt-12 grid w-full max-w-4xl gap-4 text-left sm:grid-cols-3">
+            <HeroFeature
+              icon={<Search className="size-5" />}
+              title="Find the clicks you're losing"
+              body="The exact searches where you rank but miss the click — and how to win them back."
+            />
+            <HeroFeature
+              icon={<ShieldCheck className="size-5" />}
+              title="Proof you can show"
+              body="An un-fakeable public rank and an embeddable badge, straight from Search Console."
+            />
+            <HeroFeature
+              icon={<Bot className="size-5" />}
+              title="Get cited by AI agents"
+              body="Your verified momentum is queryable over MCP, so assistants surface you to buyers."
+            />
+          </div>
+
           {/* Liveness — recently joined sites */}
           {recent.length > 0 && (
             <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
@@ -368,6 +387,26 @@ function PillStat({ value, label }: { value: number; label: string }) {
       <span className="font-semibold tabular-nums text-foreground">{formatCompact(value)}</span>
       <span className="text-muted-foreground">{label}</span>
     </span>
+  );
+}
+
+function HeroFeature({
+  icon,
+  title,
+  body,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  body: string;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card/60 p-5">
+      <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        {icon}
+      </span>
+      <p className="mt-3 font-semibold tracking-tight">{title}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{body}</p>
+    </div>
   );
 }
 
