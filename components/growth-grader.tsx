@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Share2 } from "lucide-react";
+import { track } from "@/lib/track";
 import { computeMomentum } from "@/lib/momentum";
 import { formatGrowth } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,15 @@ export function GrowthGrader() {
   const hasInput = d7 !== "" || d28 !== "";
   const inconsistent = hasInput && clicks_28d > 0 && clicks_7d > clicks_28d;
   const showResult = hasInput && !inconsistent && clicks_7d + clicks_28d > 0;
+
+  // Count one usage the first time a grade appears (not on every keystroke).
+  const fired = useRef(false);
+  useEffect(() => {
+    if (showResult && !fired.current) {
+      fired.current = true;
+      track("growth_grader");
+    }
+  }, [showResult]);
 
   const { momentumScore, growthRate } = useMemo(
     () => computeMomentum({ clicks_7d, clicks_28d }),

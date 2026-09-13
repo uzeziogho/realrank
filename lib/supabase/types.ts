@@ -349,6 +349,30 @@ export interface Database {
         };
         Relationships: [];
       };
+      site_events: {
+        Row: {
+          day: string;
+          event: string;
+          label: string;
+          hits: number;
+          updated_at: string;
+        };
+        Insert: {
+          day?: string;
+          event: string;
+          label?: string;
+          hits?: number;
+          updated_at?: string;
+        };
+        Update: {
+          day?: string;
+          event?: string;
+          label?: string;
+          hits?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       site_traffic_breakdown: {
         Row: {
           day: string;
@@ -384,6 +408,10 @@ export interface Database {
       };
       bump_traffic_breakdown: {
         Args: { p_source: string; p_path: string; p_country: string; p_device: string };
+        Returns: undefined;
+      };
+      bump_event: {
+        Args: { p_event: string; p_label: string };
         Returns: undefined;
       };
     };

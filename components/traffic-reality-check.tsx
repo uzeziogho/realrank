@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { track } from "@/lib/track";
 
 function parseNum(v: string): number {
   const n = Number.parseInt(v.replace(/[^0-9]/g, ""), 10);
@@ -27,6 +28,15 @@ export function TrafficRealityCheck() {
   const estMonthly = parseNum(estimate);
   const verifiedMonthly = Math.round(parseNum(clicks28) * (30 / 28)); // 28d clicks → monthly
   const hasBoth = estMonthly > 0 && verifiedMonthly > 0;
+
+  // Count one usage the first time both numbers produce a verdict.
+  const fired = useRef(false);
+  useEffect(() => {
+    if (hasBoth && !fired.current) {
+      fired.current = true;
+      track("traffic_reality");
+    }
+  }, [hasBoth]);
 
   const verdict = useMemo(() => {
     if (!hasBoth) return null;

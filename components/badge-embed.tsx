@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/track";
 
 /**
  * Copy-paste embeds for a site's RealRank presence — a static badge (image) and
@@ -33,6 +34,7 @@ export function BadgeEmbed({
   async function copy() {
     try {
       await navigator.clipboard.writeText(snippet);
+      track(tab === "widget" ? "embed_copy" : "badge_copy");
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {

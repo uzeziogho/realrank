@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Search, ArrowRight, CheckCircle2, Bell, Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { joinWaitlist, type WaitlistState } from "@/app/waitlist/actions";
+import { track } from "@/lib/track";
 
 /**
  * "Where do you rank?" — a domain input that personalizes the connect CTA.
@@ -38,7 +39,9 @@ export function RankChecker({
     e.preventDefault();
     const host = normalizeHost(value);
     if (!host || !host.includes(".")) return;
-    setResult({ host, ranked: known.has(host) });
+    const ranked = known.has(host);
+    track("rank_check", ranked ? "ranked" : "unranked");
+    setResult({ host, ranked });
   }
 
   return (

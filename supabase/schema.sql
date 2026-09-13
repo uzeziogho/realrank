@@ -403,3 +403,42 @@ begin
   end loop;
 end;
 $$;
+
+-- ---------------------------------------------------------------------------
+-- Product analytics: named feature-usage events (Umami-style custom events).
+-- Privacy-safe aggregate counts only — no PII, no per-visitor rows. One row per
+-- (day, event, label). Powers the owner-only Analytics dashboard.
+-- ---------------------------------------------------------------------------
+create table if not exists public.site_events (
+  day date not null default (now() at time zone 'utc')::date,
+  event text not null,
+  label text not null default '',
+  hits bigint not null default 0,
+  updated_at timestamptz not null default now(),
+  primary key (day, event, label)
+);
+
+alter table public.site_events enable row level security;
+-- Service-role only: the /api/event beacon writes and the dashboard reads via
+-- the service role. RLS on with no policy blocks anon/auth clients.
+
+create index if not exists site_events_event_idx on public.site_events (event, day);
+
+-- Increment one named event (with an optional label, e.g. the source page).
+create or replace function public.bump_event(p_event text, p_label text)
+returns void
+language plpgsql
+as $$
+declare
+  d date := (now() at time zone 'utc')::date;
+begin
+  if p_event is null or length(trim(p_event)) = 0 then
+    return;
+  end if;
+  insert into public.site_events as t (day, event, label, hits, updated_at)
+  values (d, left(trim(p_event), 64), left(coalesce(trim(p_label), ''), 96), 1, now())
+  on conflict (day, event, label) do update set
+    hits = t.hits + 1,
+    updated_at = now();
+end;
+$$;
