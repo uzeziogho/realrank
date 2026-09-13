@@ -24,7 +24,7 @@ import { getLeaderboardData, attachSparklines } from "@/lib/data";
 import { siteConfig } from "@/lib/config";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
-import { getOptionalUser } from "@/lib/auth";
+import { getOptionalUser, isOwner } from "@/lib/auth";
 import { formatCompact, formatGrowth, hostname, siteHref } from "@/lib/utils";
 import type { PublishedSite } from "@/lib/supabase/types";
 import type { RankedSite } from "@/lib/types";
@@ -109,7 +109,7 @@ export default async function DashboardPage() {
         </Button>
       </header>
 
-      <DashboardTabs />
+      <DashboardTabs owner={isOwner(user.email)} />
 
       {liveCount > 0 ? (
         <>

@@ -4,7 +4,7 @@ import { ChannelsPanel } from "@/components/dashboard/channels-panel";
 import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
 import { getChannelsWithStats, getStripeConnectionStatus } from "@/lib/channels";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
-import { getOptionalUser } from "@/lib/auth";
+import { getOptionalUser, isOwner } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Channels",
@@ -24,7 +24,7 @@ export default async function ChannelsPage() {
 
   return (
     <div className="container max-w-5xl py-10">
-      <DashboardTabs />
+      <DashboardTabs owner={isOwner(user.email)} />
 
       <div className="mt-8 mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Channels</h1>
