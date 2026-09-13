@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { track } from "@/lib/track";
 
 /** Normalize any domain-ish input to a bare lowercase hostname. */
 function normalize(input: string): string {
@@ -25,7 +26,10 @@ export function ReportCardForm({ autoFocus = false }: { autoFocus?: boolean }) {
   function submit(e: React.FormEvent) {
     e.preventDefault();
     const domain = normalize(value);
-    if (domain) router.push(`/report-card/${encodeURIComponent(domain)}`);
+    if (domain) {
+      track("report_card");
+      router.push(`/report-card/${encodeURIComponent(domain)}`);
+    }
   }
 
   return (

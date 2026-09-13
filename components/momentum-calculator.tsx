@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Share2, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { track } from "@/lib/track";
 import { computeMomentum } from "@/lib/momentum";
 import { formatGrowth } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,15 @@ export function MomentumCalculator() {
   const xIntent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
 
   const showResult = hasInput && !inconsistent && clicks_7d + clicks_28d > 0;
+
+  // Count one usage the first time a result appears (not on every keystroke).
+  const fired = useRef(false);
+  useEffect(() => {
+    if (showResult && !fired.current) {
+      fired.current = true;
+      track("momentum_calc");
+    }
+  }, [showResult]);
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5 sm:p-7">
