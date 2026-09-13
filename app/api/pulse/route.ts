@@ -69,14 +69,7 @@ export async function POST(req: Request) {
       // Record where the visit came from — only once per session, so the counts
       // read as visits per source/page/country/device. Aggregate + privacy-safe.
       if (newSession) {
-        // Cast: this RPC isn't in the generated types until `generate types`
-        // is re-run against the migrated DB (schema.sql is the source of truth).
-        const { error: bErr } = await (
-          supabase.rpc as unknown as (
-            fn: string,
-            args: Record<string, string>,
-          ) => Promise<{ error: unknown }>
-        )("bump_traffic_breakdown", {
+        const { error: bErr } = await supabase.rpc("bump_traffic_breakdown", {
           p_source: deriveSource(body.src, body.ref),
           p_path: derivePath(body.path),
           p_country: (h.get("x-vercel-ip-country") || "Unknown").toUpperCase().slice(0, 2),
