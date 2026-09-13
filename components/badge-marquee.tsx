@@ -102,6 +102,14 @@ const BADGES: Badge[] = [
     height: 300,
     rel: "noopener",
   },
+  {
+    href: "https://codehype.ai/product/realrank?utm_source=codehype_badge",
+    src: "https://codehype.ai/badges/realrank.svg?variant=find-us&v=11",
+    alt: "Find us on CodeHype",
+    width: 380,
+    height: 100,
+    rel: "noopener noreferrer",
+  },
 ];
 
 function BadgeGroup({ ariaHidden = false }: { ariaHidden?: boolean }) {
