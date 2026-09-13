@@ -321,6 +321,63 @@ export async function getTrafficBreakdown(days = 30): Promise<TrafficBreakdown> 
   }
 }
 
+export interface EventStat {
+  event: string;
+  hits: number;
+}
+export interface EventDay {
+  day: string;
+  hits: number;
+}
+export interface EventStats {
+  /** Named feature-usage events, most-used first. */
+  events: EventStat[];
+  /** Total events per day, ascending — for the trend chart. */
+  daily: EventDay[];
+  total: number;
+  distinct: number;
+}
+
+/**
+ * Product-analytics rollup for the owner dashboard: which features got used and
+ * how usage trends, from the privacy-safe site_events counter. Aggregate only.
+ */
+export async function getEventStats(days = 30): Promise<EventStats> {
+  const empty: EventStats = { events: [], daily: [], total: 0, distinct: 0 };
+  if (!isSupabaseConfigured()) return empty;
+  try {
+    const since = new Date();
+    since.setUTCDate(since.getUTCDate() - days);
+    const supabase = createServiceClient();
+    const { data, error } = await supabase
+      .from("site_events")
+      .select("day, event, hits")
+      .gte("day", since.toISOString().slice(0, 10));
+    if (error) throw error;
+
+    const byEvent = new Map<string, number>();
+    const byDay = new Map<string, number>();
+    let total = 0;
+    for (const r of data ?? []) {
+      const hits = Number(r.hits);
+      total += hits;
+      byEvent.set(r.event, (byEvent.get(r.event) ?? 0) + hits);
+      byDay.set(r.day, (byDay.get(r.day) ?? 0) + hits);
+    }
+    const events = [...byEvent.entries()]
+      .map(([event, hits]) => ({ event, hits }))
+      .sort((a, b) => b.hits - a.hits);
+    const daily = [...byDay.entries()]
+      .map(([day, hits]) => ({ day, hits }))
+      .sort((a, b) => (a.day < b.day ? -1 : 1));
+
+    return { events, daily, total, distinct: byEvent.size };
+  } catch (err) {
+    console.error("[data] event stats read failed:", err);
+    return empty;
+  }
+}
+
 export interface MoversData {
   /** Sites that gained rank since the previous refresh (largest gain first). */
   climbers: RankedSite[];
