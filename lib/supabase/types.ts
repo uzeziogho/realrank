@@ -349,6 +349,30 @@ export interface Database {
         };
         Relationships: [];
       };
+      site_traffic_breakdown: {
+        Row: {
+          day: string;
+          dimension: string;
+          label: string;
+          hits: number;
+          updated_at: string;
+        };
+        Insert: {
+          day?: string;
+          dimension: string;
+          label: string;
+          hits?: number;
+          updated_at?: string;
+        };
+        Update: {
+          day?: string;
+          dimension?: string;
+          label?: string;
+          hits?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -356,6 +380,10 @@ export interface Database {
     Functions: {
       bump_site_traffic: {
         Args: { new_visitor: boolean; new_session: boolean };
+        Returns: undefined;
+      };
+      bump_traffic_breakdown: {
+        Args: { p_source: string; p_path: string; p_country: string; p_device: string };
         Returns: undefined;
       };
     };

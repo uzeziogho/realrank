@@ -267,12 +267,6 @@ export interface BreakdownItem {
   label: string;
   hits: number;
 }
-/** A raw row from site_traffic_breakdown (typed locally; not in generated types). */
-interface BreakdownRow {
-  dimension: string;
-  label: string;
-  hits: number;
-}
 export interface TrafficBreakdown {
   sources: BreakdownItem[];
   pages: BreakdownItem[];
@@ -292,20 +286,8 @@ export async function getTrafficBreakdown(days = 30): Promise<TrafficBreakdown> 
     const since = new Date();
     since.setUTCDate(since.getUTCDate() - days);
     const supabase = createServiceClient();
-    // Cast: site_traffic_breakdown isn't in the generated types until
-    // `generate types` is re-run against the migrated DB (schema.sql is source).
-    const { data, error } = await (
-      supabase.from as unknown as (
-        t: string,
-      ) => {
-        select: (c: string) => {
-          gte: (
-            col: string,
-            v: string,
-          ) => Promise<{ data: BreakdownRow[] | null; error: unknown }>;
-        };
-      }
-    )("site_traffic_breakdown")
+    const { data, error } = await supabase
+      .from("site_traffic_breakdown")
       .select("dimension, label, hits")
       .gte("day", since.toISOString().slice(0, 10));
     if (error) throw error;
