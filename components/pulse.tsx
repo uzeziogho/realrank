@@ -14,10 +14,24 @@ export function Pulse() {
 
   useEffect(() => {
     const controller = new AbortController();
+    // Send the page path, referrer, and utm_source so the server can attribute
+    // the visit (source / landing page / country / device). No PII.
+    let payload = "{}";
+    try {
+      payload = JSON.stringify({
+        path: window.location.pathname,
+        ref: document.referrer || "",
+        src: new URLSearchParams(window.location.search).get("utm_source") || "",
+      });
+    } catch {
+      /* fall back to empty body */
+    }
     fetch("/api/pulse", {
       method: "POST",
       credentials: "same-origin",
       keepalive: true,
+      headers: { "content-type": "application/json" },
+      body: payload,
       signal: controller.signal,
     }).catch(() => {
       /* ignore — never break the page */

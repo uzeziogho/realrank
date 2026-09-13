@@ -263,6 +263,82 @@ export async function getSiteTrafficSeries(days = 30): Promise<TrafficDay[]> {
   }
 }
 
+export interface BreakdownItem {
+  label: string;
+  hits: number;
+}
+/** A raw row from site_traffic_breakdown (typed locally; not in generated types). */
+interface BreakdownRow {
+  dimension: string;
+  label: string;
+  hits: number;
+}
+export interface TrafficBreakdown {
+  sources: BreakdownItem[];
+  pages: BreakdownItem[];
+  countries: BreakdownItem[];
+  devices: BreakdownItem[];
+}
+
+/**
+ * Aggregate first-party traffic breakdowns for RealRank itself: top sources,
+ * landing pages, countries, and devices over the recent window. Counts come
+ * from the privacy-safe site_traffic_breakdown counter (no per-visitor rows).
+ */
+export async function getTrafficBreakdown(days = 30): Promise<TrafficBreakdown> {
+  const empty: TrafficBreakdown = { sources: [], pages: [], countries: [], devices: [] };
+  if (!isSupabaseConfigured()) return empty;
+  try {
+    const since = new Date();
+    since.setUTCDate(since.getUTCDate() - days);
+    const supabase = createServiceClient();
+    // Cast: site_traffic_breakdown isn't in the generated types until
+    // `generate types` is re-run against the migrated DB (schema.sql is source).
+    const { data, error } = await (
+      supabase.from as unknown as (
+        t: string,
+      ) => {
+        select: (c: string) => {
+          gte: (
+            col: string,
+            v: string,
+          ) => Promise<{ data: BreakdownRow[] | null; error: unknown }>;
+        };
+      }
+    )("site_traffic_breakdown")
+      .select("dimension, label, hits")
+      .gte("day", since.toISOString().slice(0, 10));
+    if (error) throw error;
+
+    const buckets: Record<string, Map<string, number>> = {
+      source: new Map(),
+      path: new Map(),
+      country: new Map(),
+      device: new Map(),
+    };
+    for (const r of data ?? []) {
+      const m = buckets[r.dimension];
+      if (!m) continue;
+      m.set(r.label, (m.get(r.label) ?? 0) + Number(r.hits));
+    }
+    const top = (m: Map<string, number>, n = 6): BreakdownItem[] =>
+      [...m.entries()]
+        .map(([label, hits]) => ({ label, hits }))
+        .sort((a, b) => b.hits - a.hits)
+        .slice(0, n);
+
+    return {
+      sources: top(buckets.source),
+      pages: top(buckets.path),
+      countries: top(buckets.country),
+      devices: top(buckets.device),
+    };
+  } catch (err) {
+    console.error("[data] traffic breakdown read failed:", err);
+    return empty;
+  }
+}
+
 export interface MoversData {
   /** Sites that gained rank since the previous refresh (largest gain first). */
   climbers: RankedSite[];

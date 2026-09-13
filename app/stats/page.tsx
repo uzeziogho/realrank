@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { TrendingUp, TrendingDown, Minus, ShieldCheck, ArrowUpRight, Users, MousePointerClick, Eye, Gauge } from "lucide-react";
 import { getStatsData } from "@/lib/stats";
-import { getSiteTraffic, getSiteTrafficSeries } from "@/lib/data";
+import { getSiteTraffic, getSiteTrafficSeries, getTrafficBreakdown } from "@/lib/data";
 import { TrafficTrend } from "@/components/traffic-trend";
+import { TrafficBreakdown } from "@/components/traffic-breakdown";
 import { siteConfig } from "@/lib/config";
 import { formatCompact, formatGrowth, siteHref, timeAgo } from "@/lib/utils";
 
@@ -20,6 +21,7 @@ export default async function StatsPage() {
   const stats = await getStatsData();
   const traffic = await getSiteTraffic();
   const trafficSeries = await getSiteTrafficSeries(30);
+  const breakdown = await getTrafficBreakdown(30);
 
   return (
     <>
@@ -67,6 +69,21 @@ export default async function StatsPage() {
           </p>
           <div className="mt-4">
             <TrafficTrend totals={traffic} days={trafficSeries} showTotals={false} />
+          </div>
+        </section>
+
+        {/* Where traffic comes from */}
+        <section>
+          <SectionLabel>First-party analytics</SectionLabel>
+          <h2 className="mt-1 text-2xl font-semibold tracking-tight">
+            Where your traffic comes from
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Top sources, landing pages, countries, and devices — counted
+            first-party, cookieless, and aggregate only. Last 30 days.
+          </p>
+          <div className="mt-4">
+            <TrafficBreakdown data={breakdown} />
           </div>
         </section>
 
