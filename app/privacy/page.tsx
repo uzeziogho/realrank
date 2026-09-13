@@ -65,8 +65,16 @@ export default function PrivacyPage() {
           </ul>
           <p className="mt-3">
             Only the aggregate numbers and details you choose to publish are shown
-            publicly. Individual search queries, pages, countries, and devices are
-            never requested, stored, or displayed.
+            publicly. Nobody else ever sees your individual search queries, pages,
+            countries, or devices, and none of that detail appears on the public
+            leaderboard.
+          </p>
+          <p className="mt-3">
+            Some private tools inside your own dashboard — such as Search leaks —
+            do read query- and page-level Search Console data to show you your own
+            analysis. That detail is fetched read-only when you open those tools, is
+            visible only to you, and is never published to the leaderboard or shown
+            to anyone else.
           </p>
         </Section>
 

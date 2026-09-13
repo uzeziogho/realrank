@@ -133,7 +133,7 @@ export default async function ComparePage({ params }: { params: Params }) {
           Connect Google Search Console and your verified momentum joins the board.
         </p>
         <Button asChild className="mt-4">
-          <Link href="/login">Connect Search Console</Link>
+          <Link href="/login">Connect my Search Console</Link>
         </Button>
       </div>
     </div>

@@ -136,7 +136,7 @@ export default async function LolDirectoriesPage() {
 
       <div className="mt-12 text-center">
         <Button asChild size="lg">
-          <Link href="/login">Claim your verified rank</Link>
+          <Link href="/login">Claim my verified rank</Link>
         </Button>
       </div>
     </div>

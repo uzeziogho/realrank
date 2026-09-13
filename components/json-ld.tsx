@@ -32,6 +32,29 @@ export function LeaderboardJsonLd({ sites }: { sites: RankedSite[] }) {
   );
 }
 
+/**
+ * FAQPage markup. AI answer engines map FAQ entries almost one-to-one onto the
+ * question/answer format their responses are built from, so this makes RealRank
+ * easier to cite accurately. Answers must be plain text (no markup).
+ */
+export function FaqJsonLd({ items }: { items: { q: string; a: string }[] }) {
+  const json = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    })),
+  };
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(json) }}
+    />
+  );
+}
+
 export function WebsiteJsonLd() {
   const json = {
     "@context": "https://schema.org",

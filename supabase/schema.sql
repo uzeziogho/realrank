@@ -349,3 +349,57 @@ as $$
     pageviews = t.pageviews + excluded.pageviews,
     updated_at = now();
 $$;
+
+-- ---------------------------------------------------------------------------
+-- First-party traffic breakdowns (privacy-safe: aggregate counts only, no PII,
+-- no per-visitor rows). One row per (day, dimension, label); recorded on a new
+-- session so counts approximate visits per source / landing page / country /
+-- device. Powers the "where your traffic comes from" section on /stats.
+-- ---------------------------------------------------------------------------
+create table if not exists public.site_traffic_breakdown (
+  day date not null default (now() at time zone 'utc')::date,
+  dimension text not null,   -- 'source' | 'path' | 'country' | 'device'
+  label text not null,
+  hits bigint not null default 0,
+  updated_at timestamptz not null default now(),
+  primary key (day, dimension, label)
+);
+
+alter table public.site_traffic_breakdown enable row level security;
+-- Service-role only: the /api/pulse beacon writes and the /stats loader reads
+-- via the service role. RLS on with no policy blocks anon/auth clients.
+
+create index if not exists site_traffic_breakdown_dim_idx
+  on public.site_traffic_breakdown (dimension, day);
+
+-- Increment up to four dimension counters for one counted visit. Empty/null
+-- labels are skipped so a missing dimension never creates a blank row.
+create or replace function public.bump_traffic_breakdown(
+  p_source text,
+  p_path text,
+  p_country text,
+  p_device text
+) returns void
+language plpgsql
+as $$
+declare
+  d date := (now() at time zone 'utc')::date;
+  pairs text[][] := array[
+    array['source', p_source],
+    array['path', p_path],
+    array['country', p_country],
+    array['device', p_device]
+  ];
+  i int;
+begin
+  for i in 1 .. array_length(pairs, 1) loop
+    if pairs[i][2] is not null and length(trim(pairs[i][2])) > 0 then
+      insert into public.site_traffic_breakdown as t (day, dimension, label, hits, updated_at)
+      values (d, pairs[i][1], left(trim(pairs[i][2]), 128), 1, now())
+      on conflict (day, dimension, label) do update set
+        hits = t.hits + 1,
+        updated_at = now();
+    end if;
+  end loop;
+end;
+$$;

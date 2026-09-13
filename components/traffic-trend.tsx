@@ -10,23 +10,28 @@ import { formatCompact } from "@/lib/utils";
 export function TrafficTrend({
   totals,
   days,
+  showTotals = true,
 }: {
   totals: SiteTraffic;
   days: TrafficDay[];
+  /** Hide the all-time totals when they're shown in a separate KPI row. */
+  showTotals?: boolean;
 }) {
   const hasSeries = days.some((d) => d.sessions > 0 || d.visitors > 0);
 
   return (
     <div className="rounded-xl border border-border bg-card p-6">
       {/* Totals */}
-      <dl className="grid grid-cols-3 gap-4">
-        <TotalTile icon={<Eye className="size-4" />} label="Pageviews" value={totals.pageviews} />
-        <TotalTile icon={<MousePointerClick className="size-4" />} label="Sessions" value={totals.sessions} />
-        <TotalTile icon={<Users className="size-4" />} label="Visitors" value={totals.visitors} />
-      </dl>
+      {showTotals && (
+        <dl className="grid grid-cols-3 gap-4">
+          <TotalTile icon={<Eye className="size-4" />} label="Pageviews" value={totals.pageviews} />
+          <TotalTile icon={<MousePointerClick className="size-4" />} label="Sessions" value={totals.sessions} />
+          <TotalTile icon={<Users className="size-4" />} label="Visitors" value={totals.visitors} />
+        </dl>
+      )}
 
       {/* Daily sessions chart */}
-      <div className="mt-6 border-t border-border pt-6">
+      <div className={showTotals ? "mt-6 border-t border-border pt-6" : ""}>
         {hasSeries ? (
           <>
             <p className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Sparkles, ShieldCheck, TrendingUp, Award, Share2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CopyLink } from "@/components/copy-link";
+import { ConnectNote } from "@/components/connect-note";
 import { getFoundingInfo } from "@/lib/data";
 import { siteConfig } from "@/lib/config";
 
@@ -64,7 +65,7 @@ export default async function FoundingPage() {
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <Button asChild size="lg">
               <Link href="/login">
-                Claim your founding spot <ArrowRight className="size-4" />
+                Claim my founding spot <ArrowRight className="size-4" />
               </Link>
             </Button>
             <a
@@ -116,9 +117,10 @@ export default async function FoundingPage() {
           </ol>
           <Button asChild className="mt-6">
             <Link href="/login">
-              Connect Search Console <ArrowRight className="size-4" />
+              Connect my Search Console <ArrowRight className="size-4" />
             </Link>
           </Button>
+          <ConnectNote className="mt-3" />
         </div>
 
         {/* Recruit */}

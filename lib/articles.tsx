@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 
 /**
- * Blog posts as hand-authored content modules. Each Body is unique prose — no
- * shared copy template — so every page is a distinct, indexable document.
+ * Blog posts as hand-authored content modules. Each Body is unique prose - no
+ * shared copy template - so every page is a distinct, indexable document.
  */
 export interface Article {
   slug: string;
@@ -39,7 +39,7 @@ export const articles: Article[] = [
         <p>
           Eighteen months ago, shipping a polished web app took a small team and a
           few weeks. Today one person and an AI ship one before lunch. That is
-          genuinely wonderful — and it has quietly broken something.
+          genuinely wonderful - and it has quietly broken something.
         </p>
         <p>
           When everyone can ship, <strong>&quot;I built it&quot; stops being
@@ -50,18 +50,18 @@ export const articles: Article[] = [
         </p>
         <h2>Screenshots are noise now</h2>
         <p>
-          The old flex was a dashboard screenshot — &quot;we hit 100k visitors 🚀&quot;.
+          The old flex was a dashboard screenshot - &quot;we hit 100k visitors 🚀&quot;.
           Nobody believes those anymore, and they&apos;re right not to. A screenshot
           is a cropped, best-day, un-auditable image. Third-party estimators like
           SimilarWeb or Ahrefs aren&apos;t much better; they model traffic from
           sampled panels and are routinely off by{" "}
-          <Link href="/is-my-traffic-real">30–80% in either direction</Link>. When the
+          <Link href="/is-my-traffic-real">30-80% in either direction</Link>. When the
           number can&apos;t be checked, a skeptical reader rounds it down to zero.
         </p>
         <h2>Why organic traffic is the honest signal</h2>
         <p>
           Paid traffic can be bought. A viral spike is a moment, not a trend. But
-          organic search traffic is <strong>durable demand</strong> — real people
+          organic search traffic is <strong>durable demand</strong> - real people
           searching for the thing you made, and finding you, week after week. It&apos;s
           the closest thing to proof that your product has a reason to exist. And
           crucially, it&apos;s <strong>verifiable</strong>: Google Search Console is
@@ -73,8 +73,8 @@ export const articles: Article[] = [
           That&apos;s the whole idea behind RealRank. You connect Search Console
           (read-only), and your <em>verified</em> organic clicks rank you on a public
           board. No screenshots, no estimates, no paying for position. And because the
-          board is ranked by <Link href="/momentum-score">momentum</Link> — how fast
-          you&apos;re growing, not how big you are — a two-week-old app that&apos;s
+          board is ranked by <Link href="/momentum-score">momentum</Link> - how fast
+          you&apos;re growing, not how big you are - a two-week-old app that&apos;s
           climbing can sit above a bloated incumbent that&apos;s flat.
         </p>
         <p>
@@ -93,7 +93,7 @@ export const articles: Article[] = [
     slug: "your-traffic-screenshot-means-nothing",
     title: "Your traffic screenshot means nothing (and everyone already knows it)",
     description:
-      "A cropped analytics screenshot proves nothing — it's the easiest number in tech to fake or cherry-pick. Here's why verified traffic is becoming the only metric people trust, and what to show instead.",
+      "A cropped analytics screenshot proves nothing - it's the easiest number in tech to fake or cherry-pick. Here's why verified traffic is becoming the only metric people trust, and what to show instead.",
     date: "2026-09-03",
     keywords: [
       "verified traffic",
@@ -107,7 +107,7 @@ export const articles: Article[] = [
         <p>
           You&apos;ve seen the post: a founder drops a screenshot of a spiky analytics
           chart, &quot;insane month 🤯&quot;, thousands of likes. Be honest about your
-          first reaction. It probably wasn&apos;t admiration — it was{" "}
+          first reaction. It probably wasn&apos;t admiration - it was{" "}
           <em>&quot;sure, on your best day, with bots, and which tool is that
           anyway?&quot;</em>
         </p>
@@ -117,18 +117,18 @@ export const articles: Article[] = [
         </p>
         <h2>A screenshot is the easiest number to fake</h2>
         <p>
-          Not even fake, usually — just <em>flattered</em>. You can pick the best
+          Not even fake, usually - just <em>flattered</em>. You can pick the best
           7-day window. You can show sessions instead of users, or lump direct and
           referral in with organic. You can screenshot a tool that counts bot hits. And
           if someone really wants to lie, editing a number in dev tools takes fifteen
           seconds. The reader knows all of this, so a screenshot carries almost no
-          weight in the moments that count — raising, selling, landing a big customer,
+          weight in the moments that count - raising, selling, landing a big customer,
           getting a partner to take you seriously.
         </p>
         <h2>Estimates aren&apos;t proof either</h2>
         <p>
           &quot;Fine,&quot; you say, &quot;SimilarWeb says I get 40k a month.&quot; But
-          SimilarWeb, Ahrefs and Semrush don&apos;t see your traffic — they model it
+          SimilarWeb, Ahrefs and Semrush don&apos;t see your traffic - they model it
           from clickstream panels and keyword math, then extrapolate. For small and
           mid-size sites those guesses swing wildly. Enter your real numbers next to
           theirs and{" "}
@@ -141,7 +141,7 @@ export const articles: Article[] = [
           recorded for you. Google Search Console is Google&apos;s own ledger of how
           many times someone clicked through to your site from search. Pull it
           read-only and you have a figure you can put in front of an investor or an
-          acquirer without a caveat — the same way{" "}
+          acquirer without a caveat - the same way{" "}
           <A href="https://trustmrr.com/">TrustMRR</A> made verified Stripe revenue the
           norm for founders who used to just claim an MRR.
         </p>
@@ -162,7 +162,7 @@ export const articles: Article[] = [
     slug: "best-time-to-join-a-leaderboard-is-when-its-empty",
     title: "The best time to get on a leaderboard is while it's empty",
     description:
-      "Everyone waits for a leaderboard to be big before they join. That's backwards. The empty board is the opportunity — here's the case for going early.",
+      "Everyone waits for a leaderboard to be big before they join. That's backwards. The empty board is the opportunity - here's the case for going early.",
     date: "2026-09-02",
     keywords: [
       "founding member",
@@ -180,18 +180,18 @@ export const articles: Article[] = [
         </p>
         <h2>Empty is leverage, not a red flag</h2>
         <p>
-          A full board is a crowded race — hundreds of sites, and cracking the top is
+          A full board is a crowded race - hundreds of sites, and cracking the top is
           hard. An empty one is wide open. The same effort that buys you rank #340 in a
           year buys you <strong>rank #3 today</strong>. And on a board ranked by{" "}
           <Link href="/momentum-score">momentum</Link> rather than raw size, you
-          don&apos;t even need big numbers — you need to be moving. A small site
+          don&apos;t even need big numbers - you need to be moving. A small site
           growing fast wins now.
         </p>
         <h2>Early status compounds</h2>
         <p>
           Being early isn&apos;t just an easier climb; it&apos;s a permanent marker.
           The first sites on RealRank become{" "}
-          <Link href="/founding">founding members</Link> with a badge that sticks — the
+          <Link href="/founding">founding members</Link> with a badge that sticks - the
           &quot;I was here first&quot; that you can&apos;t buy later at any price.
           And every visitor the board picks up as it grows discovers <em>you</em>,
           sitting near the top, for free.
@@ -201,7 +201,7 @@ export const articles: Article[] = [
           Yes, the board is small right now. That&apos;s the trade: you get in before
           it&apos;s obvious, the way the good spots always work. The people who joined
           the directories, communities and boards that later mattered didn&apos;t wait
-          for proof they were worth joining — they were early, and that&apos;s why it
+          for proof they were worth joining - they were early, and that&apos;s why it
           paid.
         </p>
         <p>
@@ -217,7 +217,7 @@ export const articles: Article[] = [
     slug: "outbid-lol-explained",
     title: "Outbid.lol, explained: the $178K pay-to-rank board that started the .lol craze",
     description:
-      "How Jonathan Wilke's outbid.lol turned a three-hour side project into a viral pay-to-rank leaderboard — and why it kicked off the .lol directory wave of 2026.",
+      "How Jonathan Wilke's outbid.lol turned a three-hour side project into a viral pay-to-rank leaderboard - and why it kicked off the .lol directory wave of 2026.",
     date: "2026-08-26",
     keywords: ["outbid.lol", "Jonathan Wilke", "pay to rank", ".lol directory", "leaderboard"],
     Body: () => (
@@ -242,8 +242,8 @@ export const articles: Article[] = [
           The numbers got absurd fast. Multiple write-ups reported roughly{" "}
           <strong>$178,000 in 77 hours</strong> (
           <A href="https://superframeworks.com/articles/outbid-lol-viral-launch">SuperFrameworks</A>
-          ), ten-thousand-plus visitors within twelve hours, and an unsolicited
-          six-figure acquisition offer before day one was over (
+          ), more than 200,000 visitors in the first 24 hours, and an unsolicited
+          acquisition offer before day one was over (
           <A href="https://automatio.ai/articles/dev-tools/inside-outbid-lol-the-pay-to-rank-board-taking-over-tech">automatio.ai</A>
           ).
         </p>
@@ -265,7 +265,7 @@ export const articles: Article[] = [
         <p>
           That&apos;s the gap <strong>RealRank</strong> fills. Instead of paying
           for a position, sites connect Google Search Console and are ranked by{" "}
-          <strong>verified organic clicks</strong> — real growth, not real
+          <strong>verified organic clicks</strong> - real growth, not real
           spend. See how it works on the{" "}
           <Link href="/">live leaderboard</Link> or the{" "}
           <Link href="/about">methodology page</Link>.
@@ -294,7 +294,7 @@ export const articles: Article[] = [
         <p>
           Pay-to-rank has a ceiling built into it. The board only rewards the
           highest bidder, so once the novelty fades you&apos;re left with a
-          ranking that means &quot;richest this week&quot; — not
+          ranking that means &quot;richest this week&quot; - not
           &quot;best,&quot; not &quot;fastest-growing,&quot; not &quot;most
           useful.&quot; Visitors learn to discount it, and the auction cools.
         </p>
@@ -302,7 +302,7 @@ export const articles: Article[] = [
         <p>
           The more durable branch of the .lol wave is <em>verification</em>.{" "}
           <A href="https://trustmrr.com/">TrustMRR</A> (from Marc Lou) ranks
-          startups by <strong>Stripe-verified revenue</strong> — no
+          startups by <strong>Stripe-verified revenue</strong> - no
           self-reported screenshots. The insight is that a ranking is only worth
           browsing if the underlying number is real and hard to fake.
         </p>
@@ -310,7 +310,7 @@ export const articles: Article[] = [
           RealRank applies that same principle to a different metric:{" "}
           <strong>organic search traffic</strong>. Every site on the board has
           connected Google Search Console, so its click totals are pulled
-          straight from Google — not estimated, not typed in. And because the
+          straight from Google - not estimated, not typed in. And because the
           default sort is <Link href="/about">momentum</Link> (growth velocity),
           a fast-rising small site can out-rank a flat giant.
         </p>
@@ -318,7 +318,7 @@ export const articles: Article[] = [
         <p>
           The pay-to-rank boards were the spark; verified boards are the staying
           power. Expect the .lol category to consolidate around a few
-          credible, data-backed leaderboards per metric — revenue (TrustMRR),
+          credible, data-backed leaderboards per metric - revenue (TrustMRR),
           and organic traffic (<Link href="/">RealRank</Link>). If you run a
           site, claiming a verified rank now is free and compounding.
         </p>
@@ -336,9 +336,9 @@ export const articles: Article[] = [
       <>
         <p>
           In late 2025, reacting to the flood of faked MRR screenshots, Marc Lou
-          built <A href="https://trustmrr.com/">TrustMRR</A> in about 48 hours: a
-          directory where founders connect Stripe, LemonSqueezy, or Polar to
-          publish <strong>tamper-proof revenue</strong>. It now lists 800+
+          built <A href="https://trustmrr.com/">TrustMRR</A> reportedly in a couple
+          of days: a directory where founders connect Stripe, LemonSqueezy, or Polar
+          to publish <strong>tamper-proof revenue</strong>. It now lists hundreds of
           startups and draws serious traffic (
           <A href="https://aiso.blog/trustmrr-review/">review</A>). The lesson was
           simple and powerful: <em>people trust rankings built on verified data,
@@ -347,7 +347,7 @@ export const articles: Article[] = [
         <h2>Same idea, different metric</h2>
         <p>
           Revenue is one proof of traction. <strong>Organic search
-          traffic</strong> is another — arguably the one every founder obsesses
+          traffic</strong> is another - arguably the one every founder obsesses
           over and the one most often exaggerated. RealRank is the verified
           leaderboard for that metric:
         </p>
@@ -365,13 +365,13 @@ export const articles: Article[] = [
         <h2>Why verified traffic matters</h2>
         <p>
           Tools like SimilarWeb <em>estimate</em> traffic from models and can be
-          off by an order of magnitude. Search Console is the source of truth —
+          off by an order of magnitude. Search Console is the source of truth -
           it&apos;s your actual click data from Google. A leaderboard built on it
           can&apos;t be gamed with a screenshot.
         </p>
         <p>
           If you already verify revenue on TrustMRR, verifying traffic on{" "}
-          <Link href="/">RealRank</Link> is the natural next badge — and it takes
+          <Link href="/">RealRank</Link> is the natural next badge - and it takes
           one click to <Link href="/login">connect Search Console</Link>. The two
           together tell a complete traction story: real money and real demand.
         </p>
@@ -395,7 +395,7 @@ export const articles: Article[] = [
         <h2>Pay-to-rank</h2>
         <p>
           You buy the position. It&apos;s fun, it&apos;s viral, and it can raise
-          real money — <A href="https://outbid.lol/">outbid.lol</A> proved that.
+          real money - <A href="https://outbid.lol/">outbid.lol</A> proved that.
           But the ranking answers only &quot;who paid most,&quot; so it decays
           into a spending contest and browsers stop trusting the order.
         </p>
@@ -411,7 +411,7 @@ export const articles: Article[] = [
         <p>
           Growth is your last 7 days versus the prior 21, weighted by a
           logarithm of volume so a small site with real momentum can beat a large
-          flat one — without letting noise (5 → 15 clicks) top a steady 40k-click
+          flat one - without letting noise (5 → 15 clicks) top a steady 40k-click
           site. You can also flip to a pure <strong>volume</strong> view.
         </p>
         <h2>Why earn-your-rank wins long term</h2>
@@ -421,7 +421,7 @@ export const articles: Article[] = [
           <li><strong>Usefulness:</strong> the board actually surfaces what&apos;s working.</li>
         </ul>
         <p>
-          It&apos;s free to claim your spot — <Link href="/login">connect Search
+          It&apos;s free to claim your spot - <Link href="/login">connect Search
           Console</Link> and let real growth decide the order. Browse the{" "}
           <Link href="/">live leaderboard</Link> to see momentum in action.
         </p>
@@ -430,7 +430,7 @@ export const articles: Article[] = [
   },
   {
     slug: "read-search-console-momentum",
-    title: "How to read your Search Console momentum — and actually improve it",
+    title: "How to read your Search Console momentum - and actually improve it",
     description:
       "Your RealRank momentum comes straight from Google Search Console. Here's how to interpret the 7-day-vs-21-day trend behind it, and the levers that move it.",
     date: "2026-08-27",
@@ -438,7 +438,7 @@ export const articles: Article[] = [
     Body: () => (
       <>
         <p>
-          RealRank doesn&apos;t invent a growth number for you — it reads your{" "}
+          RealRank doesn&apos;t invent a growth number for you - it reads your{" "}
           <strong>actual clicks</strong> from Google Search Console and computes
           momentum from the shape of that trend. So the fastest way to
           understand your rank is to understand the two windows behind it.
@@ -469,7 +469,7 @@ export const articles: Article[] = [
         <ul>
           <li>
             <strong>Refresh decaying winners.</strong> Find pages whose clicks
-            fell quarter-over-quarter and update them — new data, a better
+            fell quarter-over-quarter and update them - new data, a better
             title, an added section. Recovering existing rankings moves the
             7-day window faster than net-new pages.
           </li>
@@ -491,7 +491,7 @@ export const articles: Article[] = [
           </li>
         </ul>
         <p>
-          None of this games the board — it&apos;s the same work that grows the
+          None of this games the board - it&apos;s the same work that grows the
           business. That&apos;s the point of a verified leaderboard: the only way
           up is real growth. Connect your property and watch the trend on your{" "}
           <Link href="/dashboard">dashboard</Link>, or see where you&apos;d land
@@ -504,7 +504,7 @@ export const articles: Article[] = [
     slug: "verified-vs-estimated-traffic",
     title: "Verified traffic vs estimated traffic: why SimilarWeb and RealRank disagree",
     description:
-      "Third-party tools model your traffic from clickstream panels and can be wildly off. Search Console is the source of truth. Here's why the numbers differ — and which to trust.",
+      "Third-party tools model your traffic from clickstream panels and can be wildly off. Search Console is the source of truth. Here's why the numbers differ - and which to trust.",
     date: "2026-08-27",
     keywords: ["verified traffic", "similarweb accuracy", "estimated traffic", "search console data", "traffic estimates"],
     Body: () => (
@@ -522,14 +522,14 @@ export const articles: Article[] = [
           analytics. They <em>model</em> traffic from a mix of clickstream panels
           (browsing data from a sample of users), keyword-ranking databases, and
           machine-learned extrapolation. For huge sites the model is decent. For
-          the long tail — most startups and indie projects — the sample is thin,
+          the long tail - most startups and indie projects - the sample is thin,
           so the estimate can be off by an order of magnitude in either
           direction. That&apos;s inherent to sampling, not a bug.
         </p>
         <h2>What Search Console actually is</h2>
         <p>
           Google Search Console reports your{" "}
-          <strong>real clicks from Google Search</strong> — not a sample, not a
+          <strong>real clicks from Google Search</strong> - not a sample, not a
           model. It&apos;s Google telling you how many times someone clicked
           through to your site from its results. There&apos;s no closer source of
           truth for organic search traffic, because it <em>is</em> the source.
@@ -547,11 +547,11 @@ export const articles: Article[] = [
         </p>
         <h2>The practical takeaway</h2>
         <p>
-          Use estimation tools for what they&apos;re good at — competitive
+          Use estimation tools for what they&apos;re good at - competitive
           research on sites you <em>don&apos;t</em> own, where they&apos;re your
           only option. But for proving your own traffic, or comparing yourself
           fairly against peers, verified beats estimated every time. That&apos;s
-          the whole reason RealRank exists — see the{" "}
+          the whole reason RealRank exists - see the{" "}
           <Link href="/best/lol-directories">verified vs pay-to-rank landscape</Link>{" "}
           or <Link href="/login">connect your own property</Link>.
         </p>
@@ -562,7 +562,7 @@ export const articles: Article[] = [
     slug: "grow-saas-organic-traffic",
     title: "How to grow your SaaS's organic traffic: a founder's playbook",
     description:
-      "A practical, no-fluff playbook for growing SaaS organic search traffic — the compounding channel that keeps paying after you stop spending. Written for founders, not agencies.",
+      "A practical, no-fluff playbook for growing SaaS organic search traffic - the compounding channel that keeps paying after you stop spending. Written for founders, not agencies.",
     date: "2026-08-27",
     keywords: ["grow SaaS organic traffic", "SaaS SEO", "content marketing", "programmatic SEO", "founder SEO playbook"],
     Body: () => (
@@ -571,7 +571,7 @@ export const articles: Article[] = [
           Paid acquisition stops the moment you stop paying. Organic search is
           the opposite: a page that ranks keeps sending visitors for months or
           years at near-zero marginal cost. That compounding is why organic
-          traffic is the growth metric most founders quietly obsess over — and
+          traffic is the growth metric most founders quietly obsess over - and
           the one RealRank was built to rank fairly. Here&apos;s how to actually
           grow it.
         </p>
@@ -589,16 +589,16 @@ export const articles: Article[] = [
           &quot;[Competitor] alternative&quot; and &quot;[Tool A] vs [Tool
           B]&quot; searches come from people with a credit card already out. They
           rank quickly because few competitors write them honestly. Be fair, be
-          specific, and don&apos;t pretend you win every row of the table —
+          specific, and don&apos;t pretend you win every row of the table -
           credibility is what converts.
         </p>
         <h2>3. Use programmatic SEO where the data is real</h2>
         <p>
-          If you have structured data — templates, integrations, locations,
-          stats — you can generate hundreds of genuinely useful pages from it.
+          If you have structured data - templates, integrations, locations,
+          stats - you can generate hundreds of genuinely useful pages from it.
           The trap is thin, near-duplicate pages that Google treats as spam. The
           rule: each page must answer a distinct query with real, page-specific
-          value. (RealRank&apos;s own per-site profile pages follow this — one
+          value. (RealRank&apos;s own per-site profile pages follow this - one
           real, data-backed page per verified site.)
         </p>
         <h2>4. Refresh before you write new</h2>
@@ -613,13 +613,13 @@ export const articles: Article[] = [
         <p>
           A handful of genuinely relevant links from sites in your space beats a
           hundred low-quality ones. Original data, free tools, and honest teardowns
-          are the most reliable link magnets — they give other people a reason to
+          are the most reliable link magnets - they give other people a reason to
           cite you.
         </p>
         <h2>Measure momentum, not vanity</h2>
         <p>
           Total traffic flatters incumbents. What tells you the strategy is
-          working is <em>momentum</em> — this week beating last month. That&apos;s
+          working is <em>momentum</em> - this week beating last month. That&apos;s
           exactly what RealRank scores, straight from your verified Search Console
           data. <Link href="/login">Connect your property</Link> and watch the
           curve, or see who&apos;s growing fastest on the{" "}
@@ -639,7 +639,7 @@ export const articles: Article[] = [
       <>
         <p>
           Connecting any account to a third-party service deserves a moment of
-          suspicion — good instinct. So here&apos;s a straight answer about what
+          suspicion - good instinct. So here&apos;s a straight answer about what
           happens when you connect Google Search Console to RealRank, with no
           hand-waving.
         </p>
@@ -648,7 +648,7 @@ export const articles: Article[] = [
           One scope: <code>webmasters.readonly</code>. The word{" "}
           <strong>readonly</strong> is the whole story. It lets RealRank{" "}
           <em>read</em> the search-performance data for properties you already own
-          — clicks, impressions, the list of your verified sites. It{" "}
+          - clicks, impressions, the list of your verified sites. It{" "}
           <strong>cannot</strong> change your settings, submit or remove URLs,
           alter sitemaps, add or remove users, or touch anything outside Search
           Console. There is no write access to give away because we never ask for
@@ -657,7 +657,7 @@ export const articles: Article[] = [
         <h2>What we actually read, and store</h2>
         <p>
           For properties <em>you choose to publish</em>, we read your total
-          organic clicks over the last 7 and 28 days — the minimum needed to
+          organic clicks over the last 7 and 28 days - the minimum needed to
           compute <Link href="/about">momentum and volume</Link>. We don&apos;t
           pull your individual queries or URLs into the public board. Your
           Google refresh token is <strong>encrypted at rest</strong> and never
@@ -669,7 +669,7 @@ export const articles: Article[] = [
           <li>
             <strong>Nothing is public until you publish it.</strong> Connecting
             just lists your verified properties on your private dashboard. You
-            pick which — if any — go on the board.
+            pick which - if any - go on the board.
           </li>
           <li>
             <strong>Unpublish anytime</strong> to remove a site from the public
@@ -678,7 +678,7 @@ export const articles: Article[] = [
           <li>
             <strong>Revoke access in one click</strong> from your{" "}
             <A href="https://myaccount.google.com/permissions">Google account permissions</A>{" "}
-            page — that instantly cuts off our read access, independent of
+            page - that instantly cuts off our read access, independent of
             RealRank.
           </li>
         </ul>
@@ -687,7 +687,7 @@ export const articles: Article[] = [
           A leaderboard has no legitimate reason to modify your Search Console. By
           requesting the narrowest possible scope, the worst-case blast radius is
           bounded to &quot;someone could see the click totals you already chose to
-          publish&quot; — which is the entire point of a public board. That&apos;s
+          publish&quot; - which is the entire point of a public board. That&apos;s
           the same trust-through-verification idea behind the whole{" "}
           <Link href="/best/lol-directories">verified-leaderboard movement</Link>.
           Ready? <Link href="/login">Connect Search Console</Link>.
@@ -699,7 +699,7 @@ export const articles: Article[] = [
     slug: "indie-hacker-leaderboards-2026",
     title: "The indie hacker leaderboard landscape in 2026",
     description:
-      "From pay-to-rank boards to Stripe-verified revenue to verified organic traffic — a field guide to the leaderboards indie hackers are watching in 2026, and what each actually measures.",
+      "From pay-to-rank boards to Stripe-verified revenue to verified organic traffic - a field guide to the leaderboards indie hackers are watching in 2026, and what each actually measures.",
     date: "2026-08-27",
     keywords: ["indie hacker leaderboards", "startup directories 2026", "outbid.lol", "trustmrr", "realrank", ".lol trend"],
     Body: () => (
@@ -714,12 +714,12 @@ export const articles: Article[] = [
         <h2>The spark: pay-to-rank</h2>
         <p>
           <A href="https://outbid.lol/">outbid.lol</A>, from{" "}
-          <strong>Jonathan Wilke</strong>, lit the fuse — pay a dollar more than
+          <strong>Jonathan Wilke</strong>, lit the fuse - pay a dollar more than
           the leader to take #1, reportedly ~$178K in 77 hours, and a wave of
           170+ clones behind it (full story in{" "}
           <Link href="/blog/outbid-lol-explained">our breakdown</Link>). These
           boards are pure spectacle and pure spend: the ranking measures who paid
-          most, right now, and nothing else. Fun, viral, and — by design —
+          most, right now, and nothing else. Fun, viral, and - by design -
           impossible to &quot;earn.&quot;
         </p>
         <h2>The correction: verified data</h2>
@@ -729,14 +729,14 @@ export const articles: Article[] = [
         <ul>
           <li>
             <strong><A href="https://trustmrr.com/">TrustMRR</A></strong> (Marc
-            Lou) ranks startups by <em>Stripe-verified revenue</em> — connect
-            your payment provider, publish tamper-proof MRR. 800+ startups and a{" "}
+            Lou) ranks startups by <em>Stripe-verified revenue</em> - connect
+            your payment provider, publish tamper-proof MRR. Hundreds of startups and a{" "}
             <A href="https://trustmrr.com/special-category/lol">.lol category</A>{" "}
             of its own.
           </li>
           <li>
             <strong><Link href="/">RealRank</Link></strong> ranks by{" "}
-            <em>verified organic traffic</em> — connect Google Search Console
+            <em>verified organic traffic</em> - connect Google Search Console
             (read-only), publish real click totals, get ranked by momentum or
             volume.
           </li>
@@ -751,21 +751,21 @@ export const articles: Article[] = [
           Expect consolidation around a few <strong>credible boards per
           metric</strong> rather than endless clones. Revenue has a clear leader;
           organic traffic is being claimed now. The pay-to-rank boards will keep
-          popping up as launch stunts — they&apos;re great marketing — but the
+          popping up as launch stunts - they&apos;re great marketing - but the
           leaderboards founders actually <em>keep a tab open on</em> will be the
           verified ones, because those are the ones that mean something.
         </p>
         <p>
           If you run a site, the verified boards are the ones worth a badge on
           your homepage. <Link href="/login">Claim your verified traffic rank</Link>{" "}
-          — it&apos;s free and it compounds.
+          - it&apos;s free and it compounds.
         </p>
       </>
     ),
   },
   {
     slug: "momentum-score-explained",
-    title: "What's a good momentum score? Reading — and climbing — the RealRank board",
+    title: "What's a good momentum score? Reading - and climbing - the RealRank board",
     description:
       "Momentum isn't an absolute grade, it's a ranking of growth velocity. Here's how to interpret your score, why it moves week to week, and the honest ways to climb.",
     date: "2026-08-27",
@@ -775,7 +775,7 @@ export const articles: Article[] = [
         <p>
           The most common question about RealRank is &quot;what&apos;s a{" "}
           <em>good</em> momentum score?&quot; The honest answer: it&apos;s not a
-          grade out of 100 — it&apos;s a <strong>ranking of velocity</strong>. A
+          grade out of 100 - it&apos;s a <strong>ranking of velocity</strong>. A
           score is only meaningful relative to everyone else&apos;s on the board
           that day.
         </p>
@@ -785,7 +785,7 @@ export const articles: Article[] = [
           versus your prior three weeks, and a logarithm of your click volume so
           the growth is anchored to real traffic. That means a small site
           doubling its clicks can post a higher momentum than a large site
-          growing 5% — which is the point. The board rewards{" "}
+          growing 5% - which is the point. The board rewards{" "}
           <em>who&apos;s accelerating</em>, not who&apos;s biggest. The exact
           formula lives on the <Link href="/about">methodology page</Link>.
         </p>
@@ -793,7 +793,7 @@ export const articles: Article[] = [
         <p>
           Because the 7-day window slides every day, your score is naturally
           alive. A great launch week will spike it, then it settles as that week
-          becomes the new baseline. A drop isn&apos;t failure — it often just
+          becomes the new baseline. A drop isn&apos;t failure - it often just
           means last week set a high bar. Watch the <em>trend</em> of your rank
           over weeks, not any single day.
         </p>
@@ -801,24 +801,24 @@ export const articles: Article[] = [
         <ul>
           <li>
             <strong>Momentum</strong> answers &quot;who&apos;s growing fastest
-            right now?&quot; — the default board.
+            right now?&quot; - the default board.
           </li>
           <li>
-            <strong>Volume</strong> answers &quot;who&apos;s biggest?&quot; —
+            <strong>Volume</strong> answers &quot;who&apos;s biggest?&quot; -
             total clicks over 28 days, for when you want the incumbents.
           </li>
         </ul>
         <p>
           Flip between them with the toggle on the{" "}
           <Link href="/">leaderboard</Link>. Most fast-growing sites rank far
-          higher on momentum than volume — that contrast <em>is</em> the story
+          higher on momentum than volume - that contrast <em>is</em> the story
           worth sharing.
         </p>
         <h2>The honest ways to climb</h2>
         <p>
           There&apos;s no trick, because the input is verified: the only way up is
           more real clicks this week than last. Refresh decaying pages, fix titles
-          on high-impression queries, and ship on a cadence — the specifics are in{" "}
+          on high-impression queries, and ship on a cadence - the specifics are in{" "}
           <Link href="/blog/read-search-console-momentum">reading your Search Console momentum</Link>{" "}
           and the{" "}
           <Link href="/blog/grow-saas-organic-traffic">organic growth playbook</Link>.
@@ -840,13 +840,13 @@ export const articles: Article[] = [
         <p>
           When you open Search Console you&apos;ll see properties prefixed either
           with <code>sc-domain:</code> or a full <code>https://</code> URL. They
-          look similar but count different things — and picking the wrong one to
+          look similar but count different things - and picking the wrong one to
           publish can under-report your traffic. Here&apos;s the plain-English
           version.
         </p>
         <h2>URL-prefix properties</h2>
         <p>
-          A URL-prefix property covers <strong>exactly one prefix</strong> —{" "}
+          A URL-prefix property covers <strong>exactly one prefix</strong> -{" "}
           <code>https://www.example.com/</code> and{" "}
           <code>https://example.com/</code> are two separate properties, and
           neither includes the other&apos;s traffic or your subdomains. It&apos;s
@@ -858,8 +858,8 @@ export const articles: Article[] = [
         <h2>Domain properties (<code>sc-domain:</code>)</h2>
         <p>
           A domain property covers <strong>every subdomain and both
-          protocols</strong> — <code>www</code> and bare, <code>http</code> and{" "}
-          <code>https</code>, <code>blog.</code>, <code>app.</code>, all of it —
+          protocols</strong> - <code>www</code> and bare, <code>http</code> and{" "}
+          <code>https</code>, <code>blog.</code>, <code>app.</code>, all of it -
           under one roof. It&apos;s verified once via DNS. For almost everyone
           this is the <strong>truest single picture</strong> of your organic
           traffic, which is why it&apos;s worth setting up.
@@ -868,14 +868,14 @@ export const articles: Article[] = [
         <p>
           Publish the property that represents your <em>whole site</em>. In
           practice that&apos;s almost always the <code>sc-domain:</code> domain
-          property — it aggregates every entrance to your site, so your momentum
+          property - it aggregates every entrance to your site, so your momentum
           and volume reflect all of your organic traffic rather than one
           subdomain. RealRank handles <code>sc-domain:</code> properties natively
           and displays a clean hostname for them on the board.
         </p>
         <h2>If you only have a URL-prefix property</h2>
         <p>
-          It still works — RealRank will rank it — but consider adding the domain
+          It still works - RealRank will rank it - but consider adding the domain
           property too (a single DNS record) so nothing is missed. Once
           it&apos;s verified in Google, it&apos;ll appear on your{" "}
           <Link href="/dashboard">RealRank dashboard</Link> ready to publish.
@@ -909,8 +909,8 @@ export const articles: Article[] = [
         <p>
           Social proof works when it&apos;s <em>credible</em>, and credibility
           comes from being independently verifiable. A badge backed by Google
-          Search Console data — that a visitor can click through to confirm on
-          the public board — carries weight that a self-declared stat can&apos;t.
+          Search Console data - that a visitor can click through to confirm on
+          the public board - carries weight that a self-declared stat can&apos;t.
           It&apos;s the same reason a{" "}
           <Link href="/blog/trustmrr-vs-realrank">Stripe-verified revenue badge</Link>{" "}
           lands differently than an MRR screenshot.
@@ -919,22 +919,22 @@ export const articles: Article[] = [
         <p>
           Every published site gets an SVG badge showing its live rank. Because
           it&apos;s server-rendered from the same data as the board, it
-          can&apos;t go stale or be faked — it always reflects your current
+          can&apos;t go stale or be faked - it always reflects your current
           standing. Drop it in your footer, your README, a launch post, or a
           pitch deck. When your rank improves, the badge updates itself.
         </p>
         <h2>Where to use it</h2>
         <ul>
           <li>
-            <strong>Homepage &amp; pricing pages</strong> — right where
+            <strong>Homepage &amp; pricing pages</strong> - right where
             hesitation happens.
           </li>
           <li>
-            <strong>GitHub README</strong> — for developer-tool and open-source
+            <strong>GitHub README</strong> - for developer-tool and open-source
             projects, a live traffic rank is unusual and eye-catching.
           </li>
           <li>
-            <strong>Launch and &quot;we&apos;re #N&quot; posts</strong> — the
+            <strong>Launch and &quot;we&apos;re #N&quot; posts</strong> - the
             badge gives the claim a source, and the source links back to you.
           </li>
         </ul>
@@ -943,11 +943,11 @@ export const articles: Article[] = [
           Here&apos;s the quiet benefit: every badge links back to your{" "}
           <Link href="/">RealRank profile</Link>, and every share points more
           people at the board. Verified rank drives credibility, credibility
-          drives shares, shares drive discovery — a growth loop where the fuel is
+          drives shares, shares drive discovery - a growth loop where the fuel is
           simply real growth you were achieving anyway.
         </p>
         <p>
-          Get your badge by publishing a property —{" "}
+          Get your badge by publishing a property -{" "}
           <Link href="/login">connect Search Console</Link>, and it&apos;s
           generated automatically for your site.
         </p>
@@ -967,14 +967,14 @@ export const articles: Article[] = [
           You paid to sit at #1 on <A href="https://outbid.lol/">outbid.lol</A>{" "}
           (or one of its 170+ clones) for a day or two. Visitors came. Now the
           honest question: <strong>was it worth it?</strong> The answer depends
-          entirely on which kind of traffic you&apos;re measuring — and most
+          entirely on which kind of traffic you&apos;re measuring - and most
           people measure the wrong one.
         </p>
         <h2>Two very different kinds of traffic</h2>
         <p>
           A pay-to-rank spot sends you <strong>referral traffic</strong>: people
           clicking straight from the board to your site while your bid is live.
-          It&apos;s real, but it&apos;s rented — it stops the moment someone
+          It&apos;s real, but it&apos;s rented - it stops the moment someone
           outbids you. You&apos;ll see it in your own analytics (Vercel
           Analytics or Google Analytics) as a referral from the board&apos;s
           domain.
@@ -983,7 +983,7 @@ export const articles: Article[] = [
           What you actually want to know is whether that burst created{" "}
           <strong>organic growth you keep</strong>: did the attention make people
           Google your brand, link to you, and discover you through search
-          afterwards? That&apos;s the compounding kind — and it shows up in{" "}
+          afterwards? That&apos;s the compounding kind - and it shows up in{" "}
           <A href="https://search.google.com/search-console/about">Google Search Console</A>, not in referral logs.
         </p>
         <h2>Why the spike alone doesn&apos;t tell you anything</h2>
@@ -1023,19 +1023,19 @@ export const articles: Article[] = [
             Find the days around your bid on the timeline.
           </li>
           <li>
-            Compare the <em>after</em> baseline to the <em>before</em> baseline —
+            Compare the <em>after</em> baseline to the <em>before</em> baseline -
             not the peak. If the recent-7-day pace stays above the prior line,
             the bid bought you durable growth. If it snaps back, it didn&apos;t.
           </li>
         </ol>
         <p>
           Because the data is <Link href="/blog/verified-vs-estimated-traffic">verified, not estimated</Link>,
-          the comparison is trustworthy — you&apos;re looking at your actual
+          the comparison is trustworthy - you&apos;re looking at your actual
           Google clicks, not a model&apos;s guess.
         </p>
         <h2>The smarter play</h2>
         <p>
-          Pay-to-rank and verified rank aren&apos;t rivals — they&apos;re a
+          Pay-to-rank and verified rank aren&apos;t rivals - they&apos;re a
           funnel. Use a bid for the spike, then use your{" "}
           <Link href="/blog/momentum-score-explained">momentum score</Link> to
           prove whether it converted into lasting organic traffic. Over time, the
@@ -1050,7 +1050,7 @@ export const articles: Article[] = [
     slug: "introducing-channels",
     title: "Introducing Channels: see which marketing actually brings paying customers",
     description:
-      "RealRank Channels tracks which sources — X, Reddit, directories, even outbid boards — bring paying customers, ranked by revenue and efficiency. Attribution verified through Stripe.",
+      "RealRank Channels tracks which sources - X, Reddit, directories, even outbid boards - bring paying customers, ranked by revenue and efficiency. Attribution verified through Stripe.",
     date: "2026-08-31",
     keywords: ["channel attribution", "marketing ROI", "stripe attribution", "indie SaaS analytics", "RealRank Channels"],
     Body: () => (
@@ -1058,7 +1058,7 @@ export const articles: Article[] = [
         <p>
           RealRank started as a way to prove one thing with real data: which
           websites are actually growing. Today it does the same for the question
-          every founder loses sleep over — <strong>which marketing is actually
+          every founder loses sleep over - <strong>which marketing is actually
           working?</strong> Meet <strong>Channels</strong>, now built into your
           RealRank dashboard.
         </p>
@@ -1073,7 +1073,7 @@ export const articles: Article[] = [
         </p>
         <h2>How Channels works</h2>
         <p>
-          It&apos;s deliberately minimal — no multi-touch models, no bloated
+          It&apos;s deliberately minimal - no multi-touch models, no bloated
           funnels. Just the chain that matters:
         </p>
         <ul>
@@ -1083,7 +1083,7 @@ export const articles: Article[] = [
           <li><strong>Read the ranking:</strong> visits → signups → customers → revenue → revenue per visit.</li>
         </ul>
         <p>
-          The board sorts by <strong>revenue, then efficiency</strong> — so the
+          The board sorts by <strong>revenue, then efficiency</strong> - so the
           channel quietly printing customers rises to the top, and the one
           burning your evenings for zero sales sinks. Same philosophy as the
           public leaderboard: <em>rank by what&apos;s real, not what&apos;s
@@ -1091,7 +1091,7 @@ export const articles: Article[] = [
         </p>
         <h2>Verified, like everything else here</h2>
         <p>
-          Revenue attribution comes straight from <strong>Stripe</strong> — not a
+          Revenue attribution comes straight from <strong>Stripe</strong> - not a
           guess, not a self-reported number. It&apos;s the same
           verification principle behind RealRank&apos;s{" "}
           <Link href="/blog/verified-vs-estimated-traffic">verified traffic</Link>{" "}
@@ -1109,7 +1109,7 @@ export const articles: Article[] = [
         <p>
           Channels is free while it&apos;s new.{" "}
           <Link href="/login">Connect Search Console to open your dashboard</Link>{" "}
-          and create your first tracking link — then finally spend your time where
+          and create your first tracking link - then finally spend your time where
           it actually pays.
         </p>
       </>

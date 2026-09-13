@@ -73,7 +73,7 @@ momentum = (1 + growth) × log10(clicks_7d + 1) × 100`}
       <div className="mt-12 flex flex-col items-center gap-3 text-center">
         <p className="text-muted-foreground">Ready to see where you rank?</p>
         <Button asChild size="lg">
-          <Link href="/dashboard">Add your site</Link>
+          <Link href="/dashboard">Add my site</Link>
         </Button>
       </div>
     </div>

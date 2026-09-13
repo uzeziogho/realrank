@@ -8,10 +8,29 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const alt = `${siteConfig.name} rank card`;
 
-const GREEN = "#22c55e";
+const GREEN = "#10BF5B";
 const BG = "#0a0a0b";
 const CARD = "#141416";
 const MUTED = "#a1a1aa";
+
+/** The RealRank "Cadence" mark as flex bars (Satori-friendly), dark-ground variant. */
+function Mark({ unit = 10 }: { unit?: number }) {
+  const bars = [
+    { h: 0.31, c: "rgba(255,255,255,0.55)" },
+    { h: 0.5, c: "rgba(255,255,255,0.72)" },
+    { h: 0.71, c: "rgba(255,255,255,0.88)" },
+    { h: 1, c: GREEN },
+  ];
+  const tall = unit * 5;
+  const w = unit * 0.85;
+  return (
+    <div style={{ display: "flex", alignItems: "flex-end", gap: unit * 0.55, height: tall }}>
+      {bars.map((b, i) => (
+        <div key={i} style={{ width: w, height: tall * b.h, borderRadius: w / 2, background: b.c }} />
+      ))}
+    </div>
+  );
+}
 
 /**
  * Fetch a site's favicon as a data URI so it can be embedded in the OG image.
@@ -62,23 +81,10 @@ export default async function Image({ params }: { params: Promise<{ slug: string
       >
         {/* Brand row */}
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <div
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 12,
-              background: GREEN,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#04160a",
-              fontSize: 30,
-              fontWeight: 800,
-            }}
-          >
-            ⌁
+          <Mark unit={10} />
+          <div style={{ color: "#fff", fontSize: 32, fontWeight: 700, letterSpacing: "-0.03em" }}>
+            {siteConfig.name}
           </div>
-          <div style={{ color: "#fff", fontSize: 30, fontWeight: 700 }}>{siteConfig.name}</div>
         </div>
 
         {/* Main */}

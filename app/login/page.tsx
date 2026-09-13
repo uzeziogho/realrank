@@ -58,13 +58,13 @@ export default async function LoginPage({
           {ready ? (
             <Button asChild size="lg" className="w-full">
               <a href="/api/auth/google/start">
-                Connect Google Search Console
+                Connect my Search Console
                 <ArrowRight className="size-4" />
               </a>
             </Button>
           ) : (
             <Button size="lg" className="w-full" disabled>
-              Connect Google Search Console
+              Connect my Search Console
             </Button>
           )}
         </div>

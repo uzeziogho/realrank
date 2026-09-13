@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/components/logo";
 import { siteConfig, categories, guideLinks } from "@/lib/config";
 
 export function SiteFooter() {
@@ -6,8 +7,38 @@ export function SiteFooter() {
     <footer className="border-t border-border/60 py-10">
       <div className="container flex flex-col gap-8 md:flex-row md:justify-between">
         <div className="max-w-xs">
-          <p className="font-semibold">{siteConfig.name}</p>
-          <p className="mt-2 text-sm text-muted-foreground">{siteConfig.tagline}</p>
+          <Logo markSize={22} />
+          <p className="mt-3 text-sm text-muted-foreground">{siteConfig.tagline}</p>
+          <a
+            href={`https://x.com/${siteConfig.twitter.replace(/^@/, "")}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="size-4 fill-current">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+            </svg>
+            Follow on X ({siteConfig.twitter})
+          </a>
+
+          {/* Live Domain Rating badge (FrogDR). The badge art is white, so it
+              sits on a fixed dark chip to stay legible in both themes. */}
+          <a
+            href="https://frogdr.com/realrank.lol?utm_source=realrank.lol"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-flex w-fit rounded-lg bg-[#0a0a0b] px-3 py-2"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://frogdr.com/realrank.lol/badge-white.svg"
+              alt="Monitor your Domain Rating with FrogDR"
+              width={250}
+              height={54}
+              className="h-7 w-auto"
+              loading="lazy"
+            />
+          </a>
         </div>
 
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
@@ -26,7 +57,8 @@ export function SiteFooter() {
           <div>
             <p className="text-sm font-medium">Product</p>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/#leaderboard" className="hover:text-foreground">Leaderboard</Link></li>
+              <li><Link href="/leaderboard" className="hover:text-foreground">Leaderboard</Link></li>
+              <li><Link href="/launches" className="hover:text-foreground">Launches</Link></li>
               <li><Link href="/movers" className="hover:text-foreground">Movers &amp; Shakers</Link></li>
               <li><Link href="/founding" className="hover:text-foreground">Founding sites</Link></li>
               <li><Link href="/momentum-score" className="hover:text-foreground">Momentum calculator</Link></li>

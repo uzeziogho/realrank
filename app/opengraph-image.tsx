@@ -6,9 +6,31 @@ export const alt = `${siteConfig.name} — The Organic Traffic Leaderboard`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-const GREEN = "#22c55e";
+const GREEN = "#10BF5B";
 const BG = "#0a0a0b";
 const MUTED = "#a1a1aa";
+
+/** The RealRank "Cadence" mark as flex bars (Satori-friendly), dark-ground variant. */
+function Mark({ unit = 16 }: { unit?: number }) {
+  const bars = [
+    { h: 0.31, c: "rgba(255,255,255,0.55)" },
+    { h: 0.5, c: "rgba(255,255,255,0.72)" },
+    { h: 0.71, c: "rgba(255,255,255,0.88)" },
+    { h: 1, c: GREEN },
+  ];
+  const tall = unit * 5;
+  const w = unit * 0.85;
+  return (
+    <div style={{ display: "flex", alignItems: "flex-end", gap: unit * 0.55, height: tall }}>
+      {bars.map((b, i) => (
+        <div
+          key={i}
+          style={{ width: w, height: tall * b.h, borderRadius: w / 2, background: b.c }}
+        />
+      ))}
+    </div>
+  );
+}
 
 /**
  * Default social-share card for the whole site (home, blog, categories, etc.).
@@ -31,24 +53,11 @@ export default function Image() {
           fontFamily: "sans-serif",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <div
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: 16,
-              background: GREEN,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#04160a",
-              fontSize: 40,
-              fontWeight: 800,
-            }}
-          >
-            ⌁
+        <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
+          <Mark unit={15} />
+          <div style={{ color: "#fff", fontSize: 44, fontWeight: 700, letterSpacing: "-0.03em" }}>
+            {siteConfig.name}
           </div>
-          <div style={{ color: "#fff", fontSize: 40, fontWeight: 700 }}>{siteConfig.name}</div>
         </div>
 
         <div

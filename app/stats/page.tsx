@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { TrendingUp, TrendingDown, Minus, ShieldCheck, ArrowUpRight } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, ShieldCheck, ArrowUpRight, Users, MousePointerClick, Eye, Gauge } from "lucide-react";
 import { getStatsData } from "@/lib/stats";
-import { getSiteTraffic, getSiteTrafficSeries } from "@/lib/data";
+import { getSiteTraffic, getSiteTrafficSeries, getTrafficBreakdown } from "@/lib/data";
 import { TrafficTrend } from "@/components/traffic-trend";
+import { TrafficBreakdown } from "@/components/traffic-breakdown";
 import { siteConfig } from "@/lib/config";
 import { formatCompact, formatGrowth, siteHref, timeAgo } from "@/lib/utils";
 
@@ -20,6 +21,7 @@ export default async function StatsPage() {
   const stats = await getStatsData();
   const traffic = await getSiteTraffic();
   const trafficSeries = await getSiteTrafficSeries(30);
+  const breakdown = await getTrafficBreakdown(30);
 
   return (
     <>
@@ -40,7 +42,21 @@ export default async function StatsPage() {
         </div>
       </section>
 
-      <div className="container max-w-4xl space-y-10 py-12">
+      <div className="container max-w-4xl space-y-8 py-12">
+        {/* KPI row — at-a-glance headline metrics */}
+        <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <StatTile icon={<Users className="size-4" />} label="Visitors" value={formatCompact(traffic.visitors)} sub="all-time" />
+          <StatTile icon={<MousePointerClick className="size-4" />} label="Sessions" value={formatCompact(traffic.sessions)} sub="all-time" />
+          <StatTile icon={<Eye className="size-4" />} label="Pageviews" value={formatCompact(traffic.pageviews)} sub="all-time" />
+          <StatTile
+            icon={<Gauge className="size-4" />}
+            label="Organic Index"
+            value={String(stats.index)}
+            sub={`${formatGrowth(stats.medianGrowth)} median`}
+            tone={stats.medianGrowth > 0.005 ? "up" : stats.medianGrowth < -0.005 ? "down" : undefined}
+          />
+        </section>
+
         {/* RealRank's own traffic — first-party counter */}
         <section>
           <SectionLabel>First-party analytics</SectionLabel>
@@ -52,46 +68,44 @@ export default async function StatsPage() {
             third-party trackers. Cumulative since launch.
           </p>
           <div className="mt-4">
-            <TrafficTrend totals={traffic} days={trafficSeries} />
+            <TrafficTrend totals={traffic} days={trafficSeries} showTotals={false} />
           </div>
         </section>
 
-        {/* Organic Index */}
+        {/* Where traffic comes from */}
+        <section>
+          <SectionLabel>First-party analytics</SectionLabel>
+          <h2 className="mt-1 text-2xl font-semibold tracking-tight">
+            Where your traffic comes from
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Top sources, landing pages, countries, and devices — counted
+            first-party, cookieless, and aggregate only. Last 30 days.
+          </p>
+          <div className="mt-4">
+            <TrafficBreakdown data={breakdown} />
+          </div>
+        </section>
+
+        {/* Market pulse */}
         <section>
           <SectionLabel>Anonymous benchmark</SectionLabel>
           <h2 className="mt-1 text-2xl font-semibold tracking-tight">
             {siteConfig.name} Organic Pulse
           </h2>
           <p className="text-sm text-muted-foreground">
-            Last 7 days vs. the prior 21.
+            The share of verified sites growing vs. declining — last 7 days vs. the prior 21.
           </p>
 
           <div className="mt-4 rounded-xl border border-border bg-card p-6">
-            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                {siteConfig.name} Organic Index
-              </span>
-              <span className="text-4xl font-bold tabular-nums">{stats.index}</span>
-              <GrowthText ratio={stats.medianGrowth} suffix="median growth" />
-            </div>
-
-            <dl className="mt-6 grid grid-cols-3 gap-4 border-t border-border pt-6">
+            <dl className="grid grid-cols-3 gap-4">
               <Metric label="Websites" value={String(stats.qualifyingCount)} />
-              <Metric
-                label="Growing"
-                value={`${stats.growingPct}%`}
-                tone="up"
-              />
-              <Metric
-                label="Declining"
-                value={`${stats.decliningPct}%`}
-                tone="down"
-              />
+              <Metric label="Growing" value={`${stats.growingPct}%`} tone="up" />
+              <Metric label="Declining" value={`${stats.decliningPct}%`} tone="down" />
             </dl>
-
             <p className="mt-4 text-xs text-muted-foreground">
-              100 means flat. The index uses the <strong>median</strong> change so
-              one large website cannot move the market.
+              The Organic Index above is 100 when flat. It uses the{" "}
+              <strong>median</strong> change so one large website cannot move the market.
             </p>
           </div>
         </section>
@@ -158,6 +172,41 @@ export default async function StatsPage() {
         </p>
       </div>
     </>
+  );
+}
+
+function StatTile({
+  icon,
+  label,
+  value,
+  sub,
+  tone,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  sub?: string;
+  tone?: "up" | "down";
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-4">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          {label}
+        </span>
+        <span className="text-muted-foreground">{icon}</span>
+      </div>
+      <div className="mt-2 text-3xl font-bold tabular-nums tracking-tight">{value}</div>
+      {sub && (
+        <div
+          className={`mt-0.5 text-xs ${
+            tone === "up" ? "text-success" : tone === "down" ? "text-danger" : "text-muted-foreground"
+          }`}
+        >
+          {sub}
+        </div>
+      )}
+    </div>
   );
 }
 

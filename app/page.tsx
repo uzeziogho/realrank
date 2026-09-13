@@ -1,93 +1,59 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
 import { RefreshCw, ShieldCheck, TrendingUp, LineChart, BarChart3, Award, GitCompare, Radio, Search, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { RankingToggle } from "@/components/ranking-toggle";
-import { Leaderboard } from "@/components/leaderboard";
-import { LeaderboardJsonLd } from "@/components/json-ld";
-import { Pagination } from "@/components/pagination";
-import { getLeaderboardData, attachSparklines, getRecentlyJoined, getMovers, getSiteTraffic } from "@/lib/data";
+import { FaqJsonLd } from "@/components/json-ld";
+import { LeaderboardSection } from "@/components/leaderboard-section";
+import { getLeaderboardData, getRecentlyJoined, getMovers, getSiteTraffic } from "@/lib/data";
 import { MoversBand } from "@/components/movers";
-import { injectSponsored } from "@/lib/ranking";
 import { RankChecker } from "@/components/rank-checker";
 import { WaitlistForm } from "@/components/waitlist-form";
-import { LeaderboardSearch } from "@/components/leaderboard-search";
-import { RankingExplainer } from "@/components/ranking-explainer";
 import { BadgeMarquee } from "@/components/badge-marquee";
-import { siteConfig, categories, type RankingView } from "@/lib/config";
-import { formatCompact, timeAgo, hostname } from "@/lib/utils";
+import { siteConfig } from "@/lib/config";
+import { formatCompact, hostname } from "@/lib/utils";
 
 // Incremental Static Regeneration — full ranked list is in the initial HTML,
 // refreshed at most hourly (and on-demand after the cron writes new data).
 export const revalidate = 3600;
 
-const PAGE_SIZE = 50;
+/** Homepage FAQ: rendered visibly and mirrored into FAQPage structured data. */
+const FAQ_ITEMS: { q: string; a: string }[] = [
+  {
+    q: "What is RealRank?",
+    a: "RealRank is a public leaderboard of websites ranked by verified organic search traffic. Sites connect Google Search Console (read-only) and their real click totals decide the order, so the ranking cannot be faked with screenshots or third-party estimates.",
+  },
+  {
+    q: "How does the ranking work?",
+    a: "The default sort is momentum, which compares a site's last 7 days of organic clicks against the prior 21 days, weighted by a logarithm of volume so a fast-growing small site can outrank a large flat one. A volume view (total clicks over 28 days) is also available. Rankings refresh hourly.",
+  },
+  {
+    q: "Is RealRank free?",
+    a: "Yes. Connecting a site and claiming a verified rank is free. The public leaderboard and the tools around it (report card, momentum calculator, traffic reality check) are free to use with no login required to browse.",
+  },
+  {
+    q: "Is it safe to connect Google Search Console?",
+    a: "RealRank requests a single read-only scope (webmasters.readonly). It can read search-performance data for properties you already own, but it cannot change settings, submit or remove URLs, or write anything. Nothing is public until you choose to publish a property, and you can revoke access anytime from your Google account permissions.",
+  },
+  {
+    q: "Can I fake my traffic to rank higher?",
+    a: "No. Click totals are read straight from Google Search Console, so the only way to climb is real organic growth. Nobody types in a number and nobody uploads a screenshot.",
+  },
+];
 
-type SearchParams = Promise<{ view?: string; page?: string; q?: string }>;
+export const metadata: Metadata = {
+  title: "Fastest-Growing Websites by Organic Traffic",
+  description: siteConfig.description,
+  alternates: { canonical: "/" },
+};
 
-function parseView(v?: string): RankingView {
-  return v === "volume" ? "volume" : "momentum";
-}
-
-function parsePage(v: string | undefined, totalPages: number): number {
-  const n = Number.parseInt(v ?? "1", 10);
-  if (Number.isNaN(n) || n < 1) return 1;
-  return Math.min(n, Math.max(1, totalPages));
-}
-
-/** Build a leaderboard URL preserving view + query + page params. */
-function leaderboardHref(view: RankingView, page: number, q = ""): string {
-  const params = new URLSearchParams();
-  if (view === "volume") params.set("view", "volume");
-  if (q) params.set("q", q);
-  if (page > 1) params.set("page", String(page));
-  const qs = params.toString();
-  return qs ? `/?${qs}#leaderboard` : "/#leaderboard";
-}
-
-export async function generateMetadata({
-  searchParams,
-}: {
-  searchParams: SearchParams;
-}): Promise<Metadata> {
-  const sp = await searchParams;
-  const view = parseView(sp.view);
-  const page = Number.parseInt(sp.page ?? "1", 10) || 1;
-  const base =
-    view === "volume"
-      ? "Top Websites by Organic Traffic Volume"
-      : "Fastest-Growing Websites by Organic Traffic";
-  const title = page > 1 ? `${base} — Page ${page}` : base;
-
-  const params = new URLSearchParams();
-  if (view === "volume") params.set("view", "volume");
-  if (page > 1) params.set("page", String(page));
-  const qs = params.toString();
-
-  // Search-result views point their canonical at the clean board and stay out
-  // of the index (avoids thin/duplicate query pages).
-  const searching = Boolean(sp.q?.trim());
-
-  return {
-    title,
-    description: siteConfig.description,
-    alternates: { canonical: searching ? "/" : qs ? `/?${qs}` : "/" },
-    ...(searching ? { robots: { index: false, follow: true } } : {}),
-  };
-}
-
-export default async function HomePage({
-  searchParams,
-}: {
-  searchParams: SearchParams;
-}) {
-  const sp = await searchParams;
-  const view = parseView(sp.view);
+export default async function HomePage() {
+  // No searchParams here: the homepage renders the default momentum board so it
+  // prerenders (ISR) and serves cached HTML. Search, the volume toggle, and
+  // pagination live on /leaderboard, which is server-rendered per request.
   // Fetch concurrently — the board/recent/movers share one cached Supabase read
   // (see loadRaw), so this is ~2 round-trips instead of the previous 7 in series.
   const [data, recent, movers, traffic] = await Promise.all([
-    getLeaderboardData(view),
+    getLeaderboardData("momentum"),
     getRecentlyJoined(6),
     getMovers(5),
     getSiteTraffic(),
@@ -96,26 +62,6 @@ export default async function HomePage({
   // For the rank checker: hostnames already on the board + the top volume.
   const knownHosts = data.organic.map((s) => hostname(s.siteUrl).toLowerCase());
   const topClicks = data.organic.reduce((m, s) => Math.max(m, s.clicks28d), 0);
-
-  // Search filter (name or hostname). Kept server-side so results stay crawlable.
-  const query = (sp.q ?? "").trim().toLowerCase();
-  const filtered = query
-    ? data.organic.filter(
-        (s) =>
-          s.displayName.toLowerCase().includes(query) ||
-          hostname(s.siteUrl).toLowerCase().includes(query),
-      )
-    : data.organic;
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const page = parsePage(sp.page, totalPages);
-  const start = (page - 1) * PAGE_SIZE;
-  const pageOrganic = filtered.slice(start, start + PAGE_SIZE);
-  // Re-inject sponsored slots for this page (they only match ranks #10/#20 → page 1).
-  // Skip ads while searching. Attach sparklines for just this page's rows.
-  const pageRows = await attachSparklines(
-    query ? pageOrganic : injectSponsored(pageOrganic, data.sponsored),
-  );
 
   return (
     <>
@@ -128,7 +74,13 @@ export default async function HomePage({
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
               <span className="relative inline-flex size-2 rounded-full bg-primary" />
             </span>
-            <PillStat value={data.totalSites} label="websites" />
+            <Link
+              href="/founding"
+              className="font-medium text-foreground hover:text-primary"
+              title={`The first ${data.founding.total} verified sites get permanent founder status`}
+            >
+              Founding {data.founding.claimed}/{data.founding.total}
+            </Link>
             <span className="text-border">·</span>
             <PillStat value={traffic.sessions} label="sessions" />
             <span className="text-border">·</span>
@@ -160,14 +112,38 @@ export default async function HomePage({
               or{" "}
               <Link href="/login" className="text-primary hover:underline">connect Google Search Console</Link>
               {" · "}
+              <Link href="/launches" className="hover:text-foreground">see what&apos;s launching</Link>
+              {" · "}
               <Link href="#leaderboard" className="hover:text-foreground">view the leaderboard</Link>
             </p>
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              Read-only access · free · about 30 seconds
+            </p>
+          </div>
+
+          {/* What you get when you connect — the sign-up drivers, front and centre. */}
+          <div className="mt-12 grid w-full max-w-4xl gap-4 text-left sm:grid-cols-3">
+            <HeroFeature
+              icon={<Search className="size-5" />}
+              title="Find the clicks you're losing"
+              body="The exact searches where you rank but miss the click — and how to win them back."
+            />
+            <HeroFeature
+              icon={<ShieldCheck className="size-5" />}
+              title="Proof you can show"
+              body="An un-fakeable public rank and an embeddable badge, straight from Search Console."
+            />
+            <HeroFeature
+              icon={<Bot className="size-5" />}
+              title="Get cited by AI agents"
+              body="Your verified momentum is queryable over MCP, so assistants surface you to buyers."
+            />
           </div>
 
           {/* Liveness — recently joined sites */}
           {recent.length > 0 && (
             <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
-              <span className="text-xs uppercase tracking-wider text-muted-foreground">Recently joined</span>
+              <Link href="/launches" className="text-xs uppercase tracking-wider text-muted-foreground hover:text-foreground">Recently launched →</Link>
               {recent.map((s) => (
                 <Link
                   key={s.host}
@@ -195,102 +171,15 @@ export default async function HomePage({
         </section>
       )}
 
-      {/* Leaderboard */}
-      <section id="leaderboard" className="container scroll-mt-20 py-12">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 className="text-2xl font-semibold tracking-tight">
-              {view === "momentum" ? "Momentum leaders" : "Volume leaders"}
-            </h2>
-            <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
-              <TrendingUp className="size-4" />
-              {view === "momentum"
-                ? "Ranked by growth velocity — last 7 days vs. the prior 21."
-                : "Ranked by total organic clicks over the last 28 days."}
-            </p>
-          </div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <Suspense fallback={null}>
-              <LeaderboardSearch initialQuery={query} />
-            </Suspense>
-            <Suspense fallback={null}>
-              <RankingToggle view={view} counts={data.counts} />
-            </Suspense>
-          </div>
-        </div>
-
-        {/* Plain-English explainer: momentum vs volume vs pending */}
-        <div className="mb-6">
-          <RankingExplainer />
-        </div>
-
-        {/* Category filter */}
-        <div className="mb-6 flex flex-wrap gap-2">
-          {categories.map((c) => (
-            <Link
-              key={c.slug}
-              href={`/category/${c.slug}`}
-              className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
-            >
-              {c.label}
-            </Link>
-          ))}
-        </div>
-
-        {data.totalSites === 0 ? (
-          <div className="rounded-xl border border-dashed border-border bg-card/50 p-12 text-center">
-            <span className="mb-3 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-              <Award className="size-3.5" /> Founding spots open
-            </span>
-            <p className="text-lg font-medium">Be founding site #1</p>
-            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              The board is brand new. Connect Google Search Console, publish your
-              verified traffic, and claim the top spot with a permanent Founder badge.
-            </p>
-            <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-              <Button asChild>
-                <Link href="/login">Claim your spot</Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link href="/founding">How founding works</Link>
-              </Button>
-            </div>
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border bg-card/50 p-12 text-center">
-            <p className="text-lg font-medium">No sites match &ldquo;{query}&rdquo;</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Try a different name, or{" "}
-              <Link href="/#leaderboard" className="text-primary hover:underline">clear the search</Link>.
-            </p>
-          </div>
-        ) : (
-          <>
-            <LeaderboardJsonLd sites={pageOrganic} />
-            <Leaderboard rows={pageRows} view={view} foundingCutoff={data.founding.cutoff} />
-
-            <Pagination
-              currentPage={page}
-              totalPages={totalPages}
-              buildHref={(p) => leaderboardHref(view, p, query)}
-            />
-
-            <div className="mt-4 flex flex-col items-center justify-between gap-2 text-xs text-muted-foreground sm:flex-row">
-              <p>
-                Showing {start + 1}–{start + pageOrganic.length} of {filtered.length}
-                {query ? ` matching “${query}”` : ""}.
-                Last updated {data.lastUpdated ? timeAgo(data.lastUpdated) : "—"}; refreshes
-                every {siteConfig.refreshCadenceHours} hours.
-              </p>
-              {data.usingDummyData && (
-                <p className="rounded-full border border-border px-2 py-0.5">
-                  Preview data — connect a site to publish real numbers
-                </p>
-              )}
-            </div>
-          </>
-        )}
-      </section>
+      {/* Leaderboard preview: default momentum view, static.
+          Search, the volume toggle, and pagination live on /leaderboard. */}
+      <LeaderboardSection
+        data={data}
+        view="momentum"
+        query=""
+        page={1}
+        interactive={false}
+      />
 
       {/* Features — surface everything RealRank does */}
       <section className="border-t border-border/60 bg-card/40">
@@ -442,16 +331,20 @@ export default async function HomePage({
             </Link>
           )}
           <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            See where you&apos;re losing clicks. Win them back.
+            You&apos;re leaving verified clicks on the table.
           </h2>
           <p className="max-w-xl text-muted-foreground">
-            Connect Google Search Console (read-only) and publish your verified
-            traffic — then get a ranked list of the searches you&apos;re leaking
-            clicks on, and climb the board with proof, not guesses.
+            You rank for searches you never get the click on, and your real growth
+            gets lost next to sites that just buy attention. Connect Google Search
+            Console and RealRank shows the exact searches you&apos;re leaking — and
+            ranks you by real momentum, so growth decides your spot, not budget.
           </p>
           <Button asChild size="lg" className="mt-2">
-            <Link href="/login">Connect Search Console</Link>
+            <Link href="/login">Show me my leaks</Link>
           </Button>
+          <p className="text-xs text-muted-foreground">
+            Read-only access · free · about 30 seconds
+          </p>
 
           {/* Fallback for visitors not ready to connect Google yet. */}
           <div className="mt-6 flex flex-col items-center gap-2 border-t border-border/60 pt-6">
@@ -460,6 +353,29 @@ export default async function HomePage({
           </div>
         </div>
       </section>
+
+      {/* FAQ: visible answers, mirrored into FAQPage structured data below. */}
+      <section className="border-t border-border/60">
+        <div className="container max-w-3xl py-14">
+          <h2 className="text-center text-2xl font-semibold tracking-tight sm:text-3xl">
+            Frequently asked questions
+          </h2>
+          <div className="mt-8 divide-y divide-border/60 rounded-2xl border border-border bg-card">
+            {FAQ_ITEMS.map((item) => (
+              <details key={item.q} className="group px-5 py-4">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium">
+                  {item.q}
+                  <span className="text-muted-foreground transition-transform group-open:rotate-45">
+                    +
+                  </span>
+                </summary>
+                <p className="mt-3 text-sm text-muted-foreground">{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+      <FaqJsonLd items={FAQ_ITEMS} />
 
       {/* Featured-on badges — scrolling marquee */}
       <BadgeMarquee />
@@ -473,6 +389,26 @@ function PillStat({ value, label }: { value: number; label: string }) {
       <span className="font-semibold tabular-nums text-foreground">{formatCompact(value)}</span>
       <span className="text-muted-foreground">{label}</span>
     </span>
+  );
+}
+
+function HeroFeature({
+  icon,
+  title,
+  body,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  body: string;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card/60 p-5">
+      <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        {icon}
+      </span>
+      <p className="mt-3 font-semibold tracking-tight">{title}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{body}</p>
+    </div>
   );
 }
 

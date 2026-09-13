@@ -1,0 +1,32 @@
+# RealRank
+
+> RealRank is the public organic-traffic leaderboard. Sites connect Google Search Console (read-only) and are ranked by verified organic clicks. The default sort is momentum (growth velocity), so a fast-growing small site can outrank a large flat one. Nobody types in a number and nobody uploads a screenshot, so the ranking cannot be faked.
+
+## How the ranking works
+
+Momentum compares a site's last 7 days of organic clicks against the prior 21 days (an average daily rate), weighted by a logarithm of click volume so real growth counts but random noise cannot leapfrog a steady performer. The exact formula is: momentum = (1 + growthRate) x log10(clicks_7d + 1) x 100. A volume view (total clicks over 28 days) is also available. Data comes straight from each site's Google Search Console, refreshed hourly.
+
+## Key pages
+
+- [Leaderboard](https://www.realrank.lol/): The live board, ranked by momentum or volume.
+- [How ranking works](https://www.realrank.lol/about): Methodology and the momentum formula.
+- [Momentum score calculator](https://www.realrank.lol/momentum-score): Estimate a momentum score from 7- and 28-day clicks.
+- [Traffic report card](https://www.realrank.lol/report-card): Instant A to F organic-traffic grade for any domain.
+- [Is my traffic real?](https://www.realrank.lol/is-my-traffic-real): Compare third-party traffic estimates against verified Search Console clicks.
+- [Founding members](https://www.realrank.lol/founding): The first verified sites on the board.
+- [Verified vs pay-to-rank directories](https://www.realrank.lol/best/lol-directories): How RealRank compares to the .lol pay-to-rank boards.
+- [Connect Search Console](https://www.realrank.lol/login): Claim a verified rank (read-only Google access).
+
+## For AI agents
+
+- [MCP server](https://www.realrank.lol/api/mcp): A public, read-only Model Context Protocol endpoint. Tools cover momentum leaders, a site's trust profile, site comparisons, and trending sites by category. It exposes verified traffic and ranking data only, never revenue.
+- [Agent visibility](https://www.realrank.lol/agent-visibility): What agents can read about RealRank and how to use the MCP server.
+
+## Writing
+
+- [Blog](https://www.realrank.lol/blog): Essays on verified organic traffic, momentum ranking, and the .lol leaderboard trend.
+
+## Notes
+
+- Access to Google Search Console is read-only (the webmasters.readonly scope). It can read search-performance data for properties the owner already controls; it cannot change settings, submit URLs, or write anything.
+- Nothing is public until a site owner chooses to publish a property. Sites can be unpublished at any time, and access can be revoked from Google account permissions.

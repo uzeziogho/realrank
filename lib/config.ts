@@ -40,7 +40,7 @@ export const siteConfig = {
     "The public organic traffic leaderboard. Sites ranked by verified Google Search Console clicks — momentum-first, so fast-growing sites can beat the giants.",
   url: resolveSiteUrl(),
   ogImage: "/og.png",
-  twitter: "@realrank",
+  twitter: "@biznessbud",
   // Google Search Console "HTML tag" verification token (optional). See above.
   googleSiteVerification: GOOGLE_SITE_VERIFICATION,
   // How often the public data is refreshed by the cron job (used in copy only).
@@ -85,7 +85,8 @@ export interface NavLink {
  * lives under the header "More" dropdown (and the mobile menu).
  */
 export const primaryNav: NavLink[] = [
-  { href: "/#leaderboard", label: "Leaderboard" },
+  { href: "/leaderboard", label: "Leaderboard" },
+  { href: "/launches", label: "Launches" },
   { href: "/movers", label: "Movers" },
   { href: "/founding", label: "Founding" },
   { href: "/stats", label: "Stats" },
@@ -124,6 +125,11 @@ export const toolLinks: NavLink[] = [
     href: "/is-my-traffic-real",
     label: "Is my traffic real?",
     description: "Check whether your traffic is genuine organic search demand.",
+  },
+  {
+    href: "/report-card",
+    label: "Traffic report card",
+    description: "Grade any domain's verified organic traffic — instant, shareable.",
   },
   {
     href: "/dashboard/channels",

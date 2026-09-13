@@ -27,6 +27,14 @@ export const metadata: Metadata = {
   ],
   applicationName: siteConfig.name,
   alternates: { canonical: "/" },
+  icons: {
+    icon: [
+      { url: "/logo.svg", type: "image/svg+xml" },
+      { url: "/logo-120.png", type: "image/png", sizes: "120x120" },
+    ],
+    shortcut: "/logo-120.png",
+    apple: "/logo-120.png",
+  },
   openGraph: {
     type: "website",
     url: siteConfig.url,
@@ -64,6 +72,15 @@ export default function RootLayout({
       className={`${GeistSans.variable} ${GeistMono.variable}`}
     >
       <head>
+        {/* Brand wordmark typeface (Space Grotesk). Loaded via stylesheet so it
+            works without a build-time font fetch; the Logo falls back to the
+            site sans until it arrives. */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&display=swap"
+          rel="stylesheet"
+        />
         {/* Set theme before paint to avoid a flash. Follows the visitor's saved
             choice, else their system preference (dark is the design default). */}
         <script

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Flame, TrendingDown, TrendingUp, Sparkles, ArrowUpRight } from "lucide-react";
 import { SiteFavicon } from "@/components/site-favicon";
 import { Button } from "@/components/ui/button";
+import { ConnectNote } from "@/components/connect-note";
 import { getMovers } from "@/lib/data";
 import { siteConfig } from "@/lib/config";
 import { cn, formatGrowth, hostname, timeAgo } from "@/lib/utils";
@@ -142,8 +143,9 @@ export default async function MoversPage() {
             verified traffic, and let real momentum move you up. It&apos;s free.
           </p>
           <Button asChild className="mt-5">
-            <Link href="/login">Connect Search Console</Link>
+            <Link href="/login">Connect my Search Console</Link>
           </Button>
+          <ConnectNote className="mt-3" />
         </section>
       </div>
     </>
