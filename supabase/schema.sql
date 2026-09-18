@@ -442,3 +442,43 @@ begin
     updated_at = now();
 end;
 $$;
+
+-- ---------------------------------------------------------------------------
+-- Outbound clicks: how many times visitors clicked through from a RealRank
+-- board row out to the listed site. First-party engagement RealRank owns
+-- (unlike GSC clicks, which are Google's). Privacy-safe aggregate counts only —
+-- one row per (host, day), keyed by the site's registrable host. Written by the
+-- /visit/<host> tracking redirect via the service role; RLS on with no policy
+-- blocks anon/auth clients. Not yet surfaced in ranking — data is accumulating.
+-- ---------------------------------------------------------------------------
+create table if not exists public.site_outbound_clicks (
+  host text not null,
+  day date not null default (now() at time zone 'utc')::date,
+  hits bigint not null default 0,
+  updated_at timestamptz not null default now(),
+  primary key (host, day)
+);
+
+alter table public.site_outbound_clicks enable row level security;
+
+create index if not exists site_outbound_clicks_host_idx
+  on public.site_outbound_clicks (host, day);
+
+-- Increment one site's outbound click count for today.
+create or replace function public.bump_outbound_click(p_host text)
+returns void
+language plpgsql
+as $$
+declare
+  d date := (now() at time zone 'utc')::date;
+begin
+  if p_host is null or length(trim(p_host)) = 0 then
+    return;
+  end if;
+  insert into public.site_outbound_clicks as t (host, day, hits, updated_at)
+  values (lower(left(trim(p_host), 253)), d, 1, now())
+  on conflict (host, day) do update set
+    hits = t.hits + 1,
+    updated_at = now();
+end;
+$$;

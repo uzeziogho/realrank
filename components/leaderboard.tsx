@@ -3,7 +3,7 @@ import { ArrowUpRight, TrendingUp, TrendingDown, Minus, ChevronUp, ChevronDown, 
 import { Badge } from "@/components/ui/badge";
 import { Sparkline } from "@/components/sparkline";
 import { SiteFavicon } from "@/components/site-favicon";
-import { cn, formatCompact, formatGrowth, hostname, siteHref } from "@/lib/utils";
+import { cn, formatCompact, formatGrowth, hostname, visitHref } from "@/lib/utils";
 import { categoryLabel, type RankingView } from "@/lib/config";
 import type { LeaderboardRow, RankedSite, SponsoredRow } from "@/lib/types";
 
@@ -158,7 +158,7 @@ function OrganicRowItem({
               {row.displayName}
             </Link>
             <a
-              href={siteHref(row.siteUrl)}
+              href={visitHref(row.siteUrl)}
               target="_blank"
               rel="noopener nofollow"
               aria-label={`Visit ${row.displayName}`}
