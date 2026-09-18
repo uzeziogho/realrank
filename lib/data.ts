@@ -427,6 +427,54 @@ export async function getMovers(limit = 5): Promise<MoversData> {
   };
 }
 
+export interface UnderdogsData {
+  /** Low-authority sites with outsized momentum, best overperformers first. */
+  underdogs: RankedSite[];
+  weekOf: string | null;
+  usingDummyData: boolean;
+}
+
+/** DR at or below this (Open PageRank, 0–10) counts as a low-authority "underdog". */
+export const UNDERDOG_DR_CAP = 5;
+
+/**
+ * "Punching above their DR" — sites with a low third-party authority score
+ * (Open PageRank) that are nonetheless ranking well on verified momentum. DR is
+ * only ever context here, never a ranking input: the board still ranks on real
+ * clicks. This cut just surfaces the underdog story — small domains beating big
+ * ones on actual growth. Sites without a DR value can't be judged, so they're
+ * excluded rather than assumed to be underdogs.
+ */
+export async function getUnderdogs(limit = 9): Promise<UnderdogsData> {
+  const { sites, usingDummyData } = await loadRaw();
+  const withTraffic = sites.filter((s) => s.is_active && s.clicks_7d > 0);
+  const ranked = rankSites(withTraffic, "momentum");
+
+  const underdogs = ranked
+    .filter(
+      (s) =>
+        !s.pending &&
+        s.domainRank != null &&
+        s.domainRank <= UNDERDOG_DR_CAP &&
+        s.momentumScore > 0,
+    )
+    // Momentum earned per unit of authority: the more momentum a small domain
+    // shows, the further "above its weight" it's punching. (+1 avoids blowing up
+    // toward DR 0 and keeps the ordering stable.)
+    .sort(
+      (a, b) =>
+        b.momentumScore / ((b.domainRank ?? 0) + 1) -
+        a.momentumScore / ((a.domainRank ?? 0) + 1),
+    )
+    .slice(0, limit);
+
+  return {
+    underdogs,
+    weekOf: latestRefresh(sites),
+    usingDummyData,
+  };
+}
+
 export interface RecentSite {
   displayName: string;
   host: string;

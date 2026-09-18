@@ -60,6 +60,7 @@ export function SiteFooter() {
               <li><Link href="/leaderboard" className="hover:text-foreground">Leaderboard</Link></li>
               <li><Link href="/launches" className="hover:text-foreground">Launches</Link></li>
               <li><Link href="/movers" className="hover:text-foreground">Movers &amp; Shakers</Link></li>
+              <li><Link href="/underdogs" className="hover:text-foreground">Underdogs</Link></li>
               <li><Link href="/founding" className="hover:text-foreground">Founding sites</Link></li>
               <li><Link href="/momentum-score" className="hover:text-foreground">Momentum calculator</Link></li>
               <li><Link href="/organic-growth-grade" className="hover:text-foreground">Growth grader</Link></li>
