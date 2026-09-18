@@ -7,7 +7,7 @@ import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
 import { getSearchLeaks } from "@/lib/leaks";
 import { listUserProperties } from "@/lib/gsc-server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
-import { getOptionalUser } from "@/lib/auth";
+import { getOptionalUser, isOwner } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Search leaks",
@@ -35,7 +35,7 @@ export default async function LeaksPage({
 
   return (
     <div className="container max-w-5xl py-10">
-      <DashboardTabs />
+      <DashboardTabs owner={isOwner(user.email)} />
 
       <div className="mt-8 mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Search leaks</h1>

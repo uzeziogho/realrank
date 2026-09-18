@@ -9,6 +9,18 @@ import { createClient } from "@/lib/supabase/server";
  * isn't configured yet. Safe to call from any Server Component / route — it
  * never throws on missing env, so the app still renders during local dev.
  */
+/** The product owner's email — set OWNER_EMAIL in the environment. */
+const OWNER_EMAIL = (process.env.OWNER_EMAIL ?? "").trim().toLowerCase();
+
+/**
+ * True when the given email is the configured product owner. Used to gate
+ * owner-only surfaces (e.g. the Analytics dashboard). Returns false when
+ * OWNER_EMAIL isn't set, so nothing owner-only leaks by default.
+ */
+export function isOwner(email?: string | null): boolean {
+  return Boolean(OWNER_EMAIL && email && email.trim().toLowerCase() === OWNER_EMAIL);
+}
+
 export async function getOptionalUser(): Promise<User | null> {
   if (!isSupabaseConfigured()) return null;
   try {
