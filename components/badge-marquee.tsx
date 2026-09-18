@@ -110,6 +110,21 @@ const BADGES: Badge[] = [
     height: 100,
     rel: "noopener noreferrer",
   },
+  {
+    href: "https://www.founder.best/products/realrank?ref=founderbest",
+    src: "https://www.founder.best/api/badge/realrank/light",
+    alt: "RealRank - Featured on Founder.best",
+    width: 250,
+    height: 54,
+    rel: "noopener noreferrer",
+  },
+  {
+    href: "https://launchigniter.com/product/real-rank?ref=badge-real-rank",
+    src: "https://launchigniter.com/api/badge/real-rank?theme=light",
+    alt: "Featured on LaunchIgniter",
+    width: 212,
+    height: 55,
+  },
 ];
 
 function BadgeGroup({ ariaHidden = false }: { ariaHidden?: boolean }) {
