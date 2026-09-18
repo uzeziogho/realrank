@@ -18,21 +18,21 @@ export function Leaderboard({
   foundingCutoff?: string | null;
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card">
+    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
       {/* Column header — hidden on mobile where rows stack */}
-      <div className="hidden grid-cols-[3.5rem_1fr_5.5rem_6rem_6rem] items-center gap-4 border-b border-border px-5 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground md:grid">
-        <span>#</span>
+      <div className="hidden grid-cols-[3.75rem_1fr_5rem_7rem_6.5rem] items-center gap-4 border-b border-border bg-muted/30 px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground md:grid">
+        <span>Rank</span>
         <span>Site</span>
         <span className="text-right">Trend</span>
         <span className="text-right">
-          {view === "momentum" ? "Momentum" : "28-day"}
+          {view === "momentum" ? "Momentum" : "28-day clicks"}
         </span>
         <span className="text-right">
           {view === "momentum" ? "7-day clicks" : "Momentum"}
         </span>
       </div>
 
-      <ol className="divide-y divide-border">
+      <ol className="divide-y divide-border/70">
         {rows.map((row) =>
           row.kind === "organic" ? (
             <OrganicRowItem
@@ -48,6 +48,17 @@ export function Leaderboard({
       </ol>
     </div>
   );
+}
+
+/** Medal tint for the podium; neutral for everyone else. Theme-aware. */
+function rankChipClass(rank: number): string {
+  if (rank === 1)
+    return "bg-amber-400/15 text-amber-600 ring-1 ring-amber-400/40 dark:text-amber-300";
+  if (rank === 2)
+    return "bg-muted text-foreground ring-1 ring-border";
+  if (rank === 3)
+    return "bg-orange-500/12 text-orange-600 ring-1 ring-orange-500/30 dark:text-orange-300";
+  return "";
 }
 
 function OrganicRowItem({
@@ -74,16 +85,30 @@ function OrganicRowItem({
   const isNew = pending && row.clicks28d === 0;
   const pendingLabel =
     view === "momentum" && row.clicks28d > 0 ? "No clicks this week" : "No clicks yet";
+  const podium = !pending && row.rank <= 3;
 
   return (
     <li
       className={cn(
-        "group grid grid-cols-[2.5rem_1fr] items-center gap-4 px-4 py-4 transition-colors hover:bg-accent/40 md:grid-cols-[3.5rem_1fr_5.5rem_6rem_6rem] md:px-5",
+        "group relative grid grid-cols-[3rem_1fr] items-center gap-4 px-4 py-4 transition-colors hover:bg-accent/40 md:grid-cols-[3.75rem_1fr_5rem_7rem_6.5rem] md:px-6 md:py-4",
         pending && "bg-muted/20",
       )}
     >
+      {/* Podium accent bar on the left edge */}
+      {podium && (
+        <span
+          aria-hidden
+          className={cn(
+            "absolute inset-y-0 left-0 w-0.5",
+            row.rank === 1 && "bg-amber-400/70",
+            row.rank === 2 && "bg-muted-foreground/40",
+            row.rank === 3 && "bg-orange-500/60",
+          )}
+        />
+      )}
+
       {/* Rank + movement */}
-      <div className="flex flex-col items-start">
+      <div className="flex flex-col items-center gap-1">
         {pending ? (
           isNew ? (
             <span
@@ -104,8 +129,10 @@ function OrganicRowItem({
           <>
             <span
               className={cn(
-                "tabular-nums font-semibold",
-                row.rank <= 3 ? "text-2xl text-foreground" : "text-lg text-muted-foreground",
+                "flex size-9 items-center justify-center rounded-xl tabular-nums font-bold",
+                podium
+                  ? `text-lg ${rankChipClass(row.rank)}`
+                  : "text-base text-muted-foreground",
               )}
             >
               {row.rank}
@@ -120,8 +147,10 @@ function OrganicRowItem({
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           {/* Favicon + name + visit link stay together and truncate as a unit,
               so the badges below can't crush the name down to one letter. */}
-          <div className="flex min-w-0 items-center gap-2">
-            <SiteFavicon url={row.siteUrl} name={row.displayName} />
+          <div className="flex min-w-0 items-center gap-2.5">
+            <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border/70 bg-background">
+              <SiteFavicon url={row.siteUrl} name={row.displayName} />
+            </span>
             <Link
               href={`/site/${hostname(row.siteUrl).toLowerCase()}`}
               className="truncate text-base font-semibold text-foreground hover:underline"
@@ -168,13 +197,13 @@ function OrganicRowItem({
             </span>
           )}
         </div>
-        <p className="truncate text-sm text-muted-foreground">
+        <p className="mt-0.5 truncate text-sm text-muted-foreground">
           <span className="text-muted-foreground/70">{hostname(row.siteUrl)}</span>
           {row.description ? <span className="mx-1.5">·</span> : null}
           {row.description}
         </p>
         {/* Mobile metrics */}
-        <div className="mt-2 flex items-center gap-3 md:hidden">
+        <div className="mt-2.5 flex items-center gap-3 md:hidden">
           {pending ? (
             <span className="text-sm text-muted-foreground">
               {isNew ? "Verified · first ranking in ~7 days" : pendingLabel}
@@ -215,13 +244,13 @@ function OrganicRowItem({
           )
         ) : view === "momentum" ? (
           <>
-            <span className="text-xl font-semibold tabular-nums text-foreground">
+            <span className="text-xl font-bold tabular-nums text-foreground">
               {row.momentumScore.toFixed(0)}
             </span>
             <GrowthPill ratio={row.growthRate} />
           </>
         ) : (
-          <span className="text-xl font-semibold tabular-nums text-foreground">
+          <span className="text-xl font-bold tabular-nums text-foreground">
             {formatCompact(row.clicks28d)}
           </span>
         )}
@@ -232,12 +261,12 @@ function OrganicRowItem({
         {pending ? (
           <span className="text-sm text-muted-foreground/50 tabular-nums">—</span>
         ) : view === "momentum" ? (
-          <span className="text-xl font-semibold tabular-nums text-foreground">
+          <span className="text-lg font-semibold tabular-nums text-muted-foreground">
             {formatCompact(row.clicks7d)}
           </span>
         ) : (
           <>
-            <span className="text-xl font-semibold tabular-nums text-foreground">
+            <span className="text-xl font-bold tabular-nums text-foreground">
               {row.momentumScore.toFixed(0)}
             </span>
             <GrowthPill ratio={row.growthRate} />
@@ -250,9 +279,11 @@ function OrganicRowItem({
 
 function SponsoredRowItem({ row }: { row: SponsoredRow }) {
   return (
-    <li className="grid grid-cols-[2.5rem_1fr] items-center gap-4 bg-amber-500/[0.06] px-4 py-4 md:grid-cols-[3.5rem_1fr_5.5rem_6rem_6rem] md:px-5">
+    <li className="grid grid-cols-[3rem_1fr] items-center gap-4 bg-amber-500/[0.06] px-4 py-4 md:grid-cols-[3.75rem_1fr_5rem_7rem_6.5rem] md:px-6">
       <div className="flex items-center justify-center">
-        <span className="text-xs font-medium text-amber-500/70">Ad</span>
+        <span className="rounded-md border border-amber-500/30 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-500/80">
+          Ad
+        </span>
       </div>
       <div className="min-w-0">
         <div className="flex items-center gap-2">
