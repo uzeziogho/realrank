@@ -378,6 +378,36 @@ export async function getEventStats(days = 30): Promise<EventStats> {
   }
 }
 
+/**
+ * Outbound click-throughs per site host over the last `days`, from the
+ * first-party site_outbound_clicks counter (written by the /visit redirect).
+ * Keyed by lowercase host. Aggregate only. Returns an empty map on any failure
+ * or before the migration is run, so callers stay safe while data accumulates.
+ * Not yet wired into ranking — this is the read path for a future "most visited"
+ * view.
+ */
+export async function getOutboundClicks(days = 28): Promise<Map<string, number>> {
+  const out = new Map<string, number>();
+  if (!isSupabaseConfigured()) return out;
+  try {
+    const since = new Date();
+    since.setUTCDate(since.getUTCDate() - days);
+    const supabase = createServiceClient();
+    const { data, error } = await supabase
+      .from("site_outbound_clicks")
+      .select("host, hits")
+      .gte("day", since.toISOString().slice(0, 10));
+    if (error) throw error;
+    for (const r of data ?? []) {
+      out.set(r.host, (out.get(r.host) ?? 0) + Number(r.hits));
+    }
+    return out;
+  } catch (err) {
+    console.error("[data] outbound clicks read failed:", err);
+    return out;
+  }
+}
+
 export interface MoversData {
   /** Sites that gained rank since the previous refresh (largest gain first). */
   climbers: RankedSite[];

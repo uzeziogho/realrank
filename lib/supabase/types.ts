@@ -397,6 +397,27 @@ export interface Database {
         };
         Relationships: [];
       };
+      site_outbound_clicks: {
+        Row: {
+          host: string;
+          day: string;
+          hits: number;
+          updated_at: string;
+        };
+        Insert: {
+          host: string;
+          day?: string;
+          hits?: number;
+          updated_at?: string;
+        };
+        Update: {
+          host?: string;
+          day?: string;
+          hits?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -412,6 +433,10 @@ export interface Database {
       };
       bump_event: {
         Args: { p_event: string; p_label: string };
+        Returns: undefined;
+      };
+      bump_outbound_click: {
+        Args: { p_host: string };
         Returns: undefined;
       };
     };

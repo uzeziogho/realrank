@@ -125,6 +125,13 @@ const BADGES: Badge[] = [
     width: 212,
     height: 55,
   },
+  {
+    href: "https://startupfa.me/s/realrank?utm_source=www.realrank.lol",
+    src: "https://startupfa.me/badges/featured-badge.webp",
+    alt: "RealRank - Featured on Startup Fame",
+    width: 171,
+    height: 54,
+  },
 ];
 
 function BadgeGroup({ ariaHidden = false }: { ariaHidden?: boolean }) {

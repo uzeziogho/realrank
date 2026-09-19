@@ -53,3 +53,12 @@ export function siteHref(url: string): string {
   if (url.startsWith("sc-domain:")) return `https://${url.slice("sc-domain:".length)}`;
   return url;
 }
+
+/**
+ * A tracked outbound href for a stored site_url. Routes the click through
+ * /visit/<host>, which counts the click-through then 302s to the real site.
+ * Use it for board "Visit" links so outbound engagement is measured.
+ */
+export function visitHref(url: string): string {
+  return `/visit/${encodeURIComponent(hostname(url).toLowerCase())}`;
+}
