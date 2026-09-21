@@ -22,6 +22,245 @@ const A = (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
 
 export const articles: Article[] = [
   {
+    slug: "every-realrank-tool-explained",
+    title: "Every tool on RealRank, and exactly what each one does",
+    description:
+      "A field guide to the whole RealRank toolkit: the free calculators, the leaderboard and its views, the proof surfaces you can embed, the dashboard tools that read your Search Console, and the machine-readable board for AI agents. What each tool takes in, what it gives back, and when to reach for it.",
+    date: "2026-09-21",
+    keywords: [
+      "RealRank tools",
+      "momentum calculator",
+      "organic traffic tools",
+      "search console tools",
+      "verified traffic leaderboard",
+    ],
+    Body: () => (
+      <>
+        <p>
+          RealRank is one stubborn idea expressed as a dozen small tools: rank
+          websites by organic-search clicks that <strong>Google itself verifies</strong>,
+          and never by a number someone typed in. Around that idea sits a toolkit -
+          some of it free and login-free, some of it unlocked when you connect Search
+          Console. This is the full field guide. For each tool you get what it takes
+          in, what it hands back, and the moment it earns its place.
+        </p>
+        <p>
+          One thing ties all of them together, so it is worth saying once up front.
+          A third-party estimate (SimilarWeb, Ahrefs, Semrush) is modelled from
+          sampled panels and is routinely off by{" "}
+          <Link href="/is-my-traffic-real">30-80% in either direction</Link>. A
+          screenshot is a cropped, best-day, un-auditable image. Google Search Console
+          clicks are your own measured clicks, pulled over a read-only connection. That
+          is the only input RealRank trusts, and every tool below is a different lens on
+          it.
+        </p>
+
+        <h2>The free calculators (no login, nothing published)</h2>
+        <p>
+          These four run entirely on numbers you type in. Nothing is saved, nothing goes
+          public, and you do not need an account. They exist so you can see where you
+          stand before deciding whether to connect anything.
+        </p>
+        <p>
+          <strong>
+            <Link href="/momentum-score">Momentum calculator</Link>
+          </strong>{" "}
+          is the one that mirrors the board&apos;s actual maths. You enter your Search
+          Console clicks for the last 7 days and the last 28 days. It compares your
+          recent daily rate (the 7-day window) against your prior daily rate (days 8
+          through 28, so it is a like-for-like 7-versus-21 comparison), then produces a
+          momentum score of{" "}
+          <em>(1 + growth rate) x log10(7-day clicks + 1) x 100</em>. The log term
+          rewards volume with diminishing returns, and the growth multiplier is what lets
+          a small, fast-rising site out-score a bigger, flat one. It is the same formula
+          the leaderboard uses, so the number you get here is the number you would land
+          on if you published.
+        </p>
+        <p>
+          <strong>
+            <Link href="/organic-growth-grade">Growth grader</Link>
+          </strong>{" "}
+          takes the same two inputs and turns them into a single shareable letter grade,
+          from A+ down to F, based on your week-over-prior growth. It is built to be
+          screenshot-and-post friendly: a grade is easier to brag about (or commiserate
+          over) than a raw ratio, and it funnels toward a <em>verified</em> grade on the
+          board rather than a self-reported one.
+        </p>
+        <p>
+          <strong>
+            <Link href="/is-my-traffic-real">Is my traffic real?</Link>
+          </strong>{" "}
+          answers the question the whole site is named after. Enter what a third-party
+          tool estimates for your monthly organic visitors, then enter your verified
+          28-day clicks, and it shows you the gap as a percentage. Most of the time the
+          estimate is inflated, and seeing the overstatement in plain numbers is the
+          fastest way to understand why RealRank refuses to rank on estimates at all.
+        </p>
+        <p>
+          <strong>
+            <Link href="/report-card">Report card</Link>
+          </strong>{" "}
+          rolls your numbers into a single shareable scorecard - momentum, growth and
+          volume in one card designed to be posted. Think of it as the calculators&apos;
+          output dressed for an audience.
+        </p>
+
+        <h2>The leaderboard and its views</h2>
+        <p>
+          The board is the product, and it has more than one way to be read. Every view
+          below draws from the same verified data and refreshes every 24 hours, so the
+          numbers never disagree with each other.
+        </p>
+        <p>
+          <strong>
+            <Link href="/leaderboard">The leaderboard</Link>
+          </strong>{" "}
+          ranks by momentum by default: growth velocity, last 7 days against the prior
+          21. Flip it to the <em>Volume</em> view and it ranks by total organic clicks
+          over the last 28 days instead - useful when you want raw size rather than
+          direction. Sites that have connected but have no clicks in the window yet are
+          not hidden; they sit at the bottom in a &quot;warming up&quot; state so a fresh
+          site is visible the moment it joins.
+        </p>
+        <p>
+          <strong>
+            <Link href="/launches">Launches</Link>
+          </strong>{" "}
+          is the board read as a launch feed: the newest verified sites next to this
+          week&apos;s fastest climbers. It is where a just-connected site shows up first,
+          and unlike a pay-to-list directory, the position is decided by real clicks, not
+          who paid to sit at the top.
+        </p>
+        <p>
+          <strong>
+            <Link href="/movers">Movers &amp; Shakers</Link>
+          </strong>{" "}
+          surfaces movement rather than absolute position: who climbed, who slipped, and
+          who is brand new since the last refresh. It reuses the same per-site rank
+          change the main board shows, so &quot;up 12 places&quot; means the same thing
+          everywhere.
+        </p>
+        <p>
+          <strong>
+            <Link href="/underdogs">Underdogs</Link>
+          </strong>{" "}
+          is the &quot;punching above their weight&quot; cut: low-authority domains
+          (Domain Rating of 5 or under) that are ranking well on verified momentum
+          anyway. It ranks by momentum earned per unit of authority, so a DR 3 site
+          out-clicking a DR 61 incumbent is exactly the story it tells. Authority is only
+          ever context here, never a ranking input.
+        </p>
+        <p>
+          <strong>
+            <Link href="/founding">Founding</Link>
+          </strong>{" "}
+          tracks a one-time program: the first 50 sites to join keep a permanent Founder
+          badge. The page shows how many founding spots are claimed and how many remain.
+          It is the one place on the board where being early is itself the reward.
+        </p>
+        <p>
+          <strong>
+            <Link href="/stats">Stats</Link>
+          </strong>{" "}
+          zooms out from individual sites to the whole board: an anonymized benchmark of
+          median growth, the share of sites growing versus declining, and the fastest
+          verified movers, alongside RealRank&apos;s own first-party traffic. Conclusions
+          are aggregated, so it is a read on the market without exposing any single
+          site&apos;s raw numbers.
+        </p>
+        <p>
+          Prefer your own vertical? The category boards (SaaS, ecommerce, media and the
+          rest) are the same ranking scoped to one type of site, so you are compared with
+          peers rather than the entire internet.
+        </p>
+
+        <h2>Proof you can show anywhere</h2>
+        <p>
+          A ranking is only useful if you can point at it. These surfaces turn your
+          verified position into something you can link, compare and embed.
+        </p>
+        <p>
+          <strong>Site profiles and rank cards</strong> give every listed site a public
+          page with its verified momentum, a timeline of how it has moved, its clicks and
+          its Domain Rating for context. It is the link you send when someone asks
+          &quot;how do I know that number is real?&quot;
+        </p>
+        <p>
+          <strong>Head-to-head compare</strong> puts two sites side by side on the same
+          verified metrics - momentum, clicks and DR - so a comparison is settled on
+          measured clicks instead of vibes or duelling screenshots.
+        </p>
+        <p>
+          <strong>The embeddable badge and widget</strong> put your live verified number
+          on your own site or README. Because it reads from the same source as the board,
+          it updates as your traffic does, and a reader can click through to your profile
+          to check it. It is a screenshot that can never go stale or be faked.
+        </p>
+
+        <h2>The dashboard tools (after you connect Search Console)</h2>
+        <p>
+          Connecting Google Search Console is read-only - RealRank requests only the{" "}
+          <code>webmasters.readonly</code> scope, so it can read your clicks and nothing
+          else. Once connected, two tools go beyond ranking and start finding you traffic.
+        </p>
+        <p>
+          <strong>
+            <Link href="/dashboard/leaks">Search-leak finder</Link>
+          </strong>{" "}
+          reads your real per-query impressions and clicks to show where organic traffic
+          leaks before it reaches you: queries stuck just off page one, and rankings that
+          earn impressions but not the click. These are the highest-leverage fixes in SEO
+          because the demand is already there - you are losing it at the last step.
+        </p>
+        <p>
+          <strong>
+            <Link href="/dashboard/channels">Channels</Link>
+          </strong>{" "}
+          answers a different question: which marketing channels actually bring paying
+          customers. It pairs tracking links with Stripe so a click can be followed all
+          the way to revenue, then ranks your channels by money and efficiency rather than
+          raw traffic. It is the one tool here that is about dollars, not clicks.
+        </p>
+
+        <h2>Getting found by machines</h2>
+        <p>
+          <strong>
+            <Link href="/agent-visibility">Agent visibility</Link>
+          </strong>{" "}
+          and the accompanying MCP endpoint expose the board in a machine-readable form,
+          so AI agents and assistants can cite verified rankings directly rather than
+          scraping a page or trusting an estimate. As more discovery happens through
+          agents instead of blue links, a verified, structured record of who actually gets
+          traffic becomes something those agents can quote.
+        </p>
+
+        <h2>The signals under the hood</h2>
+        <p>
+          Two more things run quietly behind the tools above. <strong>Domain Rating</strong>{" "}
+          (via Open PageRank, on a 0 to 10 scale) appears as a context chip on the board
+          and on profiles. It is deliberately never part of the ranking - it is there so
+          you can see, at a glance, when a small-authority site is beating a big one on
+          real clicks. And <strong>outbound-click tracking</strong> now measures how often
+          visitors click through from a board row to the listed site, a first-party
+          engagement signal RealRank owns outright, laying the groundwork for a future
+          &quot;most visited&quot; view.
+        </p>
+
+        <h2>The throughline</h2>
+        <p>
+          Every tool on this page is the same conviction viewed from a different angle.
+          The calculators let you estimate the number privately. The board and its views
+          rank it publicly. The profiles, comparisons and badge let you prove it to
+          anyone. The dashboard tools help you grow it. And the agent endpoint makes it
+          legible to the machines doing more of the discovering. The scarce thing on the
+          modern web is not a website - it is proof that one gets traffic. RealRank is the
+          toolkit for showing that proof, one verified click at a time. When you are
+          ready, <Link href="/login">connect Search Console</Link> and claim your spot.
+        </p>
+      </>
+    ),
+  },
+  {
     slug: "prove-your-site-gets-traffic",
     title: "Anyone can vibe-code a site now. Proving it gets traffic is the new flex.",
     description:
