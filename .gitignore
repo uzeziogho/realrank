@@ -29,3 +29,6 @@ next-env.d.ts
 
 # vercel
 .vercel
+
+# /brag generated launch-video output (render artifacts, vendored libs, TTS wavs)
+brag-output/
