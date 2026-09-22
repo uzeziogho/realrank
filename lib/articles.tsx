@@ -22,6 +22,213 @@ const A = (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
 
 export const articles: Article[] = [
   {
+    slug: "similarweb-alternative-verified-traffic",
+    title: "A free SimilarWeb alternative for your own traffic (and where it isn't one)",
+    description:
+      "SimilarWeb estimates traffic from a clickstream panel, which is great for spying on sites you don't own and wrong for the one you do. Here's the free, verified alternative for measuring your own organic traffic - and an honest note on what it does not replace.",
+    date: "2026-09-22",
+    keywords: [
+      "SimilarWeb alternative",
+      "free SimilarWeb alternative",
+      "verified organic traffic",
+      "organic traffic checker",
+      "similarweb accuracy",
+    ],
+    Body: () => (
+      <>
+        <p>
+          People reach for SimilarWeb to answer two very different questions, and it is
+          only honest at one of them. The first is <em>&quot;how much traffic does that
+          site I don&apos;t own get?&quot;</em> The second is <em>&quot;how much traffic
+          does <strong>my</strong> site get?&quot;</em> For your own site there is a free,
+          exact alternative, and this post is about when to switch to it.
+        </p>
+        <h2>How SimilarWeb actually gets its number</h2>
+        <p>
+          SimilarWeb does not see your server logs or your analytics. It estimates traffic
+          by modelling a clickstream panel - browsing data from browser extensions,
+          apps and partner devices - then extrapolating to the whole internet with a lot
+          of statistical machinery. For huge sites with millions of visits, that model is
+          directional and often close. For the long tail, where almost every indie and
+          early-stage SaaS site lives, the panel barely samples you, so the number is a
+          guess dressed as a measurement. That is why founders routinely see SimilarWeb
+          report a figure that is{" "}
+          <Link href="/is-my-traffic-real">off by 30-80% in either direction</Link> from
+          what they know is true.
+        </p>
+        <h2>The alternative for your own site: your measured clicks</h2>
+        <p>
+          For the site you own, you do not need an estimate at all. Google Search Console
+          records your actual organic clicks, and connecting it (read-only) gives you the
+          exact number instead of a modelled one. RealRank is built on top of that: it
+          reads your verified Search Console clicks and ranks you against everyone else who
+          has done the same, so the comparison is measurement against measurement rather
+          than one panel estimate against another. You can sanity-check the gap yourself
+          with the <Link href="/is-my-traffic-real">Is my traffic real?</Link> tool, then{" "}
+          <Link href="/login">connect Search Console</Link> to publish the real figure.
+        </p>
+        <p>
+          The difference is not a rounding error, it is a category difference. An estimate
+          is un-auditable, so a skeptical reader discounts it toward zero. A verified click
+          count is checkable, so it counts as proof. If your goal is to <em>show</em> your
+          traffic - to an investor, a customer, a marketplace, or a timeline full of
+          strangers - the verified number is the only one that survives scrutiny.
+        </p>
+        <h2>Where RealRank is not a SimilarWeb replacement</h2>
+        <p>
+          Be clear-eyed about scope. SimilarWeb&apos;s whole point is estimating sites you
+          do <em>not</em> control - competitors, acquisition targets, a market you are
+          sizing. RealRank cannot and does not do that, because it only ever shows verified
+          numbers from sites that have connected their own Search Console. If you need a
+          rough read on a rival&apos;s traffic, an estimator is still the tool for that job,
+          with all its caveats. The verified alternative wins specifically when the site in
+          question is yours, or is one that has chosen to prove its numbers publicly.
+        </p>
+        <p>
+          So use the right lens for the question. Estimating the competition: an estimator,
+          held loosely. Knowing or proving your own traffic: your verified Search Console
+          clicks, free, on the <Link href="/leaderboard">RealRank board</Link>. For the
+          deeper why, see{" "}
+          <Link href="/blog/verified-vs-estimated-traffic">
+            verified traffic vs estimated traffic
+          </Link>
+          .
+        </p>
+      </>
+    ),
+  },
+  {
+    slug: "ahrefs-traffic-alternative-verified-clicks",
+    title: "The verified alternative to Ahrefs' organic traffic estimate",
+    description:
+      "Ahrefs' organic traffic number is modelled from keyword rankings times search volume times a click-through curve. It's a smart estimate, not a measurement. Here's the verified alternative for your own site, and when to keep using Ahrefs anyway.",
+    date: "2026-09-20",
+    keywords: [
+      "Ahrefs alternative",
+      "Ahrefs traffic accuracy",
+      "organic traffic estimate",
+      "verified traffic",
+      "search console clicks",
+    ],
+    Body: () => (
+      <>
+        <p>
+          Ahrefs is a genuinely excellent tool, and the &quot;Organic traffic&quot; number
+          on a Site Explorer page is one of the most quoted figures in SEO. It is also, for
+          your own site, the wrong number to quote - because it is a model, not a
+          measurement. If you want the real figure, there is a free verified alternative.
+        </p>
+        <h2>What the Ahrefs traffic number really is</h2>
+        <p>
+          Ahrefs does not observe your visitors. It knows which keywords your pages rank for
+          (from its own crawl and index), estimates the monthly search volume of each
+          keyword, and applies a click-through-rate curve by position to guess how many of
+          those searches become clicks. Sum that across all your ranking keywords and you
+          get an <em>estimated</em> organic traffic figure. It is a clever chain of
+          estimates, and every link in the chain has error: keyword volumes are themselves
+          modelled, CTR curves vary wildly by intent and SERP layout, and Ahrefs cannot see
+          the long-tail queries that never show up in its keyword database. The result can
+          be reasonable for big informational sites and badly off for a product site whose
+          traffic concentrates on a few branded or transactional terms.
+        </p>
+        <h2>The verified alternative: what Google already counted</h2>
+        <p>
+          Google Search Console has the number Ahrefs is trying to approximate, because it
+          counts your organic clicks directly, including all the long-tail queries Ahrefs
+          never sees. Connect it read-only and you replace the modelled estimate with the
+          measured total. RealRank uses exactly that verified figure to rank you, so instead
+          of &quot;Ahrefs thinks you get about X&quot; you get &quot;Google recorded X, and
+          here is where that puts you.&quot; You can see how far your own estimate strays
+          with <Link href="/is-my-traffic-real">Is my traffic real?</Link> and then{" "}
+          <Link href="/login">publish the verified number</Link>.
+        </p>
+        <p>
+          This matters most the moment you use the number as evidence. An Ahrefs screenshot
+          is easy to wave away - the reader knows it is an estimate, and they know you picked
+          the flattering view. A verified click count on a public{" "}
+          <Link href="/leaderboard">momentum board</Link> is not something you can tune, so it
+          reads as proof rather than marketing.
+        </p>
+        <h2>When to keep using Ahrefs</h2>
+        <p>
+          The verified alternative replaces the traffic <em>estimate</em>, not Ahrefs itself.
+          Backlink analysis, keyword research, rank tracking, content gap analysis, auditing
+          competitors you have no access to - that is Ahrefs&apos; home turf and RealRank does
+          none of it. The honest division of labour: use Ahrefs to find opportunities and
+          study sites you cannot connect, and use your verified Search Console clicks to state
+          - and prove - what your own site actually earns. If you want to turn Ahrefs&apos;
+          &quot;opportunity&quot; view into action, the{" "}
+          <Link href="/dashboard/leaks">search-leak finder</Link> does the same last-mile job
+          on your real data.
+        </p>
+      </>
+    ),
+  },
+  {
+    slug: "semrush-traffic-alternative-verified",
+    title: "A verified alternative to Semrush Traffic Analytics",
+    description:
+      "Semrush Traffic Analytics estimates visits from panel and machine-learning models, so it will never match your own analytics exactly. For your own site, here's the free verified alternative - and a clear line on what Semrush still does that it can't.",
+    date: "2026-09-18",
+    keywords: [
+      "Semrush alternative",
+      "Semrush Traffic Analytics accuracy",
+      "verified traffic",
+      "organic clicks",
+      "free traffic tool",
+    ],
+    Body: () => (
+      <>
+        <p>
+          Semrush Traffic Analytics is designed to estimate any domain&apos;s visits, which
+          is exactly why it will never agree with your own analytics. That is not a bug; a
+          model built to guess about sites it cannot access is doing a different job than a
+          tool that counts the site it can. For your own domain, the counting tool wins, and
+          it is free.
+        </p>
+        <h2>Why the Semrush number and your real number never match</h2>
+        <p>
+          Traffic Analytics blends clickstream panels, machine-learning models and other
+          third-party signals to approximate visits, sources and engagement for domains
+          Semrush has no direct measurement of. Like every panel-based estimator, its
+          accuracy scales with your size: the bigger and more mainstream the site, the more
+          the panel has to work with. For a new SaaS, a niche tool, or an indie project, the
+          panel sees a handful of your sessions at best, so the &quot;visits&quot; figure is
+          an extrapolation with a wide error bar. Comparing that against your own numbers is
+          comparing an estimate with a measurement, and the two are not supposed to line up.
+        </p>
+        <h2>The alternative for your domain: verified clicks, ranked</h2>
+        <p>
+          You already have the measurement Semrush is approximating. Google Search Console
+          records your organic clicks; a read-only connection surfaces the exact total, and
+          RealRank ranks you on it. Nothing is modelled, nothing is extrapolated - it is the
+          number Google counted, shown on a public board where every other listing was
+          verified the same way. Check your own gap with{" "}
+          <Link href="/is-my-traffic-real">Is my traffic real?</Link>, then{" "}
+          <Link href="/login">connect Search Console</Link> to make it official. If you want
+          the maths behind the ranking, the{" "}
+          <Link href="/momentum-score">momentum calculator</Link> shows exactly how a
+          verified click count becomes a score.
+        </p>
+        <h2>What Semrush still does that this doesn't</h2>
+        <p>
+          Keep Semrush for the jobs that need an estimate of things you cannot measure:
+          sizing a competitor, researching a keyword universe, auditing a domain you have no
+          login for, planning against a market. RealRank deliberately refuses to estimate,
+          so it has nothing to say about sites that have not connected their own data. Think
+          of them as opposite tools for opposite questions: Semrush for informed guesses
+          about the outside world, verified Search Console clicks for the truth about your
+          own. When the number is going to be used as proof rather than research, the
+          verified one is the only one worth publishing. The broader argument lives in{" "}
+          <Link href="/blog/verified-vs-estimated-traffic">
+            verified traffic vs estimated traffic
+          </Link>
+          .
+        </p>
+      </>
+    ),
+  },
+  {
     slug: "every-realrank-tool-explained",
     title: "Every tool on RealRank, and exactly what each one does",
     description:
