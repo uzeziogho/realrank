@@ -17,6 +17,8 @@ import { AddSiteForm } from "@/components/dashboard/add-site-form";
 import { SiteManager } from "@/components/dashboard/site-manager";
 import { GscProperties } from "@/components/dashboard/gsc-properties";
 import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
+import { BadgeEmbed } from "@/components/badge-embed";
+import { siteSlug } from "@/lib/site";
 import { SiteFavicon } from "@/components/site-favicon";
 import { Sparkline } from "@/components/sparkline";
 import { listUserProperties } from "@/lib/gsc-server";
@@ -155,6 +157,9 @@ export default async function DashboardPage() {
               ))}
             </div>
           </section>
+
+          {/* Badge flywheel: prompt every live site to embed its verified badge. */}
+          <BadgeShowcase sites={liveSites} />
         </>
       ) : (
         <Onboarding googleConnected={googleConnected} />
@@ -350,6 +355,43 @@ function Metric({ label, value }: { label: string; value: string }) {
       <div className="text-xs text-muted-foreground">{label}</div>
       <div className="font-semibold tabular-nums">{value}</div>
     </div>
+  );
+}
+
+/**
+ * Badge flywheel: every live site gets a copy-paste badge + live widget for its
+ * own site or README. Each embed links back to the verified profile, so it is
+ * real proof for the founder and a backlink that compounds for the board.
+ */
+function BadgeShowcase({ sites }: { sites: PublishedSite[] }) {
+  if (sites.length === 0) return null;
+  return (
+    <section className="mt-10">
+      <div className="mb-1 flex items-center gap-2">
+        <ShieldCheck className="size-5 text-primary" />
+        <h2 className="text-lg font-semibold">Show off your verified rank</h2>
+      </div>
+      <p className="mb-4 max-w-2xl text-sm text-muted-foreground">
+        Drop this on your site or README. It shows your live, verified number and
+        links back to your RealRank profile - a proof badge that can&apos;t be faked
+        and updates itself as your traffic moves.
+      </p>
+      <div className="grid gap-4 lg:grid-cols-2">
+        {sites.map((s) => {
+          const slug = siteSlug(s.site_url);
+          return (
+            <div key={s.id} className="rounded-xl border border-border bg-card p-5">
+              <div className="mb-3 text-sm font-semibold">{s.display_name}</div>
+              <BadgeEmbed
+                profileUrl={`${siteConfig.url}/site/${slug}`}
+                badgeUrl={`${siteConfig.url}/api/badge/${slug}.svg`}
+                embedUrl={`${siteConfig.url}/api/embed/${slug}`}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 

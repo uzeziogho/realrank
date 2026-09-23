@@ -82,6 +82,72 @@ export default async function AlternativesPage({ params }: { params: Params }) {
         </ol>
       )}
 
+      {/* Methodology + FAQ — unique, indexable content per target site */}
+      <section className="mt-12 space-y-4">
+        <h2 className="text-xl font-semibold tracking-tight">
+          How these {target.displayName} alternatives are ranked
+        </h2>
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          Every {label ? label.toLowerCase() + " " : ""}site on this page is ordered by{" "}
+          <strong className="text-foreground">verified organic momentum</strong>: real
+          Google Search Console clicks over the last 7 days measured against the prior 21,
+          refreshed hourly. Nothing here is a third-party estimate from a tool like
+          SimilarWeb or Ahrefs, and no site can pay to move up. If a site appears above{" "}
+          {target.displayName}, it is because its measured, growing organic traffic earned
+          the spot. You can read how the underlying score is built on the{" "}
+          <Link href="/momentum-score" className="text-primary hover:underline">
+            momentum calculator
+          </Link>
+          , or see why verified clicks beat estimates in{" "}
+          <Link href="/is-my-traffic-real" className="text-primary hover:underline">
+            is my traffic real
+          </Link>
+          .
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="rounded-xl border border-border bg-card p-5">
+            <h3 className="text-sm font-semibold">
+              Why compare on traffic instead of features?
+            </h3>
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              Feature lists are easy to write and impossible to verify. Organic traffic is
+              the market voting with clicks, and Search Console makes that number
+              checkable. A {label ? label.toLowerCase() + " tool" : "product"} that is
+              genuinely winning attention will show it here.
+            </p>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-5">
+            <h3 className="text-sm font-semibold">
+              How is a {target.displayName} alternative added?
+            </h3>
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              Any site can{" "}
+              <Link href="/login" className="text-primary hover:underline">
+                connect Search Console
+              </Link>{" "}
+              (read-only) and publish its verified clicks. Once live, it is ranked against{" "}
+              {target.displayName} and every other {label ? label.toLowerCase() + " " : ""}
+              site automatically.
+            </p>
+          </div>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Prefer the full picture? See the{" "}
+          <Link href="/leaderboard" className="text-primary hover:underline">
+            complete verified leaderboard
+          </Link>
+          , this week&apos;s{" "}
+          <Link href="/movers" className="text-primary hover:underline">
+            biggest movers
+          </Link>
+          , or the{" "}
+          <Link href="/underdogs" className="text-primary hover:underline">
+            underdogs punching above their domain rating
+          </Link>
+          .
+        </p>
+      </section>
+
       {/* Conversion band */}
       <div className="mt-12 flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-8 text-center">
         <ShieldCheck className="size-6 text-primary" />

@@ -92,6 +92,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     },
     {
+      url: `${base}/report-card`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      url: `${base}/agent-visibility`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
       url: `${base}/about`,
       lastModified: now,
       changeFrequency: "monthly",
@@ -105,6 +117,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
     ...siteSlugs.map((slug) => ({
       url: `${base}/site/${slug}`,
+      lastModified: now,
+      changeFrequency: "daily" as const,
+      priority: 0.6,
+    })),
+    // "Top <site> alternatives" pages — one per listed site, mirroring profiles.
+    ...siteSlugs.map((slug) => ({
+      url: `${base}/alternatives/${slug}`,
       lastModified: now,
       changeFrequency: "daily" as const,
       priority: 0.6,
