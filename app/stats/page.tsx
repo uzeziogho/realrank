@@ -5,16 +5,23 @@ import { getStatsData } from "@/lib/stats";
 import { getSiteTraffic, getSiteTrafficSeries, getTrafficBreakdown } from "@/lib/data";
 import { TrafficTrend } from "@/components/traffic-trend";
 import { TrafficBreakdown } from "@/components/traffic-breakdown";
+import { CiteIndex } from "@/components/cite-index";
 import { siteConfig } from "@/lib/config";
 import { formatCompact, formatGrowth, siteHref, timeAgo } from "@/lib/utils";
 
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Organic Search Stats — Anonymous Benchmark",
+  title: "The RealRank Index — Verified Organic Search Benchmark",
   description:
-    "Verified, privacy-safe organic search benchmarks: the RealRank Index of median growth, growing vs. declining share, and the fastest verified movers. Anonymized conclusions only.",
+    "The RealRank Index tracks organic-search momentum across verified websites: the share growing vs. declining and the median week-over-week change, measured from real Google Search Console clicks. Free to cite, updated hourly, privacy-safe.",
   alternates: { canonical: "/stats" },
+  openGraph: {
+    title: "The RealRank Index — Verified Organic Search Benchmark",
+    description:
+      "How organic search is trending across verified websites, from real Search Console clicks. Free to cite.",
+    url: `${siteConfig.url}/stats`,
+  },
 };
 
 export default async function StatsPage() {
@@ -23,26 +30,83 @@ export default async function StatsPage() {
   const trafficSeries = await getSiteTrafficSeries(30);
   const breakdown = await getTrafficBreakdown(30);
 
+  const asOf = new Date(stats.lastUpdated ?? Date.now());
+  const period = asOf.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  const indexUrl = `${siteConfig.url}/stats`;
+  const trend =
+    stats.medianGrowth > 0.005 ? "up" : stats.medianGrowth < -0.005 ? "down" : "flat";
+
+  // schema.org/Dataset so search engines (and AI agents) treat the Index as a
+  // citable dataset, not just a page.
+  const datasetLd = {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: "The RealRank Organic Search Index",
+    description:
+      "A privacy-safe benchmark of organic-search momentum across verified websites: the share growing vs. declining and the median week-over-week change, measured from real Google Search Console clicks.",
+    url: indexUrl,
+    creator: { "@type": "Organization", name: siteConfig.name, url: siteConfig.url },
+    isAccessibleForFree: true,
+    license: "https://creativecommons.org/licenses/by/4.0/",
+    dateModified: asOf.toISOString(),
+    measurementTechnique: "Verified Google Search Console organic clicks",
+    variableMeasured: [
+      { "@type": "PropertyValue", name: "Organic Index (100 = flat)", value: stats.index },
+      { "@type": "PropertyValue", name: "Share of sites growing (%)", value: stats.growingPct },
+      { "@type": "PropertyValue", name: "Share of sites declining (%)", value: stats.decliningPct },
+      { "@type": "PropertyValue", name: "Median week-over-week growth", value: stats.medianGrowth },
+      { "@type": "PropertyValue", name: "Qualifying websites", value: stats.qualifyingCount },
+    ],
+  };
+
   return (
     <>
-      {/* Hero */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(datasetLd) }}
+      />
+
+      {/* Hero — lead with the Index number so it's the citable headline */}
       <section className="hero-glow border-b border-border/60">
         <div className="container flex flex-col items-center py-16 text-center">
           <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground">
             <ShieldCheck className="size-3.5 text-primary" />
-            Verified, privacy-safe data
+            Verified, privacy-safe data · {period}
           </span>
           <h1 className="max-w-2xl text-balance text-4xl font-bold tracking-tight sm:text-5xl">
-            Organic search stats, without the guesswork.
+            The RealRank Index
           </h1>
+          <div className="mt-6 flex items-baseline gap-3">
+            <span
+              className={`text-7xl font-bold tabular-nums tracking-tight ${
+                trend === "up" ? "text-success" : trend === "down" ? "text-danger" : "text-foreground"
+              }`}
+            >
+              {stats.index}
+            </span>
+            <span className="text-lg text-muted-foreground">/ 100 = flat</span>
+          </div>
           <p className="mt-4 max-w-2xl text-balance text-muted-foreground">
-            Anonymized conclusions from participating websites. Individual queries,
-            pages, countries, and devices are never exposed.
+            The organic-search momentum of verified websites, from real Google Search
+            Console clicks. Right now{" "}
+            <strong className="text-foreground">{stats.growingPct}%</strong> are growing
+            and <strong className="text-foreground">{stats.decliningPct}%</strong> are
+            declining, with a median of {formatGrowth(stats.medianGrowth)} week-over-week
+            across {stats.qualifyingCount} qualifying sites.
           </p>
         </div>
       </section>
 
       <div className="container max-w-4xl space-y-8 py-12">
+        {/* Cite this Index — the link-bait block */}
+        <CiteIndex
+          index={stats.index}
+          growingPct={stats.growingPct}
+          medianGrowthLabel={formatGrowth(stats.medianGrowth)}
+          period={period}
+          url={indexUrl}
+        />
+
         {/* KPI row — at-a-glance headline metrics */}
         <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <StatTile icon={<Users className="size-4" />} label="Visitors" value={formatCompact(traffic.visitors)} sub="all-time" />
@@ -152,6 +216,40 @@ export default async function StatsPage() {
             Ranked by click growth. Sites need at least 100 clicks in the prior
             period to qualify.
           </p>
+        </section>
+
+        {/* Methodology — credibility for anyone citing the Index */}
+        <section>
+          <SectionLabel>Methodology</SectionLabel>
+          <h2 className="mt-1 text-2xl font-semibold tracking-tight">How the Index is built</h2>
+          <div className="mt-4 space-y-3 rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground">
+            <p>
+              <strong className="text-foreground">Source.</strong> Every input is a
+              verified Google Search Console click, pulled over a read-only connection
+              from participating websites. Nothing here is a third-party estimate, and no
+              site can pay to be included or to move the number.
+            </p>
+            <p>
+              <strong className="text-foreground">The Index.</strong> It is{" "}
+              <code>100 x (1 + median week-over-week growth)</code>, so 100 means the median
+              site is flat, above 100 means the typical site is growing, and below 100 means
+              it is shrinking. We use the <strong>median</strong>, not the average, so one
+              large website cannot swing the market reading.
+            </p>
+            <p>
+              <strong className="text-foreground">Window and sample.</strong> Growth compares
+              the last 7 days against the prior 21 days of daily clicks. A site only counts
+              once it has at least <strong>100 clicks</strong> in the prior period, which
+              filters out noise from brand-new or tiny sites. This reading covers{" "}
+              <strong className="text-foreground">{stats.qualifyingCount}</strong> qualifying
+              websites and refreshes every {siteConfig.refreshCadenceHours} hours.
+            </p>
+            <p>
+              <strong className="text-foreground">Privacy.</strong> The Index and the
+              growing/declining shares are cohort-level conclusions only. Individual queries,
+              pages, countries, and devices are never exposed.
+            </p>
+          </div>
         </section>
 
         {/* Roadmap note — honest about what's not yet collected */}

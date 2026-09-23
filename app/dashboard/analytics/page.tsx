@@ -22,6 +22,8 @@ const EVENT_LABELS: Record<string, string> = {
   traffic_reality: "Is my traffic real?",
   badge_copy: "Badge copied",
   embed_copy: "Widget copied",
+  cite_copy: "Index citation copied",
+  cite_embed_copy: "Index embed copied",
 };
 
 function labelFor(event: string): string {
