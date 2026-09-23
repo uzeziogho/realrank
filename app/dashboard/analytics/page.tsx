@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { Activity, Layers, Sparkles } from "lucide-react";
+import { Activity, Layers, Sparkles, Filter } from "lucide-react";
 import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
-import { getEventStats } from "@/lib/data";
-import type { EventDay, EventStat } from "@/lib/data";
+import { getEventStats, getConnectFunnel } from "@/lib/data";
+import type { EventDay, EventStat, ConnectFunnel } from "@/lib/data";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { getOptionalUser, isOwner } from "@/lib/auth";
 import { formatCompact } from "@/lib/utils";
@@ -25,6 +25,8 @@ const EVENT_LABELS: Record<string, string> = {
   cite_copy: "Index citation copied",
   cite_embed_copy: "Index embed copied",
   connect_click: "Connect clicked",
+  movers_post_copy: "Movers post copied",
+  movers_post_share: "Movers post shared",
 };
 
 function labelFor(event: string): string {
@@ -39,7 +41,7 @@ export default async function AnalyticsPage() {
   // Owner-only surface — everyone else lands back on their own dashboard.
   if (!isOwner(user.email)) redirect("/dashboard");
 
-  const stats = await getEventStats(30);
+  const [stats, funnel] = await Promise.all([getEventStats(30), getConnectFunnel(30)]);
   const topFeature = stats.events[0] ? labelFor(stats.events[0].event) : "—";
 
   return (
@@ -74,6 +76,21 @@ export default async function AnalyticsPage() {
           sub={stats.events[0] ? `${formatCompact(stats.events[0].hits)} uses` : "no data yet"}
           icon={<Sparkles className="size-4 text-muted-foreground" />}
         />
+      </section>
+
+      {/* Connect funnel — visits to sites on the board */}
+      <section className="mt-10">
+        <div className="mb-1 flex items-center gap-2">
+          <Filter className="size-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold">Connect funnel</h2>
+        </div>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Visits to sites on the board, last {funnel.days} days. &quot;Sites on the
+          board&quot; is the cumulative total, so treat the last step as a running tally.
+        </p>
+        <div className="rounded-xl border border-border bg-card p-6">
+          <ConnectFunnelView funnel={funnel} />
+        </div>
       </section>
 
       {stats.total === 0 ? (
@@ -160,6 +177,75 @@ function FeatureBars({ events }: { events: EventStat[] }) {
         );
       })}
     </ul>
+  );
+}
+
+/** Funnel: visits -> tool -> connect click -> on the board, with step conversion. */
+function ConnectFunnelView({ funnel }: { funnel: ConnectFunnel }) {
+  const stages = [
+    { label: "Visits", value: funnel.visits },
+    { label: "Used a free tool", value: funnel.toolUses },
+    { label: "Clicked connect", value: funnel.connectClicks },
+    { label: "Sites on the board", value: funnel.connectedSites, cumulative: true },
+  ];
+  const top = Math.max(1, funnel.visits);
+
+  if (funnel.visits === 0 && funnel.toolUses === 0 && funnel.connectClicks === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        The funnel fills in as visits, tool usage and connect clicks come in.
+      </p>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      {stages.map((s, i) => {
+        const prev = i > 0 ? stages[i - 1].value : null;
+        const conv = prev && prev > 0 ? Math.round((s.value / prev) * 100) : null;
+        const width = Math.max(3, Math.round((s.value / top) * 100));
+        return (
+          <div key={s.label}>
+            <div className="mb-1 flex items-baseline justify-between gap-3">
+              <span className="text-sm font-medium">
+                {s.label}
+                {s.cumulative && (
+                  <span className="ml-1.5 text-xs font-normal text-muted-foreground">total</span>
+                )}
+              </span>
+              <span className="flex items-baseline gap-2">
+                {conv != null && !s.cumulative && (
+                  <span className="text-xs text-muted-foreground tabular-nums">{conv}%</span>
+                )}
+                <span className="text-sm font-semibold tabular-nums">{formatCompact(s.value)}</span>
+              </span>
+            </div>
+            <div className="h-3 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className={`h-full rounded-full ${s.cumulative ? "bg-success" : "bg-primary"}`}
+                style={{ width: `${width}%` }}
+              />
+            </div>
+          </div>
+        );
+      })}
+
+      {funnel.bySource.length > 0 && (
+        <div className="mt-2 border-t border-border pt-4">
+          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Connect clicks by source
+          </p>
+          <ul className="flex flex-col gap-1.5">
+            {funnel.bySource.map((s) => (
+              <li key={s.source} className="flex items-baseline justify-between gap-3 text-sm">
+                <span className="truncate text-muted-foreground">{s.source}</span>
+                <span className="shrink-0 font-semibold tabular-nums">{formatCompact(s.hits)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
   );
 }
 

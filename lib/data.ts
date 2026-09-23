@@ -378,6 +378,90 @@ export async function getEventStats(days = 30): Promise<EventStats> {
   }
 }
 
+/** Free-tool usage events that count as "used a tool" in the connect funnel. */
+const FUNNEL_TOOL_EVENTS = [
+  "momentum_calc",
+  "growth_grader",
+  "traffic_reality",
+  "rank_check",
+  "report_card",
+];
+
+export interface ConnectFunnel {
+  /** Site visits over the window (summed daily sessions). */
+  visits: number;
+  /** Free-tool interactions over the window. */
+  toolUses: number;
+  /** Connect-CTA clicks over the window. */
+  connectClicks: number;
+  /** Sites currently live on the board (cumulative state, not windowed). */
+  connectedSites: number;
+  /** Connect clicks broken down by the CTA's source label, most first. */
+  bySource: { source: string; hits: number }[];
+  days: number;
+}
+
+/**
+ * A simple acquisition funnel for the owner dashboard: visits -> used a free
+ * tool -> clicked connect -> sites on the board. Built from the privacy-safe
+ * first-party counters (site_traffic_daily, site_events) plus the live board.
+ * Aggregate only. The visit/tool/click stages are windowed; connected sites is
+ * the cumulative board total, so it is labelled as such in the UI.
+ */
+export async function getConnectFunnel(days = 30): Promise<ConnectFunnel> {
+  const empty: ConnectFunnel = {
+    visits: 0,
+    toolUses: 0,
+    connectClicks: 0,
+    connectedSites: 0,
+    bySource: [],
+    days,
+  };
+  if (!isSupabaseConfigured()) return empty;
+  try {
+    const since = new Date();
+    since.setUTCDate(since.getUTCDate() - days);
+    const sinceDay = since.toISOString().slice(0, 10);
+    const supabase = createServiceClient();
+
+    const [series, eventsRes, active] = await Promise.all([
+      getSiteTrafficSeries(days),
+      supabase.from("site_events").select("event, label, hits").gte("day", sinceDay),
+      getActiveSites(),
+    ]);
+
+    const visits = series.reduce((sum, d) => sum + d.sessions, 0);
+
+    let toolUses = 0;
+    let connectClicks = 0;
+    const bySourceMap = new Map<string, number>();
+    for (const r of eventsRes.data ?? []) {
+      const hits = Number(r.hits);
+      if (FUNNEL_TOOL_EVENTS.includes(r.event)) toolUses += hits;
+      if (r.event === "connect_click") {
+        connectClicks += hits;
+        const src = (r.label || "unknown").trim() || "unknown";
+        bySourceMap.set(src, (bySourceMap.get(src) ?? 0) + hits);
+      }
+    }
+    const bySource = [...bySourceMap.entries()]
+      .map(([source, hits]) => ({ source, hits }))
+      .sort((a, b) => b.hits - a.hits);
+
+    return {
+      visits,
+      toolUses,
+      connectClicks,
+      connectedSites: active.sites.length,
+      bySource,
+      days,
+    };
+  } catch (err) {
+    console.error("[data] connect funnel read failed:", err);
+    return empty;
+  }
+}
+
 /**
  * Outbound click-throughs per site host over the last `days`, from the
  * first-party site_outbound_clicks counter (written by the /visit redirect).
