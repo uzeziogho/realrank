@@ -80,35 +80,42 @@ export interface NavLink {
 }
 
 /**
- * Primary top-level nav shown as inline links in the header. Kept short — the
- * live product surfaces only — so the bar stays uncrowded; everything else
- * lives under the header "More" dropdown (and the mobile menu).
+ * Flat top-level links in the header, kept to the two flagship destinations so
+ * the bar stays uncrowded. Everything else lives under the grouped header menus
+ * (Boards, Tools, Learn) and the mobile menu.
  */
 export const primaryNav: NavLink[] = [
   { href: "/leaderboard", label: "Leaderboard" },
-  { href: "/launches", label: "Launches" },
-  { href: "/movers", label: "Movers" },
-  { href: "/founding", label: "Founding" },
   { href: "/stats", label: "Stats" },
 ];
 
-/** Learn/marketing pages — folded into the header "More" dropdown. */
-export const learnLinks: NavLink[] = [
+/** The leaderboard sliced different ways. Header "Boards" menu. */
+export const boardLinks: NavLink[] = [
   {
-    href: "/about",
-    label: "How it works",
-    description: "How momentum ranking and verified traffic work.",
+    href: "/launches",
+    label: "Launches",
+    description: "New and fast-climbing verified sites.",
   },
   {
-    href: "/blog",
-    label: "Blog",
-    description: "Essays on verified organic traffic and growth.",
+    href: "/movers",
+    label: "Movers & Shakers",
+    description: "Who climbed and who slipped this week.",
+  },
+  {
+    href: "/underdogs",
+    label: "Underdogs",
+    description: "Low authority, outsized verified momentum.",
+  },
+  {
+    href: "/founding",
+    label: "Founding sites",
+    description: "The first 50 sites, with a permanent badge.",
   },
 ];
 
 /**
- * Every interactive tool RealRank ships. Surfaced in the header "Tools"
- * dropdown, the mobile menu, and the footer so nothing built stays hidden.
+ * Free, no-login tools. These run on numbers you type in, so a logged-out
+ * visitor can use them immediately. Header "Tools" menu (free section).
  */
 export const toolLinks: NavLink[] = [
   {
@@ -129,21 +136,48 @@ export const toolLinks: NavLink[] = [
   {
     href: "/report-card",
     label: "Traffic report card",
-    description: "Grade any domain's verified organic traffic — instant, shareable.",
+    description: "Grade any domain's verified organic traffic. Instant and shareable.",
+  },
+];
+
+/**
+ * Tools that read your Search Console, so they need a connected account. Kept
+ * separate from the free tools so a logged-out click never dead-ends at a login
+ * wall. Header "Tools" menu (members section).
+ */
+export const memberLinks: NavLink[] = [
+  {
+    href: "/dashboard/leaks",
+    label: "Search leaks",
+    description: "Find where organic clicks leak before reaching your site.",
   },
   {
     href: "/dashboard/channels",
     label: "Channels",
     description: "Track which marketing channels bring paying customers.",
   },
+];
+
+/** Learn/marketing pages. Header "Learn" menu. */
+export const learnLinks: NavLink[] = [
   {
-    href: "/dashboard/leaks",
-    label: "Search leaks",
-    description: "Find where organic clicks — and revenue — leak before reaching your site.",
+    href: "/about",
+    label: "How it works",
+    description: "How momentum ranking and verified traffic work.",
+  },
+  {
+    href: "/agent-visibility",
+    label: "Agent visibility",
+    description: "Make your verified rank queryable by AI agents.",
+  },
+  {
+    href: "/blog",
+    label: "Blog",
+    description: "Essays on verified organic traffic and growth.",
   },
 ];
 
-/** Guides and curated rankings — evergreen landing pages. */
+/** Guides and curated rankings, evergreen landing pages. */
 export const guideLinks: NavLink[] = [
   {
     href: "/best/fastest-growing-saas-websites",
@@ -153,6 +187,6 @@ export const guideLinks: NavLink[] = [
   {
     href: "/best/lol-directories",
     label: "Best .lol directories",
-    description: "The .lol leaderboards compared — and which to trust.",
+    description: "The .lol leaderboards compared, and which to trust.",
   },
 ];

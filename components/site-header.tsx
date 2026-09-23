@@ -3,9 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
 import { AuthNav } from "@/components/auth-nav";
 import { MobileNav } from "@/components/mobile-nav";
-import { FeaturesMenu } from "@/components/features-menu";
+import { NavMenu } from "@/components/nav-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { primaryNav } from "@/lib/config";
+import { boardLinks, toolLinks, memberLinks, learnLinks, guideLinks } from "@/lib/config";
 
 /**
  * Static server component — no per-request data — so every page that uses the
@@ -21,18 +21,25 @@ export function SiteHeader() {
         </Link>
 
         <nav className="flex items-center gap-1 sm:gap-2">
-          {primaryNav.map((l) => (
-            <Button
-              key={l.href}
-              asChild
-              variant="ghost"
-              size="sm"
-              className="hidden sm:inline-flex"
-            >
-              <Link href={l.href}>{l.label}</Link>
-            </Button>
-          ))}
-          <FeaturesMenu />
+          {/* Journey order: browse the board, explore its cuts, use a tool, learn. */}
+          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+            <Link href="/leaderboard">Leaderboard</Link>
+          </Button>
+          <NavMenu label="Boards" sections={[{ links: boardLinks }]} />
+          <NavMenu
+            label="Tools"
+            sections={[
+              { label: "Free, no login", links: toolLinks },
+              { label: "For connected sites", links: memberLinks },
+            ]}
+          />
+          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+            <Link href="/stats">Stats</Link>
+          </Button>
+          <NavMenu
+            label="Learn"
+            sections={[{ links: learnLinks }, { label: "Guides", links: guideLinks }]}
+          />
           {/* Divider between navigation and account/theme actions (desktop) */}
           <span className="mx-1 hidden h-5 w-px bg-border sm:block" aria-hidden="true" />
           <ThemeToggle />

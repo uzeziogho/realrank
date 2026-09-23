@@ -1,6 +1,14 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
-import { siteConfig, categories, guideLinks } from "@/lib/config";
+import {
+  siteConfig,
+  categories,
+  boardLinks,
+  toolLinks,
+  memberLinks,
+  learnLinks,
+  guideLinks,
+} from "@/lib/config";
 
 export function SiteFooter() {
   return (
@@ -43,6 +51,46 @@ export function SiteFooter() {
 
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
           <div>
+            <p className="text-sm font-medium">Boards</p>
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+              <li><Link href="/leaderboard" className="hover:text-foreground">Leaderboard</Link></li>
+              {boardLinks.map((l) => (
+                <li key={l.href}>
+                  <Link href={l.href} className="hover:text-foreground">{l.label}</Link>
+                </li>
+              ))}
+              <li><Link href="/stats" className="hover:text-foreground">Stats &amp; Index</Link></li>
+            </ul>
+          </div>
+          <div>
+            <p className="text-sm font-medium">Tools</p>
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+              {[...toolLinks, ...memberLinks].map((l) => (
+                <li key={l.href}>
+                  <Link href={l.href} className="hover:text-foreground">{l.label}</Link>
+                </li>
+              ))}
+              <li><Link href="/login" className="hover:text-foreground">Connect Search Console</Link></li>
+            </ul>
+          </div>
+          <div>
+            <p className="text-sm font-medium">Company</p>
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+              {learnLinks.map((l) => (
+                <li key={l.href}>
+                  <Link href={l.href} className="hover:text-foreground">{l.label}</Link>
+                </li>
+              ))}
+              {guideLinks.map((l) => (
+                <li key={l.href}>
+                  <Link href={l.href} className="hover:text-foreground">{l.label}</Link>
+                </li>
+              ))}
+              <li><Link href="/privacy" className="hover:text-foreground">Privacy</Link></li>
+              <li><Link href="/terms" className="hover:text-foreground">Terms</Link></li>
+            </ul>
+          </div>
+          <div>
             <p className="text-sm font-medium">Categories</p>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               {categories.map((c) => (
@@ -52,45 +100,6 @@ export function SiteFooter() {
                   </Link>
                 </li>
               ))}
-            </ul>
-          </div>
-          <div>
-            <p className="text-sm font-medium">Product</p>
-            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/leaderboard" className="hover:text-foreground">Leaderboard</Link></li>
-              <li><Link href="/launches" className="hover:text-foreground">Launches</Link></li>
-              <li><Link href="/movers" className="hover:text-foreground">Movers &amp; Shakers</Link></li>
-              <li><Link href="/underdogs" className="hover:text-foreground">Underdogs</Link></li>
-              <li><Link href="/founding" className="hover:text-foreground">Founding sites</Link></li>
-              <li><Link href="/momentum-score" className="hover:text-foreground">Momentum calculator</Link></li>
-              <li><Link href="/organic-growth-grade" className="hover:text-foreground">Growth grader</Link></li>
-              <li><Link href="/is-my-traffic-real" className="hover:text-foreground">Is my traffic real?</Link></li>
-              <li><Link href="/stats" className="hover:text-foreground">Stats</Link></li>
-              <li><Link href="/dashboard/channels" className="hover:text-foreground">Channels</Link></li>
-              <li><Link href="/agent-visibility" className="hover:text-foreground">Agent visibility</Link></li>
-              <li><Link href="/blog" className="hover:text-foreground">Blog</Link></li>
-              <li><Link href="/about" className="hover:text-foreground">How it works</Link></li>
-              <li><Link href="/login" className="hover:text-foreground">Connect Search Console</Link></li>
-            </ul>
-          </div>
-          <div>
-            <p className="text-sm font-medium">Guides</p>
-            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              {guideLinks.map((l) => (
-                <li key={l.href}>
-                  <Link href={l.href} className="hover:text-foreground">
-                    {l.label}
-                  </Link>
-                </li>
-              ))}
-              <li><Link href="/blog/introducing-channels" className="hover:text-foreground">Channels: intro</Link></li>
-            </ul>
-          </div>
-          <div>
-            <p className="text-sm font-medium">Legal</p>
-            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/privacy" className="hover:text-foreground">Privacy</Link></li>
-              <li><Link href="/terms" className="hover:text-foreground">Terms</Link></li>
             </ul>
           </div>
         </div>
