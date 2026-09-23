@@ -107,6 +107,14 @@ export default async function StatsPage() {
           url={indexUrl}
         />
 
+        <p className="text-center text-sm text-muted-foreground">
+          Want the narrative read?{" "}
+          <Link href="/stats/report" className="font-medium text-primary hover:underline">
+            Read the {period} Index Report
+          </Link>
+          .
+        </p>
+
         {/* KPI row — at-a-glance headline metrics */}
         <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <StatTile icon={<Users className="size-4" />} label="Visitors" value={formatCompact(traffic.visitors)} sub="all-time" />
