@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { RefreshCw, ShieldCheck, TrendingUp, LineChart, BarChart3, Award, GitCompare, Radio, Search, Bot } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ConnectCTA } from "@/components/connect-cta";
 import { FaqJsonLd } from "@/components/json-ld";
 import { LeaderboardSection } from "@/components/leaderboard-section";
 import { getLeaderboardData, getRecentlyJoined, getMovers, getSiteTraffic } from "@/lib/data";
@@ -339,12 +339,7 @@ export default async function HomePage() {
             Console and RealRank shows the exact searches you&apos;re leaking — and
             ranks you by real momentum, so growth decides your spot, not budget.
           </p>
-          <Button asChild size="lg" className="mt-2">
-            <Link href="/login">Show me my leaks</Link>
-          </Button>
-          <p className="text-xs text-muted-foreground">
-            Read-only access · free · about 30 seconds
-          </p>
+          <ConnectCTA label="Show me my leaks" source="home_band" className="mt-2" />
 
           {/* Fallback for visitors not ready to connect Google yet. */}
           <div className="mt-6 flex flex-col items-center gap-2 border-t border-border/60 pt-6">

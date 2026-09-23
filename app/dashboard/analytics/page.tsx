@@ -24,6 +24,7 @@ const EVENT_LABELS: Record<string, string> = {
   embed_copy: "Widget copied",
   cite_copy: "Index citation copied",
   cite_embed_copy: "Index embed copied",
+  connect_click: "Connect clicked",
 };
 
 function labelFor(event: string): string {

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, ArrowUpRight, ShieldCheck, GitCompare } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowUpRight, ShieldCheck, GitCompare } from "lucide-react";
+import { Breadcrumbs } from "@/components/breadcrumbs";
+import { ConnectCTA } from "@/components/connect-cta";
 import { SiteFavicon } from "@/components/site-favicon";
 import { getSiteProfileBySlug, getAllSiteSlugs, siteSlug } from "@/lib/site";
 import { getLeaderboardData } from "@/lib/data";
@@ -53,13 +54,14 @@ export default async function AlternativesPage({ params }: { params: Params }) {
 
   return (
     <div className="container max-w-3xl py-12">
-      <Link
-        href={`/site/${targetHost}`}
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ChevronLeft className="size-4" />
-        {target.displayName}
-      </Link>
+      <Breadcrumbs
+        items={[
+          { name: "Home", href: "/" },
+          { name: "Leaderboard", href: "/leaderboard" },
+          { name: target.displayName, href: `/site/${targetHost}` },
+          { name: "Alternatives" },
+        ]}
+      />
 
       <h1 className="mt-4 text-balance text-4xl font-bold tracking-tight">
         Top {target.displayName} alternatives
@@ -155,12 +157,10 @@ export default async function AlternativesPage({ params }: { params: Params }) {
           Building a {label ? label.toLowerCase() + " tool" : "product"}? Prove it&apos;s growing.
         </h2>
         <p className="max-w-md text-sm text-muted-foreground">
-          Connect Google Search Console and let verified momentum — not marketing budgets —
+          Connect Google Search Console and let verified momentum, not marketing budgets,
           decide where you rank against {target.displayName} and the rest.
         </p>
-        <Button asChild size="lg" className="mt-1">
-          <Link href="/login">Claim my verified spot</Link>
-        </Button>
+        <ConnectCTA label="Claim my verified spot" source="alternatives" className="mt-1" />
       </div>
     </div>
   );

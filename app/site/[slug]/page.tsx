@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, ExternalLink, TrendingUp, BarChart3, ArrowUpRight, Sparkles } from "lucide-react";
+import { ExternalLink, TrendingUp, BarChart3, ArrowUpRight, Sparkles } from "lucide-react";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BadgeEmbed } from "@/components/badge-embed";
@@ -55,10 +56,13 @@ export default async function SiteProfilePage({ params }: { params: Params }) {
 
   return (
     <div className="container max-w-3xl py-12">
-      <Link href="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ChevronLeft className="size-4" />
-        Leaderboard
-      </Link>
+      <Breadcrumbs
+        items={[
+          { name: "Home", href: "/" },
+          { name: "Leaderboard", href: "/leaderboard" },
+          { name: site.displayName },
+        ]}
+      />
 
       {/* Header */}
       <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
