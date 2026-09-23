@@ -4,7 +4,9 @@ import { Flame, TrendingDown, TrendingUp, Sparkles, ArrowUpRight } from "lucide-
 import { SiteFavicon } from "@/components/site-favicon";
 import { Button } from "@/components/ui/button";
 import { ConnectNote } from "@/components/connect-note";
+import { WeeklyPostBox } from "@/components/weekly-post";
 import { getMovers } from "@/lib/data";
+import { buildMoversDigest } from "@/lib/digest";
 import { siteConfig } from "@/lib/config";
 import { cn, formatGrowth, hostname, timeAgo } from "@/lib/utils";
 import type { RankedSite } from "@/lib/types";
@@ -24,8 +26,9 @@ function siteProfileHref(s: RankedSite): string {
 }
 
 export default async function MoversPage() {
-  const movers = await getMovers(12);
+  const [movers, digest] = await Promise.all([getMovers(12), buildMoversDigest(5)]);
   const top = movers.climbers[0];
+  const digestXIntent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(digest.text)}`;
 
   // Pre-written share copy — turn the ranking into the next post.
   const shareText = top
@@ -132,6 +135,9 @@ export default async function MoversPage() {
             )}
           </>
         )}
+
+        {/* This week's post — auto-generated digest, copy-ready */}
+        {!digest.empty && <WeeklyPostBox text={digest.text} xIntent={digestXIntent} />}
 
         {/* Conversion band */}
         <section className="rounded-2xl border border-border bg-card p-8 text-center">
