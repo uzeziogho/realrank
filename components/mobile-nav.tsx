@@ -5,13 +5,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { primaryNav, toolLinks, guideLinks, learnLinks } from "@/lib/config";
+import { primaryNav, boardLinks, toolLinks, memberLinks, learnLinks, guideLinks } from "@/lib/config";
 
 const SECTIONS = [
   { label: null, links: primaryNav },
-  { label: "Tools", links: toolLinks },
-  { label: "Guides", links: guideLinks },
+  { label: "Boards", links: boardLinks },
+  { label: "Free tools", links: toolLinks },
+  { label: "For connected sites", links: memberLinks },
   { label: "Learn", links: learnLinks },
+  { label: "Guides", links: guideLinks },
 ] as const;
 
 /**
