@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Breadcrumbs } from "@/components/breadcrumbs";
+import { ConnectCTA } from "@/components/connect-cta";
 import { Sparkline } from "@/components/sparkline";
 import { SiteFavicon } from "@/components/site-favicon";
 import { getSiteProfileBySlug, type SiteProfile } from "@/lib/site";
@@ -89,10 +89,14 @@ export default async function ComparePage({ params }: { params: Params }) {
     <div className="container max-w-3xl py-12">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <Link href="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ChevronLeft className="size-4" />
-        Leaderboard
-      </Link>
+      <Breadcrumbs
+        items={[
+          { name: "Home", href: "/" },
+          { name: "Leaderboard", href: "/leaderboard" },
+          { name: "Compare" },
+          { name: `${a.displayName} vs ${b.displayName}` },
+        ]}
+      />
 
       <h1 className="mt-4 text-balance text-3xl font-bold tracking-tight sm:text-4xl">
         {a.displayName} vs {b.displayName}
@@ -132,9 +136,7 @@ export default async function ComparePage({ params }: { params: Params }) {
         <p className="mt-1 text-sm text-muted-foreground">
           Connect Google Search Console and your verified momentum joins the board.
         </p>
-        <Button asChild className="mt-4">
-          <Link href="/login">Connect my Search Console</Link>
-        </Button>
+        <ConnectCTA label="Connect my Search Console" source="compare" size="default" className="mt-4" />
       </div>
     </div>
   );
