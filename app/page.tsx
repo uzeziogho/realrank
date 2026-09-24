@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ShieldCheck, Award, Search, Bot } from "lucide-react";
+import { ShieldCheck, Award } from "lucide-react";
 import { ConnectCTA } from "@/components/connect-cta";
 import { FaqJsonLd } from "@/components/json-ld";
 import { LeaderboardSection } from "@/components/leaderboard-section";
@@ -89,74 +89,31 @@ export default async function HomePage() {
           </div>
 
           <h1 className="max-w-3xl text-balance text-4xl font-bold tracking-tight sm:text-6xl">
-            Anyone can ship a site now. RealRank shows which ones get traffic.
+            The growth leaderboard you can&apos;t buy your way onto.
           </h1>
           <p className="mt-5 max-w-2xl text-balance text-lg text-muted-foreground">
-            The public leaderboard of <strong className="text-foreground">verified</strong> organic
-            traffic — real Google Search Console clicks, ranked by momentum so fast-growing sites
-            beat the giants. Proof, not screenshots — and the tools to find where you&apos;re
-            leaking clicks and win them back.
+            Every rank is pulled from Google Search Console. No ads, no upvote rings.
+            Just <strong className="text-foreground">verified</strong> clicks and momentum,
+            so fast-growing sites beat the giants.
           </p>
 
-          {/* Positioning — verified proof is the wedge now, not the anti-bid angle. */}
+          {/* Verified-proof positioning pill */}
           <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
             <ShieldCheck className="size-4" />
-            Verified by Google Search Console — real clicks, not vibes.
+            Verified by Google Search Console. Real clicks, not vibes.
           </div>
 
-          {/* Personalized entry point — check your domain, then connect. */}
+          {/* One interactive entry point: where would I rank? */}
           <div className="mt-8 flex w-full flex-col items-center">
             <RankChecker knownHosts={knownHosts} topClicks={topClicks} totalSites={data.totalSites} />
-            <p className="mt-3 text-sm text-muted-foreground">
-              or{" "}
-              <Link href="/login" className="text-primary hover:underline">connect Google Search Console</Link>
-              {" · "}
-              <Link href="/launches" className="hover:text-foreground">see what&apos;s launching</Link>
-              {" · "}
-              <Link href="#leaderboard" className="hover:text-foreground">view the leaderboard</Link>
-            </p>
-            <p className="mt-1.5 text-xs text-muted-foreground">
+            <p className="mt-3 text-xs text-muted-foreground">
               Read-only access · free · about 30 seconds
             </p>
           </div>
-
-          {/* What you get when you connect — the sign-up drivers, front and centre. */}
-          <div className="mt-12 grid w-full max-w-4xl gap-4 text-left sm:grid-cols-3">
-            <HeroFeature
-              icon={<Search className="size-5" />}
-              title="Find the clicks you're losing"
-              body="The exact searches where you rank but miss the click — and how to win them back."
-            />
-            <HeroFeature
-              icon={<ShieldCheck className="size-5" />}
-              title="Proof you can show"
-              body="An un-fakeable public rank and an embeddable badge, straight from Search Console."
-            />
-            <HeroFeature
-              icon={<Bot className="size-5" />}
-              title="Get cited by AI agents"
-              body="Your verified momentum is queryable over MCP, so assistants surface you to buyers."
-            />
-          </div>
-
         </div>
       </section>
 
-      {/* Movers & Shakers — this week's climbers, above the board for pull */}
-      {(movers.climbers.length > 0 || movers.newcomers.length > 0) && (
-        <section className="container -mt-8 sm:-mt-10">
-          <div className="mx-auto max-w-3xl">
-            <MoversBand
-              climbers={movers.climbers}
-              newcomers={movers.newcomers}
-              compact
-            />
-          </div>
-        </section>
-      )}
-
-      {/* Leaderboard preview: default momentum view, static.
-          Search, the volume toggle, and pagination live on /leaderboard. */}
+      {/* Board-as-hero: the live leaderboard is the pitch and the proof. */}
       <LeaderboardSection
         data={data}
         view="momentum"
@@ -165,20 +122,67 @@ export default async function HomePage() {
         interactive={false}
       />
 
-      {/* More than a leaderboard — the full feature detail lives on /about now. */}
+      {/* Ghost row — "your spot is waiting", the honest curiosity/endowment hook. */}
+      <section className="container -mt-6 pb-2">
+        <div className="mx-auto max-w-5xl">
+          <div className="flex flex-col items-center justify-between gap-4 rounded-2xl border border-dashed border-primary/40 bg-primary/[0.05] px-5 py-4 sm:flex-row">
+            <div className="flex items-center gap-4">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-xl font-bold text-primary">
+                ?
+              </span>
+              <div>
+                <p className="font-semibold">Your row is waiting.</p>
+                <p className="text-sm text-muted-foreground">
+                  Connect Google Search Console to reveal where you rank.
+                </p>
+              </div>
+            </div>
+            <ConnectCTA label="Reveal my rank" source="home_ghost_row" subtext={null} align="center" />
+          </div>
+        </div>
+      </section>
+
+      {/* This week's climbers — liveness under the board. */}
+      {(movers.climbers.length > 0 || movers.newcomers.length > 0) && (
+        <section className="container pb-4">
+          <div className="mx-auto max-w-3xl">
+            <MoversBand climbers={movers.climbers} newcomers={movers.newcomers} compact />
+          </div>
+        </section>
+      )}
+
+      {/* The reward — the badge as payoff and the growth loop back to RealRank. */}
       <section className="border-t border-border/60 bg-card/40">
-        <div className="container flex flex-col items-center gap-4 py-14 text-center">
-          <h2 className="text-2xl font-semibold tracking-tight">More than a leaderboard</h2>
-          <p className="max-w-xl text-balance text-muted-foreground">
-            A search-leak finder, shareable rank badges, head-to-head compare, channel
-            attribution, and agent visibility. All free while it&apos;s new.
-          </p>
-          <Link
-            href="/about"
-            className="inline-flex h-11 items-center justify-center rounded-md border border-input bg-background px-5 text-sm font-medium transition-colors hover:bg-accent"
-          >
-            See everything RealRank does →
-          </Link>
+        <div className="container grid items-center gap-8 py-16 sm:grid-cols-2">
+          <div>
+            <div className="text-xs font-medium uppercase tracking-wider text-primary">The reward</div>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-balance">
+              A badge that can&apos;t be faked, and a spot AI assistants can cite.
+            </h2>
+            <p className="mt-3 max-w-md text-muted-foreground">
+              Embed your verified rank on your own site. Your momentum is queryable over
+              MCP, so assistants surface you to buyers when they compare tools.
+            </p>
+            <Link
+              href="/about"
+              className="mt-5 inline-flex h-11 items-center justify-center rounded-md border border-input bg-background px-5 text-sm font-medium transition-colors hover:bg-accent"
+            >
+              See everything RealRank does →
+            </Link>
+          </div>
+          <div className="flex justify-center">
+            <div className="inline-flex items-center gap-3 rounded-xl border border-border bg-background px-4 py-3 shadow-sm">
+              <span className="flex size-9 items-center justify-center rounded-full border-2 border-primary text-sm font-bold text-primary">
+                #4
+              </span>
+              <div>
+                <div className="text-sm font-semibold">yourdomain.com</div>
+                <div className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                  Verified by RealRank
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -248,26 +252,6 @@ function PillStat({ value, label }: { value: number; label: string }) {
       <span className="font-semibold tabular-nums text-foreground">{formatCompact(value)}</span>
       <span className="text-muted-foreground">{label}</span>
     </span>
-  );
-}
-
-function HeroFeature({
-  icon,
-  title,
-  body,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  body: string;
-}) {
-  return (
-    <div className="rounded-xl border border-border bg-card/60 p-5">
-      <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-        {icon}
-      </span>
-      <p className="mt-3 font-semibold tracking-tight">{title}</p>
-      <p className="mt-1 text-sm text-muted-foreground">{body}</p>
-    </div>
   );
 }
 
