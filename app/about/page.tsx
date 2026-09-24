@@ -1,6 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ShieldCheck, TrendingUp, RefreshCw, LockKeyhole } from "lucide-react";
+import {
+  ShieldCheck,
+  TrendingUp,
+  RefreshCw,
+  LockKeyhole,
+  LineChart,
+  BarChart3,
+  Award,
+  GitCompare,
+  Radio,
+  Search,
+  Bot,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { siteConfig } from "@/lib/config";
 
@@ -70,7 +82,34 @@ momentum = (1 + growth) × log10(clicks_7d + 1) × 100`}
         </pre>
       </div>
 
-      <div className="mt-12 flex flex-col items-center gap-3 text-center">
+      {/* Full feature set — the detail that used to crowd the homepage. */}
+      <div className="mt-16">
+        <h2 className="text-2xl font-semibold tracking-tight">Everything {siteConfig.name} does</h2>
+        <p className="mt-2 text-muted-foreground">
+          A verified leaderboard, plus the tools to prove and grow your traffic. Free
+          while it&apos;s new.
+        </p>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          {FEATURES.map((f) => (
+            <Link
+              key={f.title}
+              href={f.href}
+              className="group flex flex-col rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary/50"
+            >
+              <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <f.icon className="size-5" />
+              </span>
+              <p className="mt-3 font-medium">{f.title}</p>
+              <p className="mt-1 flex-1 text-sm text-muted-foreground">{f.body}</p>
+              <span className="mt-3 text-sm font-medium text-primary group-hover:underline">
+                {f.cta} →
+              </span>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-16 flex flex-col items-center gap-3 text-center">
         <p className="text-muted-foreground">Ready to see where you rank?</p>
         <Button asChild size="lg">
           <Link href="/dashboard">Add my site</Link>
@@ -79,3 +118,76 @@ momentum = (1 + growth) × log10(clicks_7d + 1) × 100`}
     </div>
   );
 }
+
+const FEATURES = [
+  {
+    icon: TrendingUp,
+    title: "Momentum ranking",
+    body: "Ranked by growth velocity, last 7 days vs. the prior 21, so fast-rising sites beat flat giants.",
+    href: "/leaderboard",
+    cta: "See the board",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Verified, not estimated",
+    body: "Real organic clicks pulled from your Google Search Console (read-only). No guesses, no self-reported numbers.",
+    href: "/blog/verified-vs-estimated-traffic",
+    cta: "Why it matters",
+  },
+  {
+    icon: Bot,
+    title: "Agent visibility",
+    body: "Your verified momentum is queryable by AI assistants via MCP, so agents surface you to buyers.",
+    href: "/agent-visibility",
+    cta: "How agents see you",
+  },
+  {
+    icon: Search,
+    title: "Search-leak finder",
+    body: "See the searches where you rank but miss the click, plus near-page-1 queries worth chasing.",
+    href: "/dashboard/leaks",
+    cta: "Find your leaks",
+  },
+  {
+    icon: LineChart,
+    title: "Momentum timeline",
+    body: "Every site gets a daily-clicks trend and row sparklines, so you can see who's heating up at a glance.",
+    href: "/blog/read-search-console-momentum",
+    cta: "Read your trend",
+  },
+  {
+    icon: Award,
+    title: "Profiles, rank cards & badges",
+    body: "A shareable profile per site, dynamic rank cards for social, and an embeddable badge that updates itself.",
+    href: "/blog/rank-badge-social-proof",
+    cta: "Turn rank into proof",
+  },
+  {
+    icon: GitCompare,
+    title: "Head-to-head compare",
+    body: "Put any two sites side by side: momentum, volume, growth and authority, with the leader highlighted.",
+    href: "/leaderboard",
+    cta: "Browse the board",
+  },
+  {
+    icon: Radio,
+    title: "Channels attribution",
+    body: "See which marketing channels actually bring paying customers, ranked by revenue.",
+    href: "/dashboard/channels",
+    cta: "Open Channels",
+  },
+  {
+    icon: BarChart3,
+    title: "Domain authority (DR)",
+    body: "A DR-style authority score shown alongside verified traffic. Context, never a way to game the rank.",
+    href: "/underdogs",
+    cta: "See the underdogs",
+  },
+  {
+    icon: RefreshCw,
+    title: "Always fresh",
+    body: "Numbers refresh automatically from Search Console, and new sites appear the moment they connect.",
+    href: "/launches",
+    cta: "See launches",
+  },
+] as const;

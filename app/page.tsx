@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { RefreshCw, ShieldCheck, TrendingUp, LineChart, BarChart3, Award, GitCompare, Radio, Search, Bot } from "lucide-react";
+import { ShieldCheck, Award, Search, Bot } from "lucide-react";
 import { ConnectCTA } from "@/components/connect-cta";
 import { FaqJsonLd } from "@/components/json-ld";
 import { LeaderboardSection } from "@/components/leaderboard-section";
@@ -181,140 +181,20 @@ export default async function HomePage() {
         interactive={false}
       />
 
-      {/* Features — surface everything RealRank does */}
+      {/* More than a leaderboard — the full feature detail lives on /about now. */}
       <section className="border-t border-border/60 bg-card/40">
-        <div className="container py-16">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              Everything RealRank does
-            </h2>
-            <p className="mt-2 text-muted-foreground">
-              A verified leaderboard, plus the tools to prove and grow your traffic —
-              all free while it&apos;s new.
-            </p>
-          </div>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <FeatureCard
-              icon={<TrendingUp className="size-5" />}
-              title="Momentum ranking"
-              body="Ranked by growth velocity — last 7 days vs. the prior 21 — so fast-rising sites beat flat giants."
-              href="/about"
-              cta="How it works"
-            />
-            <FeatureCard
-              icon={<ShieldCheck className="size-5" />}
-              title="Verified, not estimated"
-              body="Real organic clicks pulled from your Google Search Console (read-only). No guesses, no self-reported numbers."
-              href="/blog/verified-vs-estimated-traffic"
-              cta="Why it matters"
-            />
-            <FeatureCard
-              icon={<Bot className="size-5" />}
-              title="Agent visibility"
-              body="Your verified momentum is queryable by AI assistants via MCP — the longer you're verified, the stronger your signal when an agent compares you to rivals."
-              href="/agent-visibility"
-              cta="How agents see you"
-            />
-            <FeatureCard
-              icon={<Search className="size-5" />}
-              title="Search-leak finder"
-              body="See the searches where you rank but don't get the click, plus the near-page-1 queries worth chasing — recover traffic you've already earned."
-              href="/dashboard/leaks"
-              cta="Find your leaks"
-            />
-            <FeatureCard
-              icon={<LineChart className="size-5" />}
-              title="Momentum timeline"
-              body="Every site gets a daily-clicks trend and row sparklines, so you can see who's heating up at a glance."
-              href="/blog/read-search-console-momentum"
-              cta="Read your trend"
-            />
-            <FeatureCard
-              icon={<Award className="size-5" />}
-              title="Profiles, rank cards & badges"
-              body="A shareable profile per site, dynamic rank cards for social, and an embeddable badge that updates itself."
-              href="/blog/rank-badge-social-proof"
-              cta="Turn rank into proof"
-            />
-            <FeatureCard
-              icon={<GitCompare className="size-5" />}
-              title="Head-to-head compare"
-              body="Put any two sites side by side — momentum, volume, growth and authority, with the leader highlighted."
-              href="/#leaderboard"
-              cta="Browse the board"
-            />
-            <FeatureCard
-              icon={<Radio className="size-5" />}
-              title="Channels — attribution"
-              body="See which marketing channels actually bring paying customers — ranked by revenue, so you spend where it pays."
-              href="/dashboard/channels"
-              cta="Open Channels"
-            />
-            <FeatureCard
-              icon={<BarChart3 className="size-5" />}
-              title="Domain authority (DR)"
-              body="A DR-style authority score shown alongside verified traffic — context, never a way to game the rank."
-              href="/best/lol-directories"
-              cta="See the board"
-            />
-            <FeatureCard
-              icon={<RefreshCw className="size-5" />}
-              title="Always fresh"
-              body="Numbers refresh automatically from Search Console, and new sites appear the moment they connect."
-              href="/login"
-              cta="Connect & claim"
-            />
-            <FeatureCard
-              icon={<ShieldCheck className="size-5" />}
-              title="Free to claim"
-              body="Connect Search Console, publish your verified properties, and let real growth decide your order."
-              href="/login"
-              cta="Get on the board"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Explore — internal links to landing pages + blog */}
-      <section className="border-t border-border/60">
-        <div className="container py-14">
-          <h2 className="text-xl font-semibold tracking-tight">Explore</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Guides and rankings on verified organic traffic and the .lol
-            leaderboard wave.
+        <div className="container flex flex-col items-center gap-4 py-14 text-center">
+          <h2 className="text-2xl font-semibold tracking-tight">More than a leaderboard</h2>
+          <p className="max-w-xl text-balance text-muted-foreground">
+            A search-leak finder, shareable rank badges, head-to-head compare, channel
+            attribution, and agent visibility. All free while it&apos;s new.
           </p>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <ExploreCard
-              href="/best/fastest-growing-saas-websites"
-              title="Fastest-growing SaaS websites"
-              body="A live ranking of SaaS sites by verified organic momentum — not third-party estimates."
-            />
-            <ExploreCard
-              href="/best/lol-directories"
-              title="The best .lol directories"
-              body="outbid.lol, TrustMRR, and RealRank compared — what each ranks, and which to trust."
-            />
-            <ExploreCard
-              href="/blog/grow-saas-organic-traffic"
-              title="How to grow organic traffic"
-              body="A founder's playbook for the compounding channel that keeps paying after you stop."
-            />
-            <ExploreCard
-              href="/blog/verified-vs-estimated-traffic"
-              title="Verified vs estimated traffic"
-              body="Why SimilarWeb and Search Console disagree — and which number you can actually trust."
-            />
-            <ExploreCard
-              href="/blog/momentum-score-explained"
-              title="What's a good momentum score?"
-              body="How to read your ranking, why it moves week to week, and the honest ways to climb."
-            />
-            <ExploreCard
-              href="/blog"
-              title="All articles →"
-              body="Essays on verified traffic, the pay-to-rank craze, and what really moves rankings."
-            />
-          </div>
+          <Link
+            href="/about"
+            className="inline-flex h-11 items-center justify-center rounded-md border border-input bg-background px-5 text-sm font-medium transition-colors hover:bg-accent"
+          >
+            See everything RealRank does →
+          </Link>
         </div>
       </section>
 
@@ -407,50 +287,3 @@ function HeroFeature({
   );
 }
 
-function FeatureCard({
-  icon,
-  title,
-  body,
-  href,
-  cta,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  body: string;
-  href: string;
-  cta: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="group flex flex-col rounded-xl border border-border bg-background p-5 transition-colors hover:border-primary/50"
-    >
-      <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-        {icon}
-      </span>
-      <p className="mt-3 font-medium">{title}</p>
-      <p className="mt-1 flex-1 text-sm text-muted-foreground">{body}</p>
-      <span className="mt-3 text-sm font-medium text-primary group-hover:underline">{cta} →</span>
-    </Link>
-  );
-}
-
-function ExploreCard({
-  href,
-  title,
-  body,
-}: {
-  href: string;
-  title: string;
-  body: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="group rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary/50"
-    >
-      <p className="font-medium group-hover:text-primary">{title}</p>
-      <p className="mt-1.5 text-sm text-muted-foreground">{body}</p>
-    </Link>
-  );
-}
