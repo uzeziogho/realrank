@@ -37,8 +37,16 @@ export interface SearchLeaks {
   ctrLeaks: LeakRow[];
   /** Page-2 queries (positions ~11–20) with real impression volume to chase. */
   strikingDistance: LeakRow[];
+  /**
+   * The property's biggest queries by impressions, always populated when there
+   * is any data. Guarantees the tool shows real verified search data even on a
+   * small site with no dramatic leaks yet.
+   */
+  topQueries: LeakRow[];
   /** Sum of recoverable clicks across the CTR-leak bucket. */
   totalMissedClicks: number;
+  /** True when Search Console returned any query rows for the window. */
+  hasData: boolean;
   windowDays: number;
   analyzedAt: string;
 }
@@ -53,8 +61,12 @@ const CTR_CURVE = [
   0.28, 0.15, 0.1, 0.07, 0.05, 0.04, 0.032, 0.026, 0.021, 0.018, // positions 1–10
 ];
 
-/** Below this, a query is long-tail noise not worth surfacing. */
-const MIN_IMPRESSIONS = 50;
+/**
+ * Below this, a query is long-tail noise not worth flagging as a leak. Kept low
+ * so small and new sites still surface something actionable (the biggest sites
+ * rarely have their real leaks under this bar anyway).
+ */
+const MIN_IMPRESSIONS = 15;
 
 /** The position we assume a striking-distance query could realistically reach. */
 const STRIKING_TARGET_POSITION = 8;
@@ -83,7 +95,9 @@ export async function getSearchLeaks(
   const empty: SearchLeaks = {
     ctrLeaks: [],
     strikingDistance: [],
+    topQueries: [],
     totalMissedClicks: 0,
+    hasData: false,
     windowDays,
     analyzedAt: new Date().toISOString(),
   };
@@ -119,7 +133,20 @@ export async function getSearchLeaks(
 
   const totalMissedClicks = ctrLeaks.reduce((sum, r) => sum + r.opportunityClicks, 0);
 
-  return { ctrLeaks, strikingDistance, totalMissedClicks, windowDays, analyzedAt: empty.analyzedAt };
+  // Always give the user their real query data: the biggest queries by
+  // impressions, whether or not they cleared the strict leak filters. rows are
+  // already sorted by impressions (desc) from the fetch.
+  const topQueries = rows.slice(0, 15).map(toCtrLeak);
+
+  return {
+    ctrLeaks,
+    strikingDistance,
+    topQueries,
+    totalMissedClicks,
+    hasData: rows.length > 0,
+    windowDays,
+    analyzedAt: empty.analyzedAt,
+  };
 }
 
 function toCtrLeak(r: SearchAnalyticsRow): LeakRow {

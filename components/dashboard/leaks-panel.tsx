@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MousePointerClick, Target, TrendingDown } from "lucide-react";
+import { MousePointerClick, Target, TrendingDown, ListOrdered } from "lucide-react";
 import { cn, formatCompact, hostname } from "@/lib/utils";
 import type { LeakRow, SearchLeaks } from "@/lib/leaks";
 
@@ -46,6 +46,16 @@ export function LeaksPanel({
         <p className="text-sm text-muted-foreground">
           Couldn&apos;t read Search Console for this property.
         </p>
+      ) : !leaks.hasData ? (
+        <div className="rounded-xl border border-dashed border-border bg-card/50 p-10 text-center">
+          <p className="text-sm font-medium">No Search Console impressions yet</p>
+          <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+            {hostname(selected) || selected} has no verified search impressions in the
+            last {leaks.windowDays} days. As it starts showing up in Google, your
+            queries, click-through leaks, and striking-distance opportunities appear
+            here automatically.
+          </p>
+        </div>
       ) : (
         <>
           {/* Summary */}
@@ -58,8 +68,17 @@ export function LeaksPanel({
               {formatCompact(leaks.totalMissedClicks)}
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Estimated organic clicks you&apos;re leaving on the table on page-1
-              rankings that under-perform their typical click-through rate.
+              {leaks.totalMissedClicks > 0 ? (
+                <>
+                  Estimated organic clicks you&apos;re leaving on the table on page-1
+                  rankings that under-perform their typical click-through rate.
+                </>
+              ) : (
+                <>
+                  No major click-through leaks on your current page-1 rankings. Your
+                  biggest queries and any striking-distance opportunities are below.
+                </>
+              )}
             </p>
           </div>
 
@@ -81,6 +100,16 @@ export function LeaksPanel({
             rows={leaks.strikingDistance}
             emptyLabel="No high-volume page-2 queries right now."
             opportunityLabel="Potential"
+          />
+
+          {/* Your biggest queries — always shown, so the tool never reads empty */}
+          <LeakTable
+            icon={<ListOrdered className="size-4 text-primary" />}
+            title="Your biggest queries"
+            subtitle="Every query you rank for, biggest by impressions first — the raw material behind the leaks above."
+            rows={leaks.topQueries}
+            emptyLabel="No queries with impressions yet."
+            opportunityLabel="Upside"
           />
 
           <p className="text-xs text-muted-foreground">
