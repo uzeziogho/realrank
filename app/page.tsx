@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ShieldCheck, Award } from "lucide-react";
+import { ShieldCheck, Award, ArrowUp } from "lucide-react";
 import { ConnectCTA } from "@/components/connect-cta";
 import { FaqJsonLd } from "@/components/json-ld";
 import { LeaderboardSection } from "@/components/leaderboard-section";
@@ -126,7 +126,7 @@ export default async function HomePage() {
       <section className="container -mt-6 pb-2">
         <div className="mx-auto max-w-5xl">
           <div className="flex flex-col items-center justify-between gap-4 rounded-2xl border border-dashed border-primary/40 bg-primary/[0.05] px-5 py-4 sm:flex-row">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 text-center sm:text-left">
               <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-xl font-bold text-primary">
                 ?
               </span>
@@ -137,7 +137,16 @@ export default async function HomePage() {
                 </p>
               </div>
             </div>
-            <ConnectCTA label="Reveal my rank" source="home_ghost_row" subtext={null} align="center" />
+            {/* Scrolls up to the hero rank checker and focuses it (see RankChecker) —
+                a lower-friction next step than jumping straight into Google OAuth.
+                Full-width tap target on mobile, auto once the row is horizontal. */}
+            <a
+              href="#rank-checker"
+              className="inline-flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:w-auto"
+            >
+              Reveal my rank
+              <ArrowUp className="size-4" />
+            </a>
           </div>
         </div>
       </section>

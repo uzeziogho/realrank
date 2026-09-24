@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useActionState } from "react";
+import { useState, useActionState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Search, ArrowRight, CheckCircle2, Bell, Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,8 +32,23 @@ export function RankChecker({
 }) {
   const [value, setValue] = useState("");
   const [result, setResult] = useState<null | { host: string; ranked: boolean }>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const known = new Set(knownHosts);
+
+  // Deep-link target: when the page is navigated to with #rank-checker (e.g. the
+  // ghost row's "Reveal my rank" CTA), scroll the checker into view and focus the
+  // domain field so the visitor lands ready to type. hashchange re-runs it when
+  // the same-page anchor is clicked again.
+  useEffect(() => {
+    function focusOnHash() {
+      if (window.location.hash !== "#rank-checker") return;
+      inputRef.current?.focus({ preventScroll: true });
+    }
+    focusOnHash();
+    window.addEventListener("hashchange", focusOnHash);
+    return () => window.removeEventListener("hashchange", focusOnHash);
+  }, []);
 
   function check(e: React.FormEvent) {
     e.preventDefault();
@@ -45,11 +60,12 @@ export function RankChecker({
   }
 
   return (
-    <div className="w-full max-w-xl">
+    <div id="rank-checker" className="w-full max-w-xl scroll-mt-24">
       <form onSubmit={check} className="flex flex-col gap-2 sm:flex-row">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <input
+            ref={inputRef}
             value={value}
             onChange={(e) => setValue(e.target.value)}
             placeholder="yourdomain.com"
