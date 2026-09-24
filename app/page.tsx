@@ -4,7 +4,7 @@ import { ShieldCheck, Award, Search, Bot } from "lucide-react";
 import { ConnectCTA } from "@/components/connect-cta";
 import { FaqJsonLd } from "@/components/json-ld";
 import { LeaderboardSection } from "@/components/leaderboard-section";
-import { getLeaderboardData, getRecentlyJoined, getMovers, getSiteTraffic } from "@/lib/data";
+import { getLeaderboardData, getMovers, getSiteTraffic } from "@/lib/data";
 import { MoversBand } from "@/components/movers";
 import { RankChecker } from "@/components/rank-checker";
 import { WaitlistForm } from "@/components/waitlist-form";
@@ -50,11 +50,10 @@ export default async function HomePage() {
   // No searchParams here: the homepage renders the default momentum board so it
   // prerenders (ISR) and serves cached HTML. Search, the volume toggle, and
   // pagination live on /leaderboard, which is server-rendered per request.
-  // Fetch concurrently — the board/recent/movers share one cached Supabase read
-  // (see loadRaw), so this is ~2 round-trips instead of the previous 7 in series.
-  const [data, recent, movers, traffic] = await Promise.all([
+  // Fetch concurrently — the board and movers share one cached Supabase read
+  // (see loadRaw), so this is ~2 round-trips instead of running in series.
+  const [data, movers, traffic] = await Promise.all([
     getLeaderboardData("momentum"),
-    getRecentlyJoined(6),
     getMovers(5),
     getSiteTraffic(),
   ]);
@@ -140,21 +139,6 @@ export default async function HomePage() {
             />
           </div>
 
-          {/* Liveness — recently joined sites */}
-          {recent.length > 0 && (
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
-              <Link href="/launches" className="text-xs uppercase tracking-wider text-muted-foreground hover:text-foreground">Recently launched →</Link>
-              {recent.map((s) => (
-                <Link
-                  key={s.host}
-                  href={`/site/${s.host}`}
-                  className="rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {s.displayName}
-                </Link>
-              ))}
-            </div>
-          )}
         </div>
       </section>
 
