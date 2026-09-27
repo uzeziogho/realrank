@@ -87,14 +87,6 @@ const BADGES: Badge[] = [
     height: 40,
   },
   {
-    href: "https://tools.launchllama.co?utm_source=badge&utm_medium=referral",
-    src: "https://tools.launchllama.co/featured-badge-white.png?v=2",
-    alt: "As seen on Launch Llama Newsletter",
-    width: 200,
-    height: 50,
-    rel: "noopener noreferrer",
-  },
-  {
     href: "https://www.superlaun.ch/products/3418",
     src: "https://www.superlaun.ch/badge.png",
     alt: "Featured on Super Launch",
