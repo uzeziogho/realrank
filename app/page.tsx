@@ -64,9 +64,11 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Hero */}
+      {/* Slim board header — just enough framing (SEO h1 + one-line context) so the
+          live board reads as the hero. The proof (the board) leads; the manifesto
+          ("can't buy your way onto it") is demoted below the fold. */}
       <section className="hero-glow border-b border-border/60">
-        <div className="container flex flex-col items-center py-16 text-center sm:py-24">
+        <div className="container flex flex-col items-center py-10 text-center sm:py-14">
           {/* Live activity pill — real first-party numbers, makes the board feel active. */}
           <div className="mb-5 inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-full border border-border bg-card px-3.5 py-1.5 text-sm">
             <span className="relative flex size-2">
@@ -88,32 +90,18 @@ export default async function HomePage() {
             <Link href="/stats" className="font-medium text-primary hover:underline">stats →</Link>
           </div>
 
-          <h1 className="max-w-3xl text-balance text-4xl font-bold tracking-tight sm:text-6xl">
-            The growth leaderboard you can&apos;t buy your way onto.
+          <h1 className="max-w-3xl text-balance text-3xl font-bold tracking-tight sm:text-5xl">
+            The organic-growth leaderboard.
           </h1>
-          <p className="mt-5 max-w-2xl text-balance text-lg text-muted-foreground">
-            Every rank is pulled from Google Search Console. No ads, no upvote rings.
-            Just <strong className="text-foreground">verified</strong> clicks and momentum,
-            so fast-growing sites beat the giants.
+          <p className="mt-4 inline-flex max-w-2xl items-center gap-2 text-balance text-base text-muted-foreground sm:text-lg">
+            <ShieldCheck className="size-4 shrink-0 text-primary" />
+            Ranked by opted-in Google Search Console clicks — momentum, not votes or estimates.
           </p>
-
-          {/* Verified-proof positioning pill */}
-          <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-            <ShieldCheck className="size-4" />
-            Verified by Google Search Console. Real clicks, not vibes.
-          </div>
-
-          {/* One interactive entry point: where would I rank? */}
-          <div className="mt-8 flex w-full flex-col items-center">
-            <RankChecker knownHosts={knownHosts} topClicks={topClicks} totalSites={data.totalSites} />
-            <p className="mt-3 text-xs text-muted-foreground">
-              Read-only access · free · about 30 seconds
-            </p>
-          </div>
         </div>
       </section>
 
-      {/* Board-as-hero: the live leaderboard is the pitch and the proof. */}
+      {/* Board-as-hero: the live leaderboard is the pitch and the proof — first thing
+          on the page after the one-line frame above. */}
       <LeaderboardSection
         data={data}
         view="momentum"
@@ -122,22 +110,23 @@ export default async function HomePage() {
         interactive={false}
       />
 
-      {/* Ghost row — "your spot is waiting", the honest curiosity/endowment hook. */}
-      <section className="container -mt-6 pb-2">
-        <div className="mx-auto max-w-5xl">
-          <div className="flex flex-col items-center justify-between gap-4 rounded-2xl border border-dashed border-primary/40 bg-primary/[0.05] px-5 py-4 sm:flex-row">
-            <div className="flex items-center gap-4">
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-xl font-bold text-primary">
-                ?
-              </span>
-              <div>
-                <p className="font-semibold">Your row is waiting.</p>
-                <p className="text-sm text-muted-foreground">
-                  Connect Google Search Console to reveal where you rank.
-                </p>
-              </div>
-            </div>
-            <ConnectCTA label="Reveal my rank" source="home_ghost_row" subtext={null} align="center" />
+      {/* Primary CTA, right under the board: the interactive rank checker. It makes
+          the visitor the subject ("where do I rank?") before asking for OAuth, then
+          routes to connect — higher-intent than a bare connect button. */}
+      <section className="container -mt-2 pb-2">
+        <div className="mx-auto max-w-2xl rounded-2xl border border-dashed border-primary/40 bg-primary/[0.05] px-5 py-6 text-center sm:px-8">
+          <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
+            Your row is waiting. Where do you rank?
+          </h2>
+          <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+            Check your domain against the board, then connect Google Search Console
+            (read-only) to claim your verified spot.
+          </p>
+          <div className="mt-6 flex w-full flex-col items-center">
+            <RankChecker knownHosts={knownHosts} topClicks={topClicks} totalSites={data.totalSites} />
+            <p className="mt-3 text-xs text-muted-foreground">
+              Read-only access · free · about 30 seconds
+            </p>
           </div>
         </div>
       </section>
@@ -199,13 +188,14 @@ export default async function HomePage() {
             </Link>
           )}
           <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            You&apos;re leaving verified clicks on the table.
+            You can&apos;t buy your way onto this board.
           </h2>
           <p className="max-w-xl text-muted-foreground">
-            You rank for searches you never get the click on, and your real growth
-            gets lost next to sites that just buy attention. Connect Google Search
-            Console and RealRank shows the exact searches you&apos;re leaking — and
-            ranks you by real momentum, so growth decides your spot, not budget.
+            Upvote rings and ad budgets move other leaderboards. Here, click totals
+            are read straight from Google Search Console, so the only way up is real
+            organic growth. Connect and RealRank also shows the exact searches
+            you&apos;re leaking — and ranks you by momentum, so growth decides your
+            spot, not budget.
           </p>
           <ConnectCTA label="Show me my leaks" source="home_band" className="mt-2" />
 
