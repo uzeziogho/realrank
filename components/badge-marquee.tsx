@@ -132,6 +132,14 @@ const BADGES: Badge[] = [
     width: 171,
     height: 54,
   },
+  {
+    href: "https://findalternative.to/real-rank/about?utm_source=badge",
+    src: "https://findalternative.to/api/badge/01M3H1FFS8ADR1WPAW378P6PV8.svg?theme=light&variant=hero",
+    alt: "Real rank is listed on findalternative.to",
+    width: 250,
+    height: 54,
+    title: "Real rank is listed on findalternative.to",
+  },
 ];
 
 function BadgeGroup({ ariaHidden = false }: { ariaHidden?: boolean }) {
