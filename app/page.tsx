@@ -93,8 +93,11 @@ export default async function HomePage() {
           <h1 className="max-w-3xl text-balance text-3xl font-bold tracking-tight sm:text-5xl">
             The organic-growth leaderboard.
           </h1>
-          <p className="mt-4 inline-flex max-w-2xl items-center gap-2 text-balance text-base text-muted-foreground sm:text-lg">
-            <ShieldCheck className="size-4 shrink-0 text-primary" />
+          <p className="mt-4 max-w-xl text-balance text-base text-muted-foreground sm:text-lg">
+            <ShieldCheck
+              className="mr-1.5 inline-block size-4 align-[-0.2em] text-primary"
+              aria-hidden="true"
+            />
             Ranked by opted-in Google Search Console clicks — momentum, not votes or estimates.
           </p>
         </div>
