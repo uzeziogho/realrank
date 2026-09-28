@@ -5,6 +5,7 @@ import { getStatsData } from "@/lib/stats";
 import { getSiteTraffic, getSiteTrafficSeries, getTrafficBreakdown } from "@/lib/data";
 import { TrafficTrend } from "@/components/traffic-trend";
 import { TrafficBreakdown } from "@/components/traffic-breakdown";
+import { StatTile } from "@/components/dash/stat-tile";
 import { CiteIndex } from "@/components/cite-index";
 import { siteConfig } from "@/lib/config";
 import { formatCompact, formatGrowth, siteHref, timeAgo } from "@/lib/utils";
@@ -117,10 +118,32 @@ export default async function StatsPage() {
 
         {/* KPI row — at-a-glance headline metrics */}
         <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatTile icon={<Users className="size-4" />} label="Visitors" value={formatCompact(traffic.visitors)} sub="all-time" />
-          <StatTile icon={<MousePointerClick className="size-4" />} label="Sessions" value={formatCompact(traffic.sessions)} sub="all-time" />
-          <StatTile icon={<Eye className="size-4" />} label="Pageviews" value={formatCompact(traffic.pageviews)} sub="all-time" />
           <StatTile
+            color="blue"
+            icon={<Users className="size-4" />}
+            label="Visitors"
+            value={formatCompact(traffic.visitors)}
+            sub="all-time"
+            spark={trafficSeries.map((d) => d.visitors)}
+          />
+          <StatTile
+            color="green"
+            icon={<MousePointerClick className="size-4" />}
+            label="Sessions"
+            value={formatCompact(traffic.sessions)}
+            sub="all-time"
+            spark={trafficSeries.map((d) => d.sessions)}
+          />
+          <StatTile
+            color="amber"
+            icon={<Eye className="size-4" />}
+            label="Pageviews"
+            value={formatCompact(traffic.pageviews)}
+            sub="all-time"
+            spark={trafficSeries.map((d) => d.pageviews)}
+          />
+          <StatTile
+            color="violet"
             icon={<Gauge className="size-4" />}
             label="Organic Index"
             value={String(stats.index)}
@@ -278,41 +301,6 @@ export default async function StatsPage() {
         </p>
       </div>
     </>
-  );
-}
-
-function StatTile({
-  icon,
-  label,
-  value,
-  sub,
-  tone,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  sub?: string;
-  tone?: "up" | "down";
-}) {
-  return (
-    <div className="rounded-xl border border-border bg-card p-4">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          {label}
-        </span>
-        <span className="text-muted-foreground">{icon}</span>
-      </div>
-      <div className="mt-2 text-3xl font-bold tabular-nums tracking-tight">{value}</div>
-      {sub && (
-        <div
-          className={`mt-0.5 text-xs ${
-            tone === "up" ? "text-success" : tone === "down" ? "text-danger" : "text-muted-foreground"
-          }`}
-        >
-          {sub}
-        </div>
-      )}
-    </div>
   );
 }
 

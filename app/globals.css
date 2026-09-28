@@ -36,6 +36,15 @@
   --ring: 142 69% 45%;
 
   --radius: 0.6rem;
+
+  /* Categorical data-viz palette (dashboards). Fixed order, never cycled;
+     validated for CVD separation + contrast on the dark card surface. */
+  --cat-1: #16a34a; /* green (brand)  */
+  --cat-2: #0284c7; /* blue           */
+  --cat-3: #d97706; /* amber          */
+  --cat-4: #8b5cf6; /* violet         */
+  --cat-5: #ec4899; /* pink           */
+  --cat-6: #0891b2; /* cyan           */
 }
 
 /* Optional light theme (dark is the default). */
@@ -59,6 +68,10 @@
   --border: 240 6% 90%;
   --input: 240 6% 90%;
   --ring: 142 71% 40%;
+
+  /* Deepen violet/pink on the light surface (validated for light mode). */
+  --cat-4: #7c3aed;
+  --cat-5: #db2777;
 }
 
 * {
