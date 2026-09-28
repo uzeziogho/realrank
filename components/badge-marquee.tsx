@@ -146,6 +146,13 @@ const BADGES: Badge[] = [
     width: 234,
     height: 54,
   },
+  {
+    href: "https://confettisaas.com/saas/realrank-lol?ref=badge",
+    src: "https://confettisaas.com/badge-light.svg",
+    alt: "RealRank on ConfettiSaaS",
+    width: 250,
+    height: 54,
+  },
 ];
 
 function BadgeGroup({ ariaHidden = false }: { ariaHidden?: boolean }) {
