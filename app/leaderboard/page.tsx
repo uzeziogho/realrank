@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { LeaderboardSection } from "@/components/leaderboard-section";
+import { RankChecker } from "@/components/rank-checker";
 import { getLeaderboardData } from "@/lib/data";
 import { siteConfig, type RankingView } from "@/lib/config";
+import { hostname } from "@/lib/utils";
 
 type SearchParams = Promise<{ view?: string; page?: string; q?: string }>;
 
@@ -50,6 +52,10 @@ export default async function LeaderboardPage({
 
   const data = await getLeaderboardData(view);
 
+  // For the rank checker: hostnames already on the board + the top volume.
+  const knownHosts = data.organic.map((s) => hostname(s.siteUrl).toLowerCase());
+  const topClicks = data.organic.reduce((m, s) => Math.max(m, s.clicks28d), 0);
+
   return (
     <>
       <section className="border-b border-border/60">
@@ -69,6 +75,15 @@ export default async function LeaderboardPage({
             Switch between momentum and volume, search for a site, or page through
             the full board.
           </p>
+
+          {/* Rank checker — make the visitor the subject before asking for OAuth. */}
+          <div className="mt-6 flex w-full max-w-xl flex-col">
+            <RankChecker knownHosts={knownHosts} topClicks={topClicks} totalSites={data.totalSites} />
+            <p className="mt-2 text-xs text-muted-foreground">
+              Check your domain against the board, then connect Google Search Console
+              (read-only) to claim your verified spot.
+            </p>
+          </div>
         </div>
       </section>
 

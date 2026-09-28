@@ -14,6 +14,7 @@ import {
   Bot,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FaqJsonLd } from "@/components/json-ld";
 import { siteConfig } from "@/lib/config";
 
 export const metadata: Metadata = {
@@ -109,15 +110,59 @@ momentum = (1 + growth) × log10(clicks_7d + 1) × 100`}
         </div>
       </div>
 
+      {/* FAQ — visible answers, mirrored into FAQPage structured data below. */}
+      <div className="mt-16">
+        <h2 className="text-2xl font-semibold tracking-tight">Frequently asked questions</h2>
+        <div className="mt-6 divide-y divide-border/60 rounded-2xl border border-border bg-card">
+          {FAQ_ITEMS.map((item) => (
+            <details key={item.q} className="group px-5 py-4">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium">
+                {item.q}
+                <span className="text-muted-foreground transition-transform group-open:rotate-45">
+                  +
+                </span>
+              </summary>
+              <p className="mt-3 text-sm text-muted-foreground">{item.a}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+
       <div className="mt-16 flex flex-col items-center gap-3 text-center">
         <p className="text-muted-foreground">Ready to see where you rank?</p>
         <Button asChild size="lg">
           <Link href="/dashboard">Add my site</Link>
         </Button>
       </div>
+
+      <FaqJsonLd items={FAQ_ITEMS} />
     </div>
   );
 }
+
+/** Site FAQ: rendered visibly and mirrored into FAQPage structured data. */
+const FAQ_ITEMS: { q: string; a: string }[] = [
+  {
+    q: "What is RealRank?",
+    a: "RealRank is a public leaderboard of websites ranked by verified organic search traffic. Sites connect Google Search Console (read-only) and their real click totals decide the order, so the ranking cannot be faked with screenshots or third-party estimates.",
+  },
+  {
+    q: "How does the ranking work?",
+    a: "The default sort is momentum, which compares a site's last 7 days of organic clicks against the prior 21 days, weighted by a logarithm of volume so a fast-growing small site can outrank a large flat one. A volume view (total clicks over 28 days) is also available. Rankings refresh hourly.",
+  },
+  {
+    q: "Is RealRank free?",
+    a: "Yes. Connecting a site and claiming a verified rank is free. The public leaderboard and the tools around it (report card, momentum calculator, traffic reality check) are free to use with no login required to browse.",
+  },
+  {
+    q: "Is it safe to connect Google Search Console?",
+    a: "RealRank requests a single read-only scope (webmasters.readonly). It can read search-performance data for properties you already own, but it cannot change settings, submit or remove URLs, or write anything. Nothing is public until you choose to publish a property, and you can revoke access anytime from your Google account permissions.",
+  },
+  {
+    q: "Can I fake my traffic to rank higher?",
+    a: "No. Click totals are read straight from Google Search Console, so the only way to climb is real organic growth. Nobody types in a number and nobody uploads a screenshot.",
+  },
+];
 
 const FEATURES = [
   {

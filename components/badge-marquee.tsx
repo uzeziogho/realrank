@@ -56,14 +56,6 @@ const BADGES: Badge[] = [
     rel: "noopener noreferrer nofollow sponsored",
   },
   {
-    href: "https://buildrship.xyz/products/realrank",
-    src: "https://buildrship.xyz/assets/featured-on-buildrship.png",
-    alt: "Featured on Buildrship",
-    width: 153,
-    height: 54,
-    rel: "dofollow",
-  },
-  {
     href: "https://findly.tools/realrank?utm_source=realrank",
     src: "https://findly.tools/badges/findly-tools-badge-light.svg",
     alt: "Featured on Findly.tools",

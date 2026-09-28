@@ -57,8 +57,8 @@ export function AuthNav() {
   return (
     <Button asChild size="sm">
       <Link href="/login">
-        <span className="sm:hidden">Connect</span>
-        <span className="hidden sm:inline">Connect Search Console</span>
+        <span className="sm:hidden">Launch</span>
+        <span className="hidden sm:inline">Launch your site</span>
       </Link>
     </Button>
   );
