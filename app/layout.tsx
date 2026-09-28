@@ -63,6 +63,10 @@ export const metadata: Metadata = {
     : {}),
 };
 
+// clicks.page privacy analytics. Public site key (like a Plausible data-domain),
+// overridable via env so it can be swapped or disabled without a code change.
+const CLICKS_SITE = process.env.NEXT_PUBLIC_CLICKS_SITE || "582t4f0n6t4m";
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -73,6 +77,12 @@ export default function RootLayout({
       className={`${GeistSans.variable} ${GeistMono.variable}`}
     >
       <head>
+        {/* clicks.page analytics — parser-inserted in <head> so its t.js reads
+            data-site reliably. Loads deferred, so it never blocks rendering. */}
+        {CLICKS_SITE && (
+          // eslint-disable-next-line @next/next/no-sync-scripts
+          <script defer src="https://clicks.page/t.js" data-site={CLICKS_SITE} />
+        )}
         {/* Brand wordmark typeface (Space Grotesk). Loaded via stylesheet so it
             works without a build-time font fetch; the Logo falls back to the
             site sans until it arrives. */}
