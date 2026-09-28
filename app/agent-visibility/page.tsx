@@ -117,7 +117,7 @@ export default function AgentVisibilityPage() {
         </p>
         <Button asChild size="lg">
           <Link href="/login">
-            Connect Search Console <ArrowRight className="size-4" />
+            Launch your site <ArrowRight className="size-4" />
           </Link>
         </Button>
       </div>

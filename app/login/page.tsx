@@ -60,7 +60,7 @@ export default async function LoginPage({
             <SignupButton />
           ) : (
             <Button size="lg" className="w-full" disabled>
-              Connect my Search Console
+              Launch your site
             </Button>
           )}
         </div>

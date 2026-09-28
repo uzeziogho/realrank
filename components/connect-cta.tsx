@@ -12,7 +12,7 @@ import { track } from "@/lib/track";
  * Fires a connect_click event so the owner can see where connects originate.
  */
 export function ConnectCTA({
-  label = "Connect Search Console",
+  label = "Launch your site",
   size = "lg",
   subtext = "Read-only access · free · about 30 seconds",
   source,

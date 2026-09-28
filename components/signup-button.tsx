@@ -12,9 +12,10 @@ declare global {
 }
 
 /**
- * The "Connect my Search Console" button on /login — RealRank's signup action
- * (there is no separate account step; the Google connect is the sign-up). Fires
- * the clicks.page "signup" event, then follows the link to start Google OAuth.
+ * The primary launch button on /login — RealRank's signup action (there is no
+ * separate account step; the read-only Google Search Console connect is the
+ * sign-up). Fires the clicks.page "signup" event, then follows the link to
+ * start Google OAuth. The "read-only · ~30s" reassurance lives beside it.
  */
 export function SignupButton() {
   return (
@@ -23,7 +24,7 @@ export function SignupButton() {
         href="/api/auth/google/start"
         onClick={() => window.clicks?.track("signup")}
       >
-        Connect my Search Console
+        Launch your site
         <ArrowRight className="size-4" />
       </a>
     </Button>
