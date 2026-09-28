@@ -84,7 +84,7 @@ export default async function BlogPost({ params }: { params: Params }) {
           Connect Google Search Console and let real organic growth decide your order.
         </p>
         <Button asChild className="mt-4">
-          <Link href="/login">Launch your site</Link>
+          <Link href="/login">Get ranked</Link>
         </Button>
       </div>
     </article>

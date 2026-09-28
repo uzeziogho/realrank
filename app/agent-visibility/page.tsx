@@ -117,7 +117,7 @@ export default function AgentVisibilityPage() {
         </p>
         <Button asChild size="lg">
           <Link href="/login">
-            Launch your site <ArrowRight className="size-4" />
+            Get ranked <ArrowRight className="size-4" />
           </Link>
         </Button>
       </div>

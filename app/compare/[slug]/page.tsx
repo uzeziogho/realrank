@@ -136,7 +136,7 @@ export default async function ComparePage({ params }: { params: Params }) {
         <p className="mt-1 text-sm text-muted-foreground">
           Connect Google Search Console and your verified momentum joins the board.
         </p>
-        <ConnectCTA label="Launch your site" source="compare" size="default" className="mt-4" />
+        <ConnectCTA label="Get ranked" source="compare" size="default" className="mt-4" />
       </div>
     </div>
   );

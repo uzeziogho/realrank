@@ -24,7 +24,7 @@ export function SignupButton() {
         href="/api/auth/google/start"
         onClick={() => window.clicks?.track("signup")}
       >
-        Launch your site
+        Connect Search Console
         <ArrowRight className="size-4" />
       </a>
     </Button>

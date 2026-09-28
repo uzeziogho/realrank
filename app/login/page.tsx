@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Activity, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -60,10 +61,20 @@ export default async function LoginPage({
             <SignupButton />
           ) : (
             <Button size="lg" className="w-full" disabled>
-              Launch your site
+              Connect Search Console
             </Button>
           )}
         </div>
+
+        {/* Low-friction escape hatch: not everyone is ready to grant Google
+            access. Listing is free and takes seconds — capture them here. */}
+        <p className="mt-4 text-sm text-muted-foreground">
+          Not ready to connect Google?{" "}
+          <Link href="/submit" className="font-medium text-primary hover:underline">
+            List your project free
+          </Link>{" "}
+          and upgrade to a ranked spot later.
+        </p>
 
         <p className="mt-6 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
           <ShieldCheck className="size-3.5 text-primary" />

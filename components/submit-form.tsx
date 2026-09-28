@@ -112,7 +112,7 @@ export function SubmitForm() {
         <textarea name="description" maxLength={300} rows={3} className={inputClass} />
       </Field>
 
-      <Field label="Email" hint="Optional — so we can tell you when you rank.">
+      <Field label="Email" hint="Optional — we'll only use it to reach you about this listing.">
         <input name="email" type="email" placeholder="you@company.com" className={inputClass} />
       </Field>
 

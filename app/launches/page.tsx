@@ -103,7 +103,7 @@ export default async function LaunchesPage() {
 
           <div className="mt-6 flex flex-col items-center gap-2">
             <Button asChild size="lg">
-              <Link href="/login">Launch your site</Link>
+              <Link href="/login">Get ranked</Link>
             </Button>
             <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
               <ShieldCheck className="size-3.5 text-primary" />
@@ -122,7 +122,7 @@ export default async function LaunchesPage() {
               site is the first on the launch board.
             </p>
             <Button asChild className="mt-5">
-              <Link href="/login">Launch your site</Link>
+              <Link href="/login">Get ranked</Link>
             </Button>
           </div>
         ) : (
@@ -218,7 +218,7 @@ export default async function LaunchesPage() {
           </div>
           <div className="mt-6 flex flex-col items-center gap-2 border-t border-border/60 pt-6 text-center">
             <Button asChild>
-              <Link href="/login">Launch your site</Link>
+              <Link href="/login">Get ranked</Link>
             </Button>
             <p className="text-xs text-muted-foreground">
               Connect Google Search Console (read-only) · about 30 seconds

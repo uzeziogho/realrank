@@ -117,7 +117,7 @@ export default async function FoundingPage() {
           </ol>
           <Button asChild className="mt-6">
             <Link href="/login">
-              Launch your site <ArrowRight className="size-4" />
+              Get ranked <ArrowRight className="size-4" />
             </Link>
           </Button>
           <ConnectNote className="mt-3" />
