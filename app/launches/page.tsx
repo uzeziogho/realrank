@@ -122,7 +122,7 @@ export default async function LaunchesPage() {
               site is the first on the launch board.
             </p>
             <Button asChild className="mt-5">
-              <Link href="/login">Connect Search Console</Link>
+              <Link href="/login">Launch your site</Link>
             </Button>
           </div>
         ) : (

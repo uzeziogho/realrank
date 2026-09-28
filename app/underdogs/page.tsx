@@ -49,7 +49,7 @@ export default async function UnderdogsPage() {
           </p>
           <div className="mt-8 flex flex-col items-center gap-2">
             <Button asChild size="lg">
-              <Link href="/login">Prove you&apos;re an underdog — connect Search Console</Link>
+              <Link href="/login">Prove you&apos;re an underdog — launch your site</Link>
             </Button>
             <p className="text-xs text-muted-foreground">
               Read-only access · free · DR is context, clicks are the rank
@@ -68,7 +68,7 @@ export default async function UnderdogsPage() {
               you could be the first to punch above your weight.
             </p>
             <Button asChild className="mt-5">
-              <Link href="/login">Connect Search Console</Link>
+              <Link href="/login">Launch your site</Link>
             </Button>
           </div>
         ) : (
