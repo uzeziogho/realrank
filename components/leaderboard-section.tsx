@@ -163,6 +163,13 @@ export async function LeaderboardSection({
               <Link href="/founding">How founding works</Link>
             </Button>
           </div>
+          <p className="mt-4 text-xs text-muted-foreground">
+            Not ready to connect Google?{" "}
+            <Link href="/submit" className="text-primary hover:underline">
+              List your project free
+            </Link>{" "}
+            first.
+          </p>
         </div>
       ) : filtered.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-card/50 p-12 text-center">

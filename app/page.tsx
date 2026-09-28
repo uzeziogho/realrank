@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { LeaderboardSection } from "@/components/leaderboard-section";
 import { getLeaderboardData, getSiteTraffic } from "@/lib/data";
 import { BadgeMarquee } from "@/components/badge-marquee";
@@ -64,6 +65,22 @@ export default async function HomePage() {
             />
             Ranked by opted-in Google Search Console clicks — momentum, not votes or estimates.
           </p>
+
+          {/* $0 entry point: list free today, upgrade to a verified rank later. */}
+          <div className="mt-6 flex flex-col items-center gap-2">
+            <Button asChild size="lg">
+              <Link href="/submit">
+                <Plus className="size-4" /> List your project — free
+              </Link>
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              Free, permanent link ·{" "}
+              <Link href="/login" className="underline underline-offset-2 hover:text-foreground">
+                connect Search Console
+              </Link>{" "}
+              to get a verified rank
+            </p>
+          </div>
         </div>
       </section>
 

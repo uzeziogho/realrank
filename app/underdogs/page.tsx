@@ -68,7 +68,7 @@ export default async function UnderdogsPage() {
               you could be the first to punch above your weight.
             </p>
             <Button asChild className="mt-5">
-              <Link href="/login">Launch your site</Link>
+              <Link href="/login">Get ranked</Link>
             </Button>
           </div>
         ) : (

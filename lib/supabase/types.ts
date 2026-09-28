@@ -418,6 +418,61 @@ export interface Database {
         };
         Relationships: [];
       };
+      listed_sites: {
+        Row: {
+          id: string;
+          host: string;
+          site_url: string;
+          display_name: string;
+          tagline: string | null;
+          description: string | null;
+          category: string | null;
+          submitter_email: string | null;
+          /** 'listed' (unverified) | 'owner_verified' (badge/link proven). */
+          status: string;
+          owner_verified: boolean;
+          verified_at: string | null;
+          is_active: boolean;
+          submitted_ip: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          host: string;
+          site_url: string;
+          display_name: string;
+          tagline?: string | null;
+          description?: string | null;
+          category?: string | null;
+          submitter_email?: string | null;
+          status?: string;
+          owner_verified?: boolean;
+          verified_at?: string | null;
+          is_active?: boolean;
+          submitted_ip?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          host?: string;
+          site_url?: string;
+          display_name?: string;
+          tagline?: string | null;
+          description?: string | null;
+          category?: string | null;
+          submitter_email?: string | null;
+          status?: string;
+          owner_verified?: boolean;
+          verified_at?: string | null;
+          is_active?: boolean;
+          submitted_ip?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -456,5 +511,6 @@ export type Channel = Database["public"]["Tables"]["channels"]["Row"];
 export type ChannelClick = Database["public"]["Tables"]["channel_clicks"]["Row"];
 export type ChannelConversion = Database["public"]["Tables"]["channel_conversions"]["Row"];
 export type SponsoredSlot = Database["public"]["Tables"]["sponsored_slots"]["Row"];
+export type ListedSite = Database["public"]["Tables"]["listed_sites"]["Row"];
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type ConnectedAccount = Database["public"]["Tables"]["connected_accounts"]["Row"];
