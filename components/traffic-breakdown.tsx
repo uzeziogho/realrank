@@ -1,11 +1,14 @@
 import { ExternalLink, FileText, Globe, MonitorSmartphone } from "lucide-react";
 import type { BreakdownItem, TrafficBreakdown } from "@/lib/data";
 import { formatCompact } from "@/lib/utils";
+import { dashVar, dashTint, type DashColor } from "@/lib/dash-colors";
 
 /**
- * "Where your traffic comes from" — datafast-style breakdown lists for
- * RealRank's own first-party traffic. Aggregate counts only; no per-visitor
- * data. Renders a "collecting" note until the beacon has recorded visits.
+ * "Where your traffic comes from" — breakdown lists for RealRank's own
+ * first-party traffic. Aggregate counts only; no per-visitor data. Each card
+ * carries one categorical color (icon chip, row dot, and share bar) so the four
+ * cuts read as distinct at a glance. Renders a "collecting" note until the
+ * beacon has recorded visits.
  */
 export function TrafficBreakdown({ data }: { data: TrafficBreakdown }) {
   const empty =
@@ -28,9 +31,10 @@ export function TrafficBreakdown({ data }: { data: TrafficBreakdown }) {
 
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      <Card icon={<ExternalLink className="size-4" />} title="Top sources" items={data.sources} />
-      <Card icon={<FileText className="size-4" />} title="Landing pages" items={data.pages} />
+      <Card color="blue" icon={<ExternalLink className="size-4" />} title="Top sources" items={data.sources} />
+      <Card color="violet" icon={<FileText className="size-4" />} title="Landing pages" items={data.pages} />
       <Card
+        color="amber"
         icon={<Globe className="size-4" />}
         title="Countries"
         items={data.countries}
@@ -41,49 +45,68 @@ export function TrafficBreakdown({ data }: { data: TrafficBreakdown }) {
           </>
         )}
       />
-      <Card icon={<MonitorSmartphone className="size-4" />} title="Devices" items={data.devices} />
+      <Card color="pink" icon={<MonitorSmartphone className="size-4" />} title="Devices" items={data.devices} />
     </div>
   );
 }
 
 function Card({
+  color,
   icon,
   title,
   items,
   labelFn,
 }: {
+  color: DashColor;
   icon: React.ReactNode;
   title: string;
   items: BreakdownItem[];
   labelFn?: (label: string) => React.ReactNode;
 }) {
+  const total = items.reduce((s, i) => s + i.hits, 0);
   const max = Math.max(1, ...items.map((i) => i.hits));
   return (
     <div className="rounded-xl border border-border bg-card p-5">
       <div className="mb-3 flex items-center gap-2 text-sm font-medium">
-        <span className="text-muted-foreground">{icon}</span>
+        <span
+          className="flex size-7 items-center justify-center rounded-md"
+          style={{ color: dashVar[color], backgroundColor: dashTint(color, 14) }}
+        >
+          {icon}
+        </span>
         {title}
       </div>
       {items.length === 0 ? (
         <p className="py-6 text-center text-sm text-muted-foreground">No data yet</p>
       ) : (
         <ul className="space-y-1">
-          {items.map((it) => (
-            <li
-              key={it.label}
-              className="relative flex items-center justify-between overflow-hidden rounded-md px-2.5 py-1.5 text-sm"
-            >
-              <span
-                className="absolute inset-y-0 left-0 rounded-md bg-primary/10"
-                style={{ width: `${Math.max(4, (it.hits / max) * 100)}%` }}
-                aria-hidden
-              />
-              <span className="relative z-10 truncate">{labelFn ? labelFn(it.label) : it.label}</span>
-              <span className="relative z-10 ml-3 shrink-0 tabular-nums text-muted-foreground">
-                {formatCompact(it.hits)}
-              </span>
-            </li>
-          ))}
+          {items.map((it) => {
+            const share = total > 0 ? Math.round((it.hits / total) * 100) : 0;
+            return (
+              <li
+                key={it.label}
+                className="relative flex items-center gap-2 overflow-hidden rounded-md px-2.5 py-1.5 text-sm"
+              >
+                <span
+                  className="absolute inset-y-0 left-0 rounded-md"
+                  style={{ width: `${Math.max(4, (it.hits / max) * 100)}%`, backgroundColor: dashTint(color, 12) }}
+                  aria-hidden
+                />
+                <span
+                  className="relative z-10 size-2 shrink-0 rounded-[3px]"
+                  style={{ backgroundColor: dashVar[color] }}
+                  aria-hidden
+                />
+                <span className="relative z-10 min-w-0 flex-1 truncate">
+                  {labelFn ? labelFn(it.label) : it.label}
+                </span>
+                <span className="relative z-10 shrink-0 text-xs tabular-nums text-muted-foreground/70">{share}%</span>
+                <span className="relative z-10 w-10 shrink-0 text-right tabular-nums font-medium">
+                  {formatCompact(it.hits)}
+                </span>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

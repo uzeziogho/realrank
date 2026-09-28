@@ -17,6 +17,7 @@ import { AddSiteForm } from "@/components/dashboard/add-site-form";
 import { SiteManager } from "@/components/dashboard/site-manager";
 import { GscProperties } from "@/components/dashboard/gsc-properties";
 import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
+import { StatTile } from "@/components/dash/stat-tile";
 import { BadgeEmbed } from "@/components/badge-embed";
 import { siteSlug } from "@/lib/site";
 import { SiteFavicon } from "@/components/site-favicon";
@@ -117,29 +118,33 @@ export default async function DashboardPage() {
         <>
           {/* KPI row */}
           <section className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <StatCard
+            <StatTile
+              color="green"
               label="Live sites"
               value={String(liveCount)}
               sub={mySites.length > liveCount ? `${mySites.length} total` : "on the board"}
-              icon={<Globe className="size-4 text-muted-foreground" />}
+              icon={<Globe className="size-4" />}
             />
-            <StatCard
+            <StatTile
+              color="violet"
               label="Best rank"
               value={bestRank ? `#${bestRank}` : "—"}
               sub={bestRank ? "by momentum" : "warming up"}
-              icon={<Trophy className="size-4 text-muted-foreground" />}
+              icon={<Trophy className="size-4" />}
             />
-            <StatCard
+            <StatTile
+              color="blue"
               label="Clicks (7d)"
               value={formatCompact(clicks7d)}
               sub="verified, last 7 days"
-              icon={<MousePointerClick className="size-4 text-muted-foreground" />}
+              icon={<MousePointerClick className="size-4" />}
             />
-            <StatCard
+            <StatTile
+              color="amber"
               label="Clicks (28d)"
               value={formatCompact(clicks28d)}
               sub="verified, last 28 days"
-              icon={<TrendingUp className="size-4 text-muted-foreground" />}
+              icon={<TrendingUp className="size-4" />}
             />
           </section>
 
@@ -249,31 +254,6 @@ export default async function DashboardPage() {
           <SiteManager sites={mySites} />
         </section>
       )}
-    </div>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  sub,
-  icon,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-  icon?: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-xl border border-border bg-card p-4">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          {label}
-        </span>
-        {icon}
-      </div>
-      <div className="mt-2 text-3xl font-bold tabular-nums tracking-tight">{value}</div>
-      {sub && <div className="mt-0.5 text-xs text-muted-foreground">{sub}</div>}
     </div>
   );
 }

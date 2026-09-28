@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Activity, Layers, Sparkles, Filter } from "lucide-react";
 import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
+import { StatTile } from "@/components/dash/stat-tile";
 import { getEventStats, getConnectFunnel } from "@/lib/data";
 import type { EventDay, EventStat, ConnectFunnel } from "@/lib/data";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { getOptionalUser, isOwner } from "@/lib/auth";
 import { formatCompact } from "@/lib/utils";
+import { dashVar, dashColorAt } from "@/lib/dash-colors";
 
 export const metadata: Metadata = {
   title: "Analytics",
@@ -58,23 +60,27 @@ export default async function AnalyticsPage() {
 
       {/* KPI row */}
       <section className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-        <StatCard
+        <StatTile
+          color="green"
           label="Events (30d)"
           value={formatCompact(stats.total)}
           sub="feature interactions"
-          icon={<Activity className="size-4 text-muted-foreground" />}
+          icon={<Activity className="size-4" />}
+          spark={stats.daily.map((d) => d.hits)}
         />
-        <StatCard
+        <StatTile
+          color="blue"
           label="Distinct features"
           value={String(stats.distinct)}
           sub="with at least one use"
-          icon={<Layers className="size-4 text-muted-foreground" />}
+          icon={<Layers className="size-4" />}
         />
-        <StatCard
+        <StatTile
+          color="violet"
           label="Top feature"
           value={topFeature}
           sub={stats.events[0] ? `${formatCompact(stats.events[0].hits)} uses` : "no data yet"}
-          icon={<Sparkles className="size-4 text-muted-foreground" />}
+          icon={<Sparkles className="size-4" />}
         />
       </section>
 
@@ -125,52 +131,29 @@ export default async function AnalyticsPage() {
   );
 }
 
-function StatCard({
-  label,
-  value,
-  sub,
-  icon,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-  icon?: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-xl border border-border bg-card p-4">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          {label}
-        </span>
-        {icon}
-      </div>
-      <div className="mt-2 truncate text-3xl font-bold tabular-nums tracking-tight">
-        {value}
-      </div>
-      {sub && <div className="mt-0.5 text-xs text-muted-foreground">{sub}</div>}
-    </div>
-  );
-}
-
-/** Horizontal bar list — the datafast/umami "most-used" view. */
+/** Horizontal bar list — the datafast/umami "most-used" view, colored by rank. */
 function FeatureBars({ events }: { events: EventStat[] }) {
   const max = Math.max(1, ...events.map((e) => e.hits));
   return (
     <ul className="flex flex-col gap-3">
-      {events.map((e) => {
+      {events.map((e, i) => {
         const pct = Math.max(3, Math.round((e.hits / max) * 100));
+        const color = dashVar[dashColorAt(i)];
         return (
           <li key={e.event}>
             <div className="mb-1 flex items-baseline justify-between gap-3">
-              <span className="truncate text-sm font-medium">{labelFor(e.event)}</span>
+              <span className="flex min-w-0 items-center gap-2 text-sm font-medium">
+                <span className="size-2 shrink-0 rounded-[3px]" style={{ backgroundColor: color }} aria-hidden />
+                <span className="truncate">{labelFor(e.event)}</span>
+              </span>
               <span className="shrink-0 text-sm font-semibold tabular-nums">
                 {formatCompact(e.hits)}
               </span>
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
               <div
-                className="h-full rounded-full bg-primary"
-                style={{ width: `${pct}%` }}
+                className="h-full rounded-full"
+                style={{ width: `${pct}%`, backgroundColor: color }}
               />
             </div>
           </li>
@@ -289,8 +272,14 @@ function EventsChart({ days }: { days: EventDay[] }) {
         preserveAspectRatio="none"
         aria-label={`Daily events over the last ${n} days, peaking at ${peak}.`}
       >
+        <defs>
+          <linearGradient id="events-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+          </linearGradient>
+        </defs>
         <line x1={padX} y1={H - padB} x2={W - padX} y2={H - padB} stroke="hsl(var(--border))" strokeWidth={1} />
-        <path d={area} fill="hsl(var(--primary) / 0.12)" />
+        <path d={area} fill="url(#events-fill)" />
         <path
           d={line}
           fill="none"
@@ -298,8 +287,9 @@ function EventsChart({ days }: { days: EventDay[] }) {
           strokeWidth={2}
           strokeLinejoin="round"
           strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
         />
-        <circle cx={x(n - 1)} cy={y(last.hits)} r={3.5} fill="hsl(var(--primary))" />
+        <circle cx={x(n - 1)} cy={y(last.hits)} r={4} fill="hsl(var(--primary))" stroke="hsl(var(--card))" strokeWidth={2} />
       </svg>
       <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
         <span>{fmtShort(first.day)}</span>

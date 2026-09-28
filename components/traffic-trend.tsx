@@ -101,8 +101,14 @@ function SessionsChart({ days }: { days: TrafficDay[] }) {
         preserveAspectRatio="none"
         aria-label={`Daily sessions over the last ${n} days, peaking at ${peak}.`}
       >
+        <defs>
+          <linearGradient id="sessions-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+          </linearGradient>
+        </defs>
         <line x1={padX} y1={H - padB} x2={W - padX} y2={H - padB} stroke="hsl(var(--border))" strokeWidth={1} />
-        <path d={area} fill="hsl(var(--primary) / 0.12)" />
+        <path d={area} fill="url(#sessions-fill)" />
         <path
           d={line}
           fill="none"
@@ -110,8 +116,9 @@ function SessionsChart({ days }: { days: TrafficDay[] }) {
           strokeWidth={2}
           strokeLinejoin="round"
           strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
         />
-        <circle cx={x(n - 1)} cy={y(last.sessions)} r={3.5} fill="hsl(var(--primary))" />
+        <circle cx={x(n - 1)} cy={y(last.sessions)} r={4} fill="hsl(var(--primary))" stroke="hsl(var(--card))" strokeWidth={2} />
       </svg>
       <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
         <span>{fmtShort(first.day)}</span>
