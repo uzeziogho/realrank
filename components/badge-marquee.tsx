@@ -132,6 +132,28 @@ const BADGES: Badge[] = [
     height: 54,
     title: "Real rank is listed on findalternative.to",
   },
+  {
+    href: "https://noonlaunch.com/product/real-rank",
+    src: "https://noonlaunch.com/badges/real-rank.svg",
+    alt: "Featured on Noonlaunch",
+    width: 220,
+    height: 60,
+    rel: "dofollow",
+  },
+  {
+    href: "https://www.foundrlist.com/product/realrank?utm_source=badge&utm_medium=embed",
+    src: "https://www.foundrlist.com/api/badge/realrank",
+    alt: "Featured on FoundrList",
+    width: 150,
+    height: 48,
+  },
+  {
+    href: "https://spacerrapps.com/apps/realrank?utm_source=badge&utm_medium=referral&utm_campaign=featured",
+    src: "https://spacerrapps.com/badge/realrank.svg?v=3",
+    alt: "RealRank is featured on SpacerrApps",
+    width: 234,
+    height: 54,
+  },
 ];
 
 function BadgeGroup({ ariaHidden = false }: { ariaHidden?: boolean }) {
