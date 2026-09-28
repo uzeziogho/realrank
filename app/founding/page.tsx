@@ -35,10 +35,10 @@ export default async function FoundingPage() {
             Be a founding site on {siteConfig.name}
           </h1>
           <p className="mt-4 max-w-xl text-balance text-lg text-muted-foreground">
-            The board is new — and that&apos;s the opportunity. The first{" "}
-            {founding.total} sites to connect become <strong className="text-foreground">founding
-            members</strong>: a permanent badge, top billing while it&apos;s quiet, and first-mover
-            discovery as it grows.
+            Claim one of the first {founding.total} spots and keep it. Founding{" "}
+            <strong className="text-foreground">members</strong> get a permanent Founder
+            badge, top billing while the board is small, and first-mover discovery as it
+            fills — all from real verified clicks.
           </p>
 
           {/* Scarcity */}
