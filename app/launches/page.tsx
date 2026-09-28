@@ -101,10 +101,15 @@ export default async function LaunchesPage() {
             </div>
           )}
 
-          <div className="mt-6 flex flex-col items-center gap-2">
-            <Button asChild size="lg">
-              <Link href="/login">Get ranked</Link>
-            </Button>
+          <div className="mt-6 flex flex-col items-center gap-3">
+            <div className="flex flex-col items-center gap-2 sm:flex-row">
+              <Button asChild size="lg">
+                <Link href="/login">Get ranked</Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <Link href="/submit">List your project — free</Link>
+              </Button>
+            </div>
             <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
               <ShieldCheck className="size-3.5 text-primary" />
               No votes · no pay-to-list · verified by Google
@@ -119,11 +124,16 @@ export default async function LaunchesPage() {
             <p className="text-lg font-medium">Be the first launch</p>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
               The board is brand new. Connect Google Search Console and your verified
-              site is the first on the launch board.
+              site is the first on the launch board — or list your project free to start.
             </p>
-            <Button asChild className="mt-5">
-              <Link href="/login">Get ranked</Link>
-            </Button>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+              <Button asChild>
+                <Link href="/login">Get ranked</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/submit">List your project — free</Link>
+              </Button>
+            </div>
           </div>
         ) : (
           <>
@@ -217,11 +227,16 @@ export default async function LaunchesPage() {
             />
           </div>
           <div className="mt-6 flex flex-col items-center gap-2 border-t border-border/60 pt-6 text-center">
-            <Button asChild>
-              <Link href="/login">Get ranked</Link>
-            </Button>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <Button asChild>
+                <Link href="/login">Get ranked</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/submit">List your project — free</Link>
+              </Button>
+            </div>
             <p className="text-xs text-muted-foreground">
-              Connect Google Search Console (read-only) · about 30 seconds
+              Connect Google Search Console (read-only) · about 30 seconds — or list free, no login
             </p>
           </div>
         </section>

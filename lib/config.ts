@@ -92,9 +92,14 @@ export const primaryNav: NavLink[] = [
 /** The leaderboard sliced different ways. Header "Boards" menu. */
 export const boardLinks: NavLink[] = [
   {
+    href: "/submit",
+    label: "List your project",
+    description: "Add your project free — no login, permanent link.",
+  },
+  {
     href: "/listed",
     label: "Directory",
-    description: "Every listed project. Free to join, no login.",
+    description: "Browse every listed project.",
   },
   {
     href: "/launches",

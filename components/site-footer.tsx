@@ -70,7 +70,6 @@ export function SiteFooter() {
                   <Link href={l.href} className="hover:text-foreground">{l.label}</Link>
                 </li>
               ))}
-              <li><Link href="/submit" className="hover:text-foreground">List your project</Link></li>
               <li><Link href="/login" className="hover:text-foreground">Get ranked</Link></li>
             </ul>
           </div>
