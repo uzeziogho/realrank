@@ -1,44 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ShieldCheck, Award } from "lucide-react";
-import { ConnectCTA } from "@/components/connect-cta";
-import { FaqJsonLd } from "@/components/json-ld";
+import { ShieldCheck } from "lucide-react";
 import { LeaderboardSection } from "@/components/leaderboard-section";
-import { getLeaderboardData, getMovers, getSiteTraffic } from "@/lib/data";
-import { MoversBand } from "@/components/movers";
-import { RankChecker } from "@/components/rank-checker";
-import { WaitlistForm } from "@/components/waitlist-form";
+import { getLeaderboardData, getSiteTraffic } from "@/lib/data";
 import { BadgeMarquee } from "@/components/badge-marquee";
 import { siteConfig } from "@/lib/config";
-import { formatCompact, hostname } from "@/lib/utils";
+import { formatCompact } from "@/lib/utils";
 
 // Incremental Static Regeneration — full ranked list is in the initial HTML,
 // refreshed at most hourly (and on-demand after the cron writes new data).
 export const revalidate = 3600;
-
-/** Homepage FAQ: rendered visibly and mirrored into FAQPage structured data. */
-const FAQ_ITEMS: { q: string; a: string }[] = [
-  {
-    q: "What is RealRank?",
-    a: "RealRank is a public leaderboard of websites ranked by verified organic search traffic. Sites connect Google Search Console (read-only) and their real click totals decide the order, so the ranking cannot be faked with screenshots or third-party estimates.",
-  },
-  {
-    q: "How does the ranking work?",
-    a: "The default sort is momentum, which compares a site's last 7 days of organic clicks against the prior 21 days, weighted by a logarithm of volume so a fast-growing small site can outrank a large flat one. A volume view (total clicks over 28 days) is also available. Rankings refresh hourly.",
-  },
-  {
-    q: "Is RealRank free?",
-    a: "Yes. Connecting a site and claiming a verified rank is free. The public leaderboard and the tools around it (report card, momentum calculator, traffic reality check) are free to use with no login required to browse.",
-  },
-  {
-    q: "Is it safe to connect Google Search Console?",
-    a: "RealRank requests a single read-only scope (webmasters.readonly). It can read search-performance data for properties you already own, but it cannot change settings, submit or remove URLs, or write anything. Nothing is public until you choose to publish a property, and you can revoke access anytime from your Google account permissions.",
-  },
-  {
-    q: "Can I fake my traffic to rank higher?",
-    a: "No. Click totals are read straight from Google Search Console, so the only way to climb is real organic growth. Nobody types in a number and nobody uploads a screenshot.",
-  },
-];
 
 export const metadata: Metadata = {
   title: "Fastest-Growing Websites by Organic Traffic",
@@ -47,26 +18,19 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  // No searchParams here: the homepage renders the default momentum board so it
-  // prerenders (ISR) and serves cached HTML. Search, the volume toggle, and
-  // pagination live on /leaderboard, which is server-rendered per request.
-  // Fetch concurrently — the board and movers share one cached Supabase read
-  // (see loadRaw), so this is ~2 round-trips instead of running in series.
-  const [data, movers, traffic] = await Promise.all([
+  // The homepage is the board. It renders the default momentum view so it
+  // prerenders (ISR) and serves cached HTML — search, the volume toggle, the
+  // rank checker and every marketing section live on their own pages
+  // (/leaderboard, /about, /movers, /founding), reachable from the nav.
+  const [data, traffic] = await Promise.all([
     getLeaderboardData("momentum"),
-    getMovers(5),
     getSiteTraffic(),
   ]);
 
-  // For the rank checker: hostnames already on the board + the top volume.
-  const knownHosts = data.organic.map((s) => hostname(s.siteUrl).toLowerCase());
-  const topClicks = data.organic.reduce((m, s) => Math.max(m, s.clicks28d), 0);
-
   return (
     <>
-      {/* Slim board header — just enough framing (SEO h1 + one-line context) so the
-          live board reads as the hero. The proof (the board) leads; the manifesto
-          ("can't buy your way onto it") is demoted below the fold. */}
+      {/* Slim board header — SEO h1 + one-line frame + live stats. Just enough to
+          set the board up; everything else is one click away in the nav. */}
       <section className="hero-glow border-b border-border/60">
         <div className="container flex flex-col items-center py-10 text-center sm:py-14">
           {/* Live activity pill — real first-party numbers, makes the board feel active. */}
@@ -103,8 +67,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Board-as-hero: the live leaderboard is the pitch and the proof — first thing
-          on the page after the one-line frame above. */}
+      {/* Board-as-homepage: the live leaderboard is the whole page. */}
       <LeaderboardSection
         data={data}
         view="momentum"
@@ -112,126 +75,6 @@ export default async function HomePage() {
         page={1}
         interactive={false}
       />
-
-      {/* Primary CTA, right under the board: the interactive rank checker. It makes
-          the visitor the subject ("where do I rank?") before asking for OAuth, then
-          routes to connect — higher-intent than a bare connect button. */}
-      <section className="container -mt-2 pb-2">
-        <div className="mx-auto max-w-2xl rounded-2xl border border-dashed border-primary/40 bg-primary/[0.05] px-5 py-6 text-center sm:px-8">
-          <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
-            Your row is waiting. Where do you rank?
-          </h2>
-          <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-            Check your domain against the board, then connect Google Search Console
-            (read-only) to claim your verified spot.
-          </p>
-          <div className="mt-6 flex w-full flex-col items-center">
-            <RankChecker knownHosts={knownHosts} topClicks={topClicks} totalSites={data.totalSites} />
-            <p className="mt-3 text-xs text-muted-foreground">
-              Read-only access · free · about 30 seconds
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* This week's climbers — liveness under the board. */}
-      {(movers.climbers.length > 0 || movers.newcomers.length > 0) && (
-        <section className="container pb-4">
-          <div className="mx-auto max-w-3xl">
-            <MoversBand climbers={movers.climbers} newcomers={movers.newcomers} compact />
-          </div>
-        </section>
-      )}
-
-      {/* The reward — the badge as payoff and the growth loop back to RealRank. */}
-      <section className="border-t border-border/60 bg-card/40">
-        <div className="container grid items-center gap-8 py-16 sm:grid-cols-2">
-          <div>
-            <div className="text-xs font-medium uppercase tracking-wider text-primary">The reward</div>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-balance">
-              A badge that can&apos;t be faked, and a spot AI assistants can cite.
-            </h2>
-            <p className="mt-3 max-w-md text-muted-foreground">
-              Embed your verified rank on your own site. Your momentum is queryable over
-              MCP, so assistants surface you to buyers when they compare tools.
-            </p>
-            <Link
-              href="/about"
-              className="mt-5 inline-flex h-11 items-center justify-center rounded-md border border-input bg-background px-5 text-sm font-medium transition-colors hover:bg-accent"
-            >
-              See everything RealRank does →
-            </Link>
-          </div>
-          <div className="flex justify-center">
-            <div className="inline-flex items-center gap-3 rounded-xl border border-border bg-background px-4 py-3 shadow-sm">
-              <span className="flex size-9 items-center justify-center rounded-full border-2 border-primary text-sm font-bold text-primary">
-                #4
-              </span>
-              <div>
-                <div className="text-sm font-semibold">yourdomain.com</div>
-                <div className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-                  Verified by RealRank
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Conversion band */}
-      <section className="border-t border-border/60 bg-card/40">
-        <div className="container flex flex-col items-center gap-4 py-16 text-center">
-          {data.founding.spotsLeft > 0 && (
-            <Link
-              href="/founding"
-              className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3.5 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-primary/15"
-            >
-              <Award className="size-4" />
-              First {data.founding.total} sites are founding members — {data.founding.spotsLeft} spots left →
-            </Link>
-          )}
-          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            You can&apos;t buy your way onto this board.
-          </h2>
-          <p className="max-w-xl text-muted-foreground">
-            Upvote rings and ad budgets move other leaderboards. Here, click totals
-            are read straight from Google Search Console, so the only way up is real
-            organic growth. Connect and RealRank also shows the exact searches
-            you&apos;re leaking — and ranks you by momentum, so growth decides your
-            spot, not budget.
-          </p>
-          <ConnectCTA label="Show me my leaks" source="home_band" className="mt-2" />
-
-          {/* Fallback for visitors not ready to connect Google yet. */}
-          <div className="mt-6 flex flex-col items-center gap-2 border-t border-border/60 pt-6">
-            <p className="text-sm text-muted-foreground">Not ready to connect? Get launch updates.</p>
-            <WaitlistForm source="home" />
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ: visible answers, mirrored into FAQPage structured data below. */}
-      <section className="border-t border-border/60">
-        <div className="container max-w-3xl py-14">
-          <h2 className="text-center text-2xl font-semibold tracking-tight sm:text-3xl">
-            Frequently asked questions
-          </h2>
-          <div className="mt-8 divide-y divide-border/60 rounded-2xl border border-border bg-card">
-            {FAQ_ITEMS.map((item) => (
-              <details key={item.q} className="group px-5 py-4">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium">
-                  {item.q}
-                  <span className="text-muted-foreground transition-transform group-open:rotate-45">
-                    +
-                  </span>
-                </summary>
-                <p className="mt-3 text-sm text-muted-foreground">{item.a}</p>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
-      <FaqJsonLd items={FAQ_ITEMS} />
 
       {/* Featured-on badges — scrolling marquee */}
       <BadgeMarquee />
@@ -247,4 +90,3 @@ function PillStat({ value, label }: { value: number; label: string }) {
     </span>
   );
 }
-
