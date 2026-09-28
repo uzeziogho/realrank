@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { Activity, ShieldCheck, ArrowRight } from "lucide-react";
+import { Activity, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SignupButton } from "@/components/signup-button";
 import { WaitlistForm } from "@/components/waitlist-form";
 import { getOptionalUser } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -56,12 +57,7 @@ export default async function LoginPage({
 
         <div className="mt-8">
           {ready ? (
-            <Button asChild size="lg" className="w-full">
-              <a href="/api/auth/google/start">
-                Connect my Search Console
-                <ArrowRight className="size-4" />
-              </a>
-            </Button>
+            <SignupButton />
           ) : (
             <Button size="lg" className="w-full" disabled>
               Connect my Search Console
