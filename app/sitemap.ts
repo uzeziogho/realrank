@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { siteConfig, categories } from "@/lib/config";
 import { getAllSiteSlugs } from "@/lib/site";
+import { getListedSites } from "@/lib/listed";
 import { articles } from "@/lib/articles";
 
 const LANDING_PAGES = ["lol-directories", "fastest-growing-saas-websites"];
@@ -22,6 +23,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const comparePairs: string[] = [];
   for (let i = 0; i < Math.min(siteSlugs.length - 1, 40); i++) {
     comparePairs.push(`${siteSlugs[i]}-vs-${siteSlugs[i + 1]}`);
+  }
+
+  // Only owner-verified listings are indexable, so only those go in the sitemap.
+  let verifiedListedHosts: string[] = [];
+  try {
+    verifiedListedHosts = (await getListedSites())
+      .filter((l) => l.ownerVerified)
+      .map((l) => l.host)
+      .slice(0, 5000);
+  } catch {
+    verifiedListedHosts = [];
   }
 
   return [
@@ -48,6 +60,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: "daily",
       priority: 0.8,
+    },
+    {
+      url: `${base}/listed`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.7,
+    },
+    {
+      url: `${base}/submit`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.6,
     },
     {
       url: `${base}/movers`,
@@ -126,6 +150,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: "daily" as const,
       priority: 0.6,
+    })),
+    // Owner-verified listings only (unverified listings are noindex).
+    ...verifiedListedHosts.map((host) => ({
+      url: `${base}/listed/${host}`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.5,
     })),
     // "Top <site> alternatives" pages — one per listed site, mirroring profiles.
     ...siteSlugs.map((slug) => ({

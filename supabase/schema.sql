@@ -482,3 +482,52 @@ begin
     updated_at = now();
 end;
 $$;
+
+-- ── listed_sites (open "$0 listing" tier) ─────────────────────
+-- The free, unverified directory tier: anyone can list a project without
+-- connecting Search Console. Kept in its OWN table (never mixed into
+-- published_sites, which is user-owned and GSC-verified) so the ranked
+-- momentum board stays verified-only. Listed rows are shown on a separate
+-- /listed board and their profiles/outbound links are noindex/nofollow until
+-- ownership is proven — either by embedding the RealRank badge (owner_verified)
+-- or by connecting Search Console (which promotes the site to published_sites).
+-- Inserts happen ONLY through the /api/list route with the service role, so
+-- there is no open RLS insert policy and the table can't be spam-flooded direct.
+create table if not exists public.listed_sites (
+  id uuid primary key default gen_random_uuid(),
+  host text not null unique,             -- registrable host, lowercased, no www
+  site_url text not null,                -- full https URL to link out to
+  display_name text not null,
+  tagline text,                          -- one-line pitch shown on the board
+  description text,
+  category text,
+  submitter_email text,                  -- optional, for "claim/verify" follow-up
+  -- Ownership proof. 'listed' = unverified (noindex/nofollow); 'owner_verified'
+  -- = RealRank badge/link detected on the site (dofollow); a site that connects
+  -- GSC is promoted into published_sites and its listing is deactivated.
+  status text not null default 'listed',
+  owner_verified boolean not null default false,
+  verified_at timestamptz,
+  is_active boolean not null default true,
+  submitted_ip text,                     -- coarse rate-limit / abuse triage only
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.listed_sites enable row level security;
+
+-- PUBLIC READ: the /listed board is crawlable, so anyone can read active rows.
+drop policy if exists "anyone can read active listed sites" on public.listed_sites;
+create policy "anyone can read active listed sites"
+  on public.listed_sites for select
+  using (is_active = true);
+
+-- Inserts/updates happen server-side with the service role (via /api/list),
+-- which bypasses RLS. No insert/update/delete policy is granted to end users.
+
+create index if not exists listed_sites_created_idx
+  on public.listed_sites (created_at desc) where is_active;
+create index if not exists listed_sites_category_idx
+  on public.listed_sites (category) where is_active;
+create index if not exists listed_sites_verified_idx
+  on public.listed_sites (owner_verified) where is_active;
