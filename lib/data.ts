@@ -548,12 +548,12 @@ export interface UnderdogsData {
   usingDummyData: boolean;
 }
 
-/** DR at or below this (Open PageRank, 0–10) counts as a low-authority "underdog". */
-export const UNDERDOG_DR_CAP = 5;
+/** DR at or below this (Ahrefs Domain Rating, 0–100) counts as a low-authority "underdog". */
+export const UNDERDOG_DR_CAP = 30;
 
 /**
  * "Punching above their DR" — sites with a low third-party authority score
- * (Open PageRank) that are nonetheless ranking well on verified momentum. DR is
+ * (Ahrefs Domain Rating) that are nonetheless ranking well on verified momentum. DR is
  * only ever context here, never a ranking input: the board still ranks on real
  * clicks. This cut just surfaces the underdog story — small domains beating big
  * ones on actual growth. Sites without a DR value can't be judged, so they're

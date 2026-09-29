@@ -23,7 +23,7 @@ export interface RankedSite {
   rankDelta: number | null;
   /** Compact recent daily-click series for the row sparkline (ascending). */
   spark: number[];
-  /** Domain authority (Open PageRank, 0–10). Third-party estimate; null if none. */
+  /** Domain Rating (Ahrefs, 0–100). Third-party estimate; null if none. */
   domainRank: number | null;
   /**
    * True when the site has no clicks in the current view's window, so it's shown

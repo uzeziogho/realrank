@@ -1,37 +1,68 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BadgeCheck, ArrowUpRight, Plus } from "lucide-react";
+import { BadgeCheck, ArrowUpRight, Plus, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteFavicon } from "@/components/site-favicon";
 import { getListedSites, type Listing } from "@/lib/listed";
-import { categoryLabel, siteConfig } from "@/lib/config";
+import { categories, categoryLabel, siteConfig } from "@/lib/config";
+import { cn } from "@/lib/utils";
 
-export const revalidate = 300;
+type SearchParams = Promise<{ category?: string }>;
 
-export const metadata: Metadata = {
-  title: "The directory — freshly listed projects",
-  description: `Every project listed on ${siteConfig.name}. Open and free to join; connect Search Console to earn a verified, ranked spot on the momentum board.`,
-  alternates: { canonical: "/listed" },
-};
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}): Promise<Metadata> {
+  const { category } = await searchParams;
+  const label = category ? categoryLabel(category) : null;
+  const title = label ? `${label} projects — the ${siteConfig.name} directory` : "The directory — freshly listed projects";
+  return {
+    title,
+    description: `Every project listed on ${siteConfig.name}. Open and free to join; connect Search Console to earn a verified, ranked spot on the momentum board.`,
+    alternates: { canonical: "/listed" },
+    // Category-filtered views are thin/duplicative — keep them out of the index.
+    ...(category ? { robots: { index: false, follow: true } } : {}),
+  };
+}
 
-export default async function ListedPage() {
-  const listings = await getListedSites();
+export default async function ListedPage({ searchParams }: { searchParams: SearchParams }) {
+  const { category: activeRaw } = await searchParams;
+  const all = await getListedSites();
+
+  // Count per category (only categories that actually have listings show as chips).
+  const counts = new Map<string, number>();
+  for (const l of all) if (l.category) counts.set(l.category, (counts.get(l.category) ?? 0) + 1);
+  const chips = categories.filter((c) => counts.has(c.slug));
+
+  const active = activeRaw && counts.has(activeRaw) ? activeRaw : null;
+  const listings = active ? all.filter((l) => l.category === active) : all;
+  const verifiedCount = all.filter((l) => l.ownerVerified).length;
 
   return (
     <>
-      <section className="border-b border-border/60">
-        <div className="container flex flex-col items-start gap-4 py-10 sm:flex-row sm:items-end sm:justify-between">
+      <section className="hero-glow border-b border-border/60">
+        <div className="container flex flex-col items-start gap-5 py-10 sm:flex-row sm:items-end sm:justify-between">
           <div>
+            <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 font-medium">
+                {all.length} {all.length === 1 ? "project" : "projects"}
+              </span>
+              {verifiedCount > 0 && (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 font-medium text-primary">
+                  <BadgeCheck className="size-3.5" /> {verifiedCount} verified
+                </span>
+              )}
+            </div>
             <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">The directory</h1>
             <p className="mt-2 max-w-2xl text-muted-foreground">
-              Freshly listed projects — open to everyone, free to join. This is the front door;
-              the{" "}
+              Open to everyone, free to join. This is the front door; the{" "}
               <Link href="/leaderboard" className="text-primary hover:underline">
                 ranked board
               </Link>{" "}
               stays verified-only (real Google Search Console clicks). A{" "}
               <BadgeCheck className="inline-block size-4 align-[-0.2em] text-primary" /> means the owner
-              verified the listing with a badge embed.
+              proved the listing with a badge.
             </p>
           </div>
           <Button asChild size="lg" className="shrink-0">
@@ -43,7 +74,23 @@ export default async function ListedPage() {
       </section>
 
       <section className="container py-10">
-        {listings.length === 0 ? (
+        {/* Category filter */}
+        {chips.length > 0 && (
+          <div className="mb-6 flex flex-wrap gap-2">
+            <FilterChip href="/listed" active={active === null} label="All" count={all.length} />
+            {chips.map((c) => (
+              <FilterChip
+                key={c.slug}
+                href={`/listed?category=${c.slug}`}
+                active={active === c.slug}
+                label={c.label}
+                count={counts.get(c.slug) ?? 0}
+              />
+            ))}
+          </div>
+        )}
+
+        {all.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border bg-card/50 p-12 text-center">
             <p className="text-lg font-medium">Be the first to list a project</p>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
@@ -53,55 +100,93 @@ export default async function ListedPage() {
               <Link href="/submit">List your project — free</Link>
             </Button>
           </div>
+        ) : listings.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border bg-card/50 p-10 text-center">
+            <p className="font-medium">No projects in {active ? categoryLabel(active) : "this category"} yet</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              <Link href="/listed" className="text-primary hover:underline">See all projects</Link>{" "}
+              or <Link href="/submit" className="text-primary hover:underline">list yours free</Link>.
+            </p>
+          </div>
         ) : (
-          <ul className="mx-auto grid max-w-3xl gap-3">
+          <ul className="grid gap-3 md:grid-cols-2">
             {listings.map((l) => (
-              <ListingRow key={l.host} listing={l} />
+              <ListingCard key={l.host} listing={l} />
             ))}
           </ul>
         )}
 
-        <p className="mx-auto mt-8 max-w-3xl text-center text-xs text-muted-foreground">
-          Listings are unverified until their owner adds a badge or connects Search Console. Outbound
-          links from unverified listings are nofollow.
+        <p className="mt-8 flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
+          <ShieldCheck className="size-3.5" />
+          Listings are unverified until their owner adds a badge or connects Search Console. Unverified outbound links are nofollow.
         </p>
       </section>
     </>
   );
 }
 
-function ListingRow({ listing }: { listing: Listing }) {
+function FilterChip({
+  href,
+  active,
+  label,
+  count,
+}: {
+  href: string;
+  active: boolean;
+  label: string;
+  count: number;
+}) {
   return (
-    <li className="flex items-center gap-4 rounded-xl border border-border bg-card p-4">
-      <SiteFavicon url={listing.siteUrl} name={listing.displayName} size={36} />
+    <Link
+      href={href}
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors",
+        active
+          ? "border-primary bg-primary/10 font-medium text-primary"
+          : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground",
+      )}
+    >
+      {label}
+      <span className={cn("tabular-nums", active ? "text-primary/70" : "text-muted-foreground/60")}>{count}</span>
+    </Link>
+  );
+}
+
+function ListingCard({ listing }: { listing: Listing }) {
+  return (
+    <li className="group flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40">
+      <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border/70 bg-background">
+        <SiteFavicon url={listing.siteUrl} name={listing.displayName} size={36} />
+      </span>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
           <Link href={`/listed/${listing.host}`} className="truncate font-semibold hover:underline">
             {listing.displayName}
           </Link>
-          {listing.ownerVerified ? (
+          {listing.ownerVerified && (
             <BadgeCheck className="size-4 shrink-0 text-primary" aria-label="Owner-verified" />
-          ) : null}
+          )}
         </div>
         {listing.tagline && (
           <p className="truncate text-sm text-muted-foreground">{listing.tagline}</p>
         )}
-        <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="truncate">{listing.host}</span>
+        <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="truncate text-muted-foreground/70">{listing.host}</span>
           {listing.category && (
-            <>
-              <span className="text-border">·</span>
-              <span>{categoryLabel(listing.category)}</span>
-            </>
+            <Link
+              href={`/listed?category=${listing.category}`}
+              className="shrink-0 rounded-full border border-border px-2 py-0.5 hover:text-foreground"
+            >
+              {categoryLabel(listing.category)}
+            </Link>
           )}
         </div>
       </div>
       <a
         href={listing.siteUrl}
         target="_blank"
-        // Unverified listings are nofollow; owner-verified ones earn a followed link.
         rel={listing.ownerVerified ? "noopener" : "noopener nofollow"}
-        className="inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-input text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        className="inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-input text-muted-foreground transition-colors group-hover:border-primary/40 hover:bg-accent hover:text-foreground"
         aria-label={`Visit ${listing.displayName}`}
       >
         <ArrowUpRight className="size-4" />
