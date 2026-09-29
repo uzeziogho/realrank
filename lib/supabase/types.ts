@@ -89,6 +89,7 @@ export interface Database {
           previous_momentum_score: number;
           previous_clicks_28d: number;
           domain_rank: number | null;
+          domain_rank_at: string | null;
           is_active: boolean;
           last_refreshed_at: string | null;
           created_at: string;
@@ -108,6 +109,7 @@ export interface Database {
           previous_momentum_score?: number;
           previous_clicks_28d?: number;
           domain_rank?: number | null;
+          domain_rank_at?: string | null;
           is_active?: boolean;
           last_refreshed_at?: string | null;
           created_at?: string;
@@ -127,6 +129,7 @@ export interface Database {
           previous_momentum_score?: number;
           previous_clicks_28d?: number;
           domain_rank?: number | null;
+          domain_rank_at?: string | null;
           is_active?: boolean;
           last_refreshed_at?: string | null;
           created_at?: string;

@@ -23,7 +23,7 @@ export function Leaderboard({
       <div className="hidden grid-cols-[3.75rem_1fr_3.5rem_5rem_7rem_6.5rem] items-center gap-4 border-b border-border bg-muted/30 px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground md:grid">
         <span>Rank</span>
         <span>Site</span>
-        <span className="text-right" title="Domain authority (Open PageRank, 0–10)">DR</span>
+        <span className="text-right" title="Domain Rating (Ahrefs, 0–100)">DR</span>
         <span className="text-right">Trend</span>
         <span className="text-right">
           {view === "momentum" ? "Momentum" : "28-day clicks"}
@@ -193,10 +193,10 @@ function OrganicRowItem({
               is hidden but there's still room beside the name. */}
           {row.domainRank != null && (
             <span
-              title="Domain authority (Open PageRank, 0–10)"
+              title="Domain Rating (Ahrefs, 0–100)"
               className="hidden shrink-0 rounded-full border border-border px-2 py-0.5 text-xs font-medium tabular-nums text-muted-foreground sm:inline-flex md:hidden"
             >
-              DR {row.domainRank.toFixed(1)}
+              DR {Math.round(row.domainRank)}
             </span>
           )}
         </div>
@@ -226,11 +226,11 @@ function OrganicRowItem({
       {/* DR (domain authority) column — desktop */}
       <div
         className="hidden items-center justify-end md:flex"
-        title="Domain authority (Open PageRank, 0–10)"
+        title="Domain Rating (Ahrefs, 0–100)"
       >
         {row.domainRank != null ? (
           <span className="tabular-nums text-sm font-medium text-muted-foreground">
-            {row.domainRank.toFixed(1)}
+            {Math.round(row.domainRank)}
           </span>
         ) : (
           <span className="text-sm text-muted-foreground/40">—</span>

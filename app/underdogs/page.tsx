@@ -146,7 +146,7 @@ function UnderdogCard({ row }: { row: RankedSite }) {
       {row.domainRank != null && (
         <p className="text-xs text-muted-foreground">
           <span className="font-semibold text-foreground tabular-nums">
-            DR {row.domainRank.toFixed(1)}
+            DR {Math.round(row.domainRank)}
           </span>{" "}
           authority, but ranked{" "}
           <span className="font-semibold text-foreground">#{row.rank}</span> on verified

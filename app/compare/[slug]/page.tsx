@@ -76,8 +76,8 @@ export default async function ComparePage({ params }: { params: Params }) {
     rows.push(
       row(
         "Domain authority (DR)",
-        a.domainRank != null ? `${a.domainRank.toFixed(1)}/10` : "—",
-        b.domainRank != null ? `${b.domainRank.toFixed(1)}/10` : "—",
+        a.domainRank != null ? `${Math.round(a.domainRank)}/100` : "—",
+        b.domainRank != null ? `${Math.round(b.domainRank)}/100` : "—",
         a.domainRank ?? -1,
         b.domainRank ?? -1,
         "higher",
