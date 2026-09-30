@@ -23,19 +23,59 @@ interface AhrefsOverview {
 }
 
 /**
+ * Per-batch diagnostics, so a failed DR refresh is never silent. Callers can
+ * pass one in and surface it (the cron includes it in its JSON response and
+ * logs it), turning "DR is blank" into an answer: a bad host shows up as a
+ * connection error, a bad key as HTTP 401, a missing domain as notFound, and a
+ * working call as ok > 0.
+ */
+export interface DomainRatingDiag {
+  keyConfigured: boolean;
+  host: string | null;
+  attempted: number;
+  ok: number;
+  notFound: number;
+  failed: number;
+  sampleError?: string;
+}
+
+export function newDomainRatingDiag(): DomainRatingDiag {
+  return { keyConfigured: false, host: null, attempted: 0, ok: 0, notFound: 0, failed: 0 };
+}
+
+/**
  * Fetch Ahrefs Domain Rating (0–100) for the given bare hosts (e.g.
  * "example.com"). Returns a Map keyed by the input host; missing/errored hosts
  * are simply absent. Never throws. Values are clamped to 0–100 and rounded to
- * a whole number (Ahrefs DR is an integer-scale metric).
+ * a whole number (Ahrefs DR is an integer-scale metric). Pass `diag` to collect
+ * per-batch outcome counts for logging/observability.
  */
-export async function fetchDomainRatings(domains: string[]): Promise<Map<string, number>> {
+export async function fetchDomainRatings(
+  domains: string[],
+  diag?: DomainRatingDiag,
+): Promise<Map<string, number>> {
   const out = new Map<string, number>();
   const key = process.env.ANYAPI_KEY?.trim();
+  if (diag) diag.keyConfigured = Boolean(key);
   if (!key || domains.length === 0) return out;
 
   const base = (process.env.ANYAPI_BASE_URL?.trim() || DEFAULT_BASE).replace(/\/+$/, "");
   const endpoint = `${base}${SKU_PATH}`;
   const unique = Array.from(new Set(domains.filter(Boolean)));
+  if (diag) {
+    try {
+      diag.host = new URL(endpoint).host;
+    } catch {
+      diag.host = base;
+    }
+    diag.attempted = unique.length;
+  }
+
+  function note(kind: "ok" | "notFound" | "failed", err?: string): void {
+    if (!diag) return;
+    diag[kind] += 1;
+    if (kind === "failed" && err && !diag.sampleError) diag.sampleError = err;
+  }
 
   async function one(domain: string): Promise<void> {
     try {
@@ -48,15 +88,31 @@ export async function fetchDomainRatings(domains: string[]): Promise<Map<string,
         body: JSON.stringify({ url: domain, mode: "subdomains" }),
         signal: AbortSignal.timeout(45000),
       });
-      if (!res.ok) return;
+      if (!res.ok) {
+        const msg = `HTTP ${res.status} from ${diag?.host ?? "gateway"}`;
+        console.error(`[dr] ${domain}: ${msg}`);
+        note("failed", msg);
+        return;
+      }
       const json = (await res.json()) as AhrefsOverview;
-      if (json.found === false) return;
+      if (json.found === false) {
+        note("notFound");
+        return;
+      }
       const rating = json.data?.items?.[0]?.domainRating;
       if (rating != null && Number.isFinite(rating)) {
         out.set(domain, Math.max(0, Math.min(100, Math.round(rating))));
+        note("ok");
+      } else {
+        const msg = `no domainRating in response for ${domain}`;
+        console.error(`[dr] ${msg}`);
+        note("failed", msg);
       }
-    } catch {
+    } catch (err) {
       // Skip this domain; its previously stored value stands.
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`[dr] ${domain}: ${msg}`);
+      note("failed", msg);
     }
   }
 
