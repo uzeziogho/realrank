@@ -19,18 +19,20 @@ export function Leaderboard({
 }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-      {/* Column header — hidden on mobile where rows stack */}
-      <div className="hidden grid-cols-[3.75rem_1fr_3.5rem_5rem_7rem_6.5rem] items-center gap-4 border-b border-border bg-muted/30 px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground md:grid">
+      {/* Column header — hidden on mobile where rows stack.
+          Ordered by importance: rank, identity, the ranking metric and its
+          supporting clicks, then the trend, then the third-party DR estimate. */}
+      <div className="hidden grid-cols-[3.75rem_1fr_7rem_6.5rem_5rem_3.5rem] items-center gap-4 border-b border-border bg-muted/30 px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground md:grid">
         <span>Rank</span>
         <span>Site</span>
-        <span className="text-right" title="Domain Rating (Ahrefs, 0–100)">DR</span>
-        <span className="text-right">Trend</span>
         <span className="text-right">
           {view === "momentum" ? "Momentum" : "28-day clicks"}
         </span>
         <span className="text-right">
           {view === "momentum" ? "7-day clicks" : "Momentum"}
         </span>
+        <span className="text-right">Trend</span>
+        <span className="text-right" title="Domain Rating (Ahrefs, 0–100)">DR</span>
       </div>
 
       <ol className="divide-y divide-border/70">
@@ -91,7 +93,7 @@ function OrganicRowItem({
   return (
     <li
       className={cn(
-        "group relative grid grid-cols-[3rem_1fr] items-center gap-4 px-4 py-4 transition-colors hover:bg-accent/40 md:grid-cols-[3.75rem_1fr_3.5rem_5rem_7rem_6.5rem] md:px-6 md:py-4",
+        "group relative grid grid-cols-[3rem_1fr] items-center gap-4 px-4 py-4 transition-colors hover:bg-accent/40 md:grid-cols-[3.75rem_1fr_7rem_6.5rem_5rem_3.5rem] md:px-6 md:py-4",
         pending && "bg-muted/20",
       )}
     >
@@ -223,30 +225,7 @@ function OrganicRowItem({
         </div>
       </div>
 
-      {/* DR (domain authority) column — desktop */}
-      <div
-        className="hidden items-center justify-end md:flex"
-        title="Domain Rating (Ahrefs, 0–100)"
-      >
-        {row.domainRank != null ? (
-          <span className="tabular-nums text-sm font-medium text-muted-foreground">
-            {Math.round(row.domainRank)}
-          </span>
-        ) : (
-          <span className="text-sm text-muted-foreground/40">—</span>
-        )}
-      </div>
-
-      {/* Trend sparkline (desktop) */}
-      <div className="hidden items-center justify-end md:flex">
-        {pending ? (
-          <span className="text-sm text-muted-foreground/50">—</span>
-        ) : (
-          <Sparkline data={row.spark} />
-        )}
-      </div>
-
-      {/* Primary metric column (desktop) */}
+      {/* Primary metric column (desktop) — the metric the board is ranked by */}
       <div className="hidden flex-col items-end md:flex">
         {pending ? (
           isNew ? (
@@ -290,13 +269,37 @@ function OrganicRowItem({
           </>
         )}
       </div>
+
+      {/* Trend sparkline (desktop) */}
+      <div className="hidden items-center justify-end md:flex">
+        {pending ? (
+          <span className="text-sm text-muted-foreground/50">—</span>
+        ) : (
+          <Sparkline data={row.spark} />
+        )}
+      </div>
+
+      {/* DR (domain authority) column — desktop. Third-party estimate, so it
+          sits last, after the metrics the ranking is actually built on. */}
+      <div
+        className="hidden items-center justify-end md:flex"
+        title="Domain Rating (Ahrefs, 0–100)"
+      >
+        {row.domainRank != null ? (
+          <span className="tabular-nums text-sm font-medium text-muted-foreground">
+            {Math.round(row.domainRank)}
+          </span>
+        ) : (
+          <span className="text-sm text-muted-foreground/40">—</span>
+        )}
+      </div>
     </li>
   );
 }
 
 function SponsoredRowItem({ row }: { row: SponsoredRow }) {
   return (
-    <li className="grid grid-cols-[3rem_1fr] items-center gap-4 bg-amber-500/[0.06] px-4 py-4 md:grid-cols-[3.75rem_1fr_3.5rem_5rem_7rem_6.5rem] md:px-6">
+    <li className="grid grid-cols-[3rem_1fr] items-center gap-4 bg-amber-500/[0.06] px-4 py-4 md:grid-cols-[3.75rem_1fr_7rem_6.5rem_5rem_3.5rem] md:px-6">
       <div className="flex items-center justify-center">
         <span className="rounded-md border border-amber-500/30 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-500/80">
           Ad

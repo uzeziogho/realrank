@@ -5,7 +5,7 @@ import { LEADERBOARD_TAG } from "@/lib/data";
 import { decryptToken } from "@/lib/crypto";
 import { clientFromRefreshToken, fetchSiteMetrics } from "@/lib/google";
 import { upsertSiteHistory } from "@/lib/gsc-server";
-import { fetchDomainRatings } from "@/lib/domainrating";
+import { fetchDomainRatings, newDomainRatingDiag, type DomainRatingDiag } from "@/lib/domainrating";
 import { hostname } from "@/lib/utils";
 import { categories } from "@/lib/config";
 import type { OAuth2Client } from "google-auth-library";
@@ -44,7 +44,8 @@ export async function GET(req: NextRequest) {
   // Domain Rating (Ahrefs, 0–100) via AnyAPI. Per-domain, paid, and slow, so we
   // only refresh sites missing a rating or older than a week, capped per run —
   // DR moves slowly, so this covers the board over a few runs at trivial cost.
-  const drRefreshed = await refreshDomainRatings(supabase, sites ?? []);
+  const drDiag = newDomainRatingDiag();
+  const drRefreshed = await refreshDomainRatings(supabase, sites ?? [], drDiag);
 
   const clientCache = new Map<string, OAuth2Client | null>();
   let updated = 0;
@@ -98,6 +99,11 @@ export async function GET(req: NextRequest) {
     total: sites?.length ?? 0,
     updated,
     drRefreshed,
+    // DR outcome counts, so a blank DR column is diagnosable from this response
+    // alone: dr.ok === 0 with dr.failed > 0 and a sampleError points at the
+    // gateway (bad host → connection error, bad key → HTTP 401); keyConfigured
+    // false means ANYAPI_KEY isn't set on this deployment.
+    dr: drDiag,
     failed: failures.length,
     failures: failures.slice(0, 20),
     ranAt: new Date().toISOString(),
@@ -118,6 +124,7 @@ const DR_MAX_PER_RUN = 15;
 async function refreshDomainRatings(
   supabase: ReturnType<typeof createServiceClient>,
   sites: { id: string; site_url: string; domain_rank_at: string | null }[],
+  diag: DomainRatingDiag,
 ): Promise<number> {
   const cutoff = Date.now() - DR_STALE_DAYS * 86_400_000;
   const targets = sites
@@ -125,7 +132,7 @@ async function refreshDomainRatings(
     .slice(0, DR_MAX_PER_RUN);
   if (targets.length === 0) return 0;
 
-  const ratings = await fetchDomainRatings(targets.map((s) => hostname(s.site_url)));
+  const ratings = await fetchDomainRatings(targets.map((s) => hostname(s.site_url)), diag);
   const now = new Date().toISOString();
   let written = 0;
   for (const s of targets) {

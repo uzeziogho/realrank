@@ -3,10 +3,16 @@ import Link from "next/link";
 import { ShieldCheck, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LeaderboardSection } from "@/components/leaderboard-section";
+import { JustListed } from "@/components/just-listed";
 import { getLeaderboardData, getSiteTraffic } from "@/lib/data";
+import { getListedSites } from "@/lib/listed";
 import { BadgeMarquee } from "@/components/badge-marquee";
 import { siteConfig } from "@/lib/config";
 import { formatCompact } from "@/lib/utils";
+
+// How many freshly-listed projects to preview under the board (verified-owner
+// listings sort first, so the head of the list is the highest-trust slice).
+const HOMEPAGE_LISTED_LIMIT = 6;
 
 // Incremental Static Regeneration — full ranked list is in the initial HTML,
 // refreshed at most hourly (and on-demand after the cron writes new data).
@@ -23,9 +29,10 @@ export default async function HomePage() {
   // prerenders (ISR) and serves cached HTML — search, the volume toggle, the
   // rank checker and every marketing section live on their own pages
   // (/leaderboard, /about, /movers, /founding), reachable from the nav.
-  const [data, traffic] = await Promise.all([
+  const [data, traffic, listed] = await Promise.all([
     getLeaderboardData("momentum"),
     getSiteTraffic(),
+    getListedSites(),
   ]);
 
   return (
@@ -84,7 +91,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Board-as-homepage: the live leaderboard is the whole page. */}
+      {/* Board 1 — the verified momentum leaderboard (the thesis). */}
       <LeaderboardSection
         data={data}
         view="momentum"
@@ -92,6 +99,10 @@ export default async function HomePage() {
         page={1}
         interactive={false}
       />
+
+      {/* Board 2 — the open directory of freshly listed projects. Visually
+          separated and unranked so it never reads as a verified ranking. */}
+      <JustListed listings={listed.slice(0, HOMEPAGE_LISTED_LIMIT)} total={listed.length} />
 
       {/* Featured-on badges — scrolling marquee */}
       <BadgeMarquee />

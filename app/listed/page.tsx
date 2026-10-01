@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BadgeCheck, ArrowUpRight, Plus, ShieldCheck } from "lucide-react";
+import { BadgeCheck, Plus, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SiteFavicon } from "@/components/site-favicon";
-import { getListedSites, type Listing } from "@/lib/listed";
+import { ListingCard } from "@/components/listing-card";
+import { getListedSites } from "@/lib/listed";
 import { categories, categoryLabel, siteConfig } from "@/lib/config";
 import { cn } from "@/lib/utils";
 
@@ -149,48 +149,5 @@ function FilterChip({
       {label}
       <span className={cn("tabular-nums", active ? "text-primary/70" : "text-muted-foreground/60")}>{count}</span>
     </Link>
-  );
-}
-
-function ListingCard({ listing }: { listing: Listing }) {
-  return (
-    <li className="group flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40">
-      <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border/70 bg-background">
-        <SiteFavicon url={listing.siteUrl} name={listing.displayName} size={36} />
-      </span>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-1.5">
-          <Link href={`/listed/${listing.host}`} className="truncate font-semibold hover:underline">
-            {listing.displayName}
-          </Link>
-          {listing.ownerVerified && (
-            <BadgeCheck className="size-4 shrink-0 text-primary" aria-label="Owner-verified" />
-          )}
-        </div>
-        {listing.tagline && (
-          <p className="truncate text-sm text-muted-foreground">{listing.tagline}</p>
-        )}
-        <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="truncate text-muted-foreground/70">{listing.host}</span>
-          {listing.category && (
-            <Link
-              href={`/listed?category=${listing.category}`}
-              className="shrink-0 rounded-full border border-border px-2 py-0.5 hover:text-foreground"
-            >
-              {categoryLabel(listing.category)}
-            </Link>
-          )}
-        </div>
-      </div>
-      <a
-        href={listing.siteUrl}
-        target="_blank"
-        rel={listing.ownerVerified ? "noopener" : "noopener nofollow"}
-        className="inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-input text-muted-foreground transition-colors group-hover:border-primary/40 hover:bg-accent hover:text-foreground"
-        aria-label={`Visit ${listing.displayName}`}
-      >
-        <ArrowUpRight className="size-4" />
-      </a>
-    </li>
   );
 }
