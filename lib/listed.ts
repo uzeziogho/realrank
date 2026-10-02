@@ -87,14 +87,51 @@ export interface CreateListingInput {
 }
 
 export type CreateListingResult =
-  | { ok: true; host: string; ownerVerified: false }
-  | { ok: false; error: string; code: "invalid" | "duplicate" | "rate_limited" | "unavailable" | "server" };
+  | { ok: true; host: string; ownerVerified: true }
+  | {
+      ok: false;
+      error: string;
+      code: "invalid" | "duplicate" | "rate_limited" | "unavailable" | "server" | "badge_missing" | "unreachable";
+    };
+
+const BADGE_FETCH_TIMEOUT_MS = 8000;
+const BADGE_MAX_BYTES = 512 * 1024;
 
 /**
- * Create a listing. Server-side validation + spam guards (the API route adds a
- * honeypot on top): host must be a real public domain, text within limits, a
- * known category, and the host must not already be listed OR already verified
- * on the ranked board. A coarse per-IP hourly cap blunts scripted floods.
+ * Fetch a host's homepage and report whether it carries a RealRank badge/link
+ * (any mention of our domain). Bounded fetch (timeout + size cap) so a hostile
+ * page can't hang or balloon memory. Shared by createListing (the list-time
+ * requirement) and verifyOwnership (re-check of an existing listing).
+ */
+async function siteCarriesMarker(
+  host: string,
+): Promise<{ ok: true; found: boolean } | { ok: false; error: string }> {
+  const marker = new URL(siteConfig.url).hostname.replace(/^www\./, ""); // e.g. realrank.lol
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), BADGE_FETCH_TIMEOUT_MS);
+    const res = await fetch(listingUrl(host), {
+      redirect: "follow",
+      signal: controller.signal,
+      headers: { "user-agent": `${siteConfig.name}Bot/1.0 (+${siteConfig.url})` },
+    }).finally(() => clearTimeout(timeout));
+    if (!res.ok) return { ok: false, error: `Couldn't reach ${host} (HTTP ${res.status}).` };
+    const buf = await res.arrayBuffer();
+    const html = new TextDecoder().decode(buf.slice(0, BADGE_MAX_BYTES)).toLowerCase();
+    return { ok: true, found: html.includes(marker) };
+  } catch {
+    return { ok: false, error: `Couldn't reach ${host} to check for the badge.` };
+  }
+}
+
+/**
+ * Create a listing. Listing is free but REQUIRES the RealRank badge on the
+ * site: the free tier is a reciprocal link in exchange for the listing, so the
+ * badge is checked up front and the listing is created owner-verified — there
+ * is no unverified placeholder tier any more. Server-side validation + spam
+ * guards (the API route adds a honeypot on top): host must be a real public
+ * domain, text within limits, a known category, not already listed or ranked,
+ * and the site must carry the badge. A coarse per-IP hourly cap blunts floods.
  */
 export async function createListing(
   input: CreateListingInput,
@@ -154,6 +191,22 @@ export async function createListing(
       }
     }
 
+    // The badge is the price of a free listing: the site must carry a RealRank
+    // badge/link before we'll list it. Verify up front and list as
+    // owner-verified — no unverified placeholder rows.
+    const marker = await siteCarriesMarker(host);
+    if (!marker.ok) {
+      return { ok: false, error: marker.error, code: "unreachable" };
+    }
+    if (!marker.found) {
+      return {
+        ok: false,
+        code: "badge_missing",
+        error: `Add the ${siteConfig.name} badge to ${host}, then list — it's free in exchange for a link back.`,
+      };
+    }
+
+    const nowIso = new Date().toISOString();
     const { error } = await supabase.from("listed_sites").insert({
       host,
       site_url: listingUrl(host),
@@ -163,7 +216,9 @@ export async function createListing(
       category,
       submitter_email: email,
       submitted_ip: ip,
-      status: "listed",
+      status: "owner_verified",
+      owner_verified: true,
+      verified_at: nowIso,
     });
     if (error) {
       // Unique-violation race → treat as duplicate.
@@ -174,7 +229,7 @@ export async function createListing(
     }
 
     revalidateTag(LISTED_TAG);
-    return { ok: true, host, ownerVerified: false };
+    return { ok: true, host, ownerVerified: true };
   } catch (err) {
     console.error("[listed] create failed:", err);
     return { ok: false, error: "Couldn't save the listing. Please try again.", code: "server" };
@@ -250,27 +305,9 @@ export async function verifyOwnership(host: string): Promise<VerifyResult> {
   if (!listing) return { ok: false, verified: false, error: "That listing doesn't exist." };
   if (listing.ownerVerified) return { ok: true, verified: true };
 
-  const marker = new URL(siteConfig.url).hostname.replace(/^www\./, ""); // e.g. realrank.lol
-  let html: string;
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
-    const res = await fetch(listingUrl(host), {
-      redirect: "follow",
-      signal: controller.signal,
-      headers: { "user-agent": `${siteConfig.name}Bot/1.0 (+${siteConfig.url})` },
-    }).finally(() => clearTimeout(timeout));
-    if (!res.ok) {
-      return { ok: false, verified: false, error: `Couldn't reach the site (HTTP ${res.status}).` };
-    }
-    // Cap the body we read so a huge/hostile page can't blow up memory (~512KB).
-    const buf = await res.arrayBuffer();
-    html = new TextDecoder().decode(buf.slice(0, 512 * 1024)).toLowerCase();
-  } catch {
-    return { ok: false, verified: false, error: "Couldn't reach the site to check for the badge." };
-  }
-
-  if (!html.includes(marker)) {
+  const check = await siteCarriesMarker(host);
+  if (!check.ok) return { ok: false, verified: false, error: check.error };
+  if (!check.found) {
     return {
       ok: false,
       verified: false,

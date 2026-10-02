@@ -56,13 +56,13 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
             </div>
             <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">The directory</h1>
             <p className="mt-2 max-w-2xl text-muted-foreground">
-              Open to everyone, free to join. This is the front door; the{" "}
+              Free to join — every project here added our badge to their site in exchange, so each
+              one is owner-verified (<BadgeCheck className="inline-block size-4 align-[-0.2em] text-primary" />).
+              The{" "}
               <Link href="/leaderboard" className="text-primary hover:underline">
                 ranked board
               </Link>{" "}
-              stays verified-only (real Google Search Console clicks). A{" "}
-              <BadgeCheck className="inline-block size-4 align-[-0.2em] text-primary" /> means the owner
-              proved the listing with a badge.
+              goes further: verified-only by real Google Search Console clicks.
             </p>
           </div>
           <Button asChild size="lg" className="shrink-0">
@@ -118,7 +118,7 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
 
         <p className="mt-8 flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
           <ShieldCheck className="size-3.5" />
-          Listings are unverified until their owner adds a badge or connects Search Console. Unverified outbound links are nofollow.
+          Every listing added our badge to their site to join, so all are owner-verified. Connect Search Console for a ranked spot.
         </p>
       </section>
     </>

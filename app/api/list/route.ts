@@ -69,6 +69,10 @@ export async function POST(req: Request) {
           ? 503
           : result.code === "server"
             ? 500
-            : 400;
+            : result.code === "badge_missing"
+              ? 422
+              : result.code === "unreachable"
+                ? 502
+                : 400;
   return NextResponse.json({ ok: false, error: result.error, code: result.code }, { status });
 }
