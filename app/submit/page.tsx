@@ -6,14 +6,14 @@ import { siteConfig } from "@/lib/config";
 
 export const metadata: Metadata = {
   title: "List your project — free",
-  description: `List your project on ${siteConfig.name} for free. Get a permanent link and a spot on the directory, then connect Search Console to earn a verified, ranked spot.`,
+  description: `List your project on ${siteConfig.name} for free — add our badge to your site in exchange. Get a verified listing and a permanent link, then connect Search Console to earn a ranked spot.`,
   alternates: { canonical: "/submit" },
 };
 
 const PERKS = [
-  "A permanent link to your listing",
-  "A spot on the public directory today",
-  "Optional verified checkmark via a badge embed",
+  "Free in exchange for adding our badge to your site",
+  "A verified checkmark and a followed link from day one",
+  "A permanent link to your listing on the public directory",
   "Upgrade to a ranked spot by connecting Search Console",
 ];
 
@@ -23,8 +23,8 @@ export default function SubmitPage() {
       <div className="text-center">
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">List your project for $0</h1>
         <p className="mx-auto mt-3 max-w-lg text-muted-foreground">
-          Get on {siteConfig.name} today — no account, no card. Claim a permanent link now,
-          and connect Search Console whenever you&apos;re ready for a verified, ranked spot.
+          Get on {siteConfig.name} today — no account, no card. The only ask: add our badge to
+          your site in exchange. Then connect Search Console whenever you&apos;re ready for a ranked spot.
         </p>
       </div>
 
