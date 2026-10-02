@@ -5,7 +5,7 @@
 /**
  * Resolve the public site URL robustly. Handles an unset OR empty
  * NEXT_PUBLIC_SITE_URL (a blank value would otherwise make `new URL()` throw
- * during the build), falling back to Vercel's deployment URL, then localhost.
+ * during the build), then falls back to the production domain, then localhost.
  */
 const PRODUCTION_URL = "https://www.realrank.lol";
 
@@ -25,9 +25,15 @@ function resolveSiteUrl(): string {
   const explicit = process.env.NEXT_PUBLIC_SITE_URL?.trim();
   if (explicit) return explicit.replace(/\/+$/, "");
 
-  // On Vercel, default to the real custom domain so canonical tags, the sitemap,
-  // and OAuth redirects are correct without needing an env var.
+  // On Vercel (server), default to the real custom domain so canonical tags, the
+  // sitemap, and OAuth redirects are correct without needing an env var.
   if (process.env.VERCEL) return PRODUCTION_URL;
+
+  // Client bundles can't see VERCEL (only NEXT_PUBLIC_* and NODE_ENV are inlined
+  // in the browser), so a client-rendered URL — e.g. the listing badge — would
+  // otherwise fall through to localhost in production. NODE_ENV is inlined on
+  // both server and client, so key the production default off it too.
+  if (process.env.NODE_ENV === "production") return PRODUCTION_URL;
 
   return "http://localhost:3000";
 }
