@@ -22,8 +22,8 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     title: `${listing.displayName} — listed on ${siteConfig.name}`,
     description: listing.tagline ?? listing.description ?? `${listing.displayName} is listed on ${siteConfig.name}.`,
     alternates: { canonical: `/listed/${host}` },
-    // Unverified listings stay out of the index (and their links are nofollow)
-    // until the owner proves ownership — keeps the spam incentive low.
+    // Listings are badge-verified at creation, so they index normally. The
+    // guard stays as a defensive fallback for any legacy unverified row.
     robots: listing.ownerVerified ? undefined : { index: false, follow: false },
   };
 }
@@ -88,21 +88,19 @@ export default async function ListingProfilePage({ params }: { params: Params })
         )}
       </div>
 
-      {/* This is a listing, not a ranked spot — make the difference (and the path
-          to a real rank) explicit. */}
+      {/* A listing is owner-verified (it carries our badge), but that is not a
+          ranked spot — make the difference (and the path to a real rank) explicit. */}
       <div className="mt-10 rounded-xl border border-dashed border-primary/40 bg-primary/[0.05] p-6 text-center">
         <ShieldCheck className="mx-auto size-6 text-primary" />
-        <p className="mt-2 font-medium">This is a free listing, not a verified rank.</p>
+        <p className="mt-2 font-medium">A verified listing — not a ranked spot.</p>
         <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-          {listing.displayName} hasn&apos;t connected Google Search Console yet, so it isn&apos;t on the
-          ranked momentum board. Own this site? Connect Search Console to claim a verified, ranked spot.
+          {listing.displayName} is a verified listing (it carries the {siteConfig.name} badge) but
+          hasn&apos;t connected Google Search Console, so it isn&apos;t on the ranked momentum board.
+          Own this site? Connect Search Console to claim a ranked spot.
         </p>
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+        <div className="mt-4 flex items-center justify-center">
           <Button asChild>
             <Link href="/login">Get ranked with Search Console</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/submit">Verify with a badge</Link>
           </Button>
         </div>
       </div>
