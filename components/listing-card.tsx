@@ -5,11 +5,11 @@ import { categoryLabel } from "@/lib/config";
 import type { Listing } from "@/lib/listed";
 
 /**
- * A single directory listing (unverified $0 tier). Deliberately NOT a ranked
- * row: no rank number, no momentum score — a listing is not a ranking. Shared
- * by the /listed directory and the homepage "Just listed" section so both stay
- * identical. Outbound links are nofollow until the owner proves the listing
- * (owner_verified), matching the directory's noindex/nofollow policy.
+ * A single directory listing ($0 tier). Deliberately NOT a ranked row: no rank
+ * number, no momentum score — a listing is not a ranking. Shared by the /listed
+ * directory and the homepage "Just listed" section so both stay identical.
+ * Listings are badge-verified at creation, so outbound links are dofollow; the
+ * nofollow branch stays as a defensive guard for any legacy unverified row.
  */
 export function ListingCard({ listing }: { listing: Listing }) {
   return (

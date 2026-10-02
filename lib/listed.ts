@@ -10,11 +10,12 @@ import type { ListedSite } from "@/lib/supabase/types";
 /**
  * The open "$0 listing" tier. Anyone can list a project without connecting
  * Search Console; listings live in their own table and on their own /listed
- * board, kept off the verified momentum leaderboard. A listing is unverified
- * (noindex/nofollow) until ownership is proven — either by embedding the
- * RealRank badge/link on the site (owner_verified) or by connecting Search
- * Console (which promotes the site into published_sites). All writes go through
- * this module with the service role; the table has no open insert policy.
+ * board, kept off the verified momentum leaderboard. Listing is free but
+ * requires the RealRank badge on the site, so listings are owner-verified at
+ * creation (indexed, dofollow) — there is no unverified placeholder tier.
+ * Connecting Search Console is the next rung: it promotes the site into
+ * published_sites. All writes go through this module with the service role;
+ * the table has no open insert policy.
  */
 
 export const LISTED_TAG = "listed-sites";
