@@ -47,6 +47,11 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
 
+-- This is a trigger function, not an API endpoint. Revoke RPC EXECUTE so it
+-- can't be called via /rest/v1/rpc by anon/authenticated; the trigger still
+-- fires (it runs as its SECURITY DEFINER owner).
+revoke execute on function public.handle_new_user() from anon, authenticated, public;
+
 -- ── connected_accounts ────────────────────────────────────────
 -- Encrypted Google refresh tokens. NEVER expose to the client: no SELECT
 -- policy is granted to end users; only the service role (cron) reads these.
@@ -339,6 +344,7 @@ alter table public.site_traffic_daily enable row level security;
 create or replace function public.bump_site_traffic(new_visitor boolean, new_session boolean)
 returns void
 language sql
+set search_path = ''
 as $$
   insert into public.site_traffic_daily as t (day, visitors, sessions, pageviews, updated_at)
   values (
@@ -386,6 +392,7 @@ create or replace function public.bump_traffic_breakdown(
   p_device text
 ) returns void
 language plpgsql
+set search_path = ''
 as $$
 declare
   d date := (now() at time zone 'utc')::date;
@@ -433,6 +440,7 @@ create index if not exists site_events_event_idx on public.site_events (event, d
 create or replace function public.bump_event(p_event text, p_label text)
 returns void
 language plpgsql
+set search_path = ''
 as $$
 declare
   d date := (now() at time zone 'utc')::date;
@@ -473,6 +481,7 @@ create index if not exists site_outbound_clicks_host_idx
 create or replace function public.bump_outbound_click(p_host text)
 returns void
 language plpgsql
+set search_path = ''
 as $$
 declare
   d date := (now() at time zone 'utc')::date;
