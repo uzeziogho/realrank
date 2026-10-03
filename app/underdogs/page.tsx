@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SiteFavicon } from "@/components/site-favicon";
 import { Sparkline } from "@/components/sparkline";
-import { getUnderdogs, attachSparklines, UNDERDOG_DR_CAP } from "@/lib/data";
+import { getUnderdogs, attachSparklines } from "@/lib/data";
 import { siteConfig, categoryLabel } from "@/lib/config";
 import { formatCompact, formatGrowth, hostname, siteHref } from "@/lib/utils";
 import type { RankedSite } from "@/lib/types";
@@ -13,14 +13,14 @@ import type { RankedSite } from "@/lib/types";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Underdogs — Sites Punching Above Their Domain Rating",
+  title: "Underdogs — Small Sites Punching Above Their Weight",
   description:
-    "Low-authority domains outranking the giants on verified Google Search Console clicks. Domain Rating is only context here — the board still ranks on real organic momentum, not authority.",
+    "Small sites outranking the giants on verified Google Search Console clicks. Ranked by momentum earned per unit of traffic, so a low-traffic site growing fast shows up next to the incumbents.",
   alternates: { canonical: "/underdogs" },
   openGraph: {
-    title: "Underdogs — Punching Above Their Domain Rating",
+    title: "Underdogs — Punching Above Their Weight",
     description:
-      "Small domains beating big ones on verified organic momentum, not authority scores.",
+      "Small domains beating big ones on verified organic momentum.",
     url: `${siteConfig.url}/underdogs`,
   },
 };
@@ -43,16 +43,16 @@ export default async function UnderdogsPage() {
             Small domains beating the giants
           </h1>
           <p className="mt-4 max-w-xl text-balance text-lg text-muted-foreground">
-            Low Domain Rating, outsized organic momentum. These sites rank on real
-            Search Console clicks, not authority scores — so a fresh domain growing
-            fast shows up right next to the incumbents.
+            Small in traffic, outsized in organic momentum. These sites rank on real
+            Search Console clicks — so a fresh domain growing fast shows up right next
+            to the incumbents.
           </p>
           <div className="mt-8 flex flex-col items-center gap-2">
             <Button asChild size="lg">
               <Link href="/login">Prove you&apos;re an underdog — launch your site</Link>
             </Button>
             <p className="text-xs text-muted-foreground">
-              Read-only access · free · DR is context, clicks are the rank
+              Read-only access · free · clicks are the rank
             </p>
           </div>
         </div>
@@ -63,9 +63,8 @@ export default async function UnderdogsPage() {
           <div className="rounded-2xl border border-dashed border-border bg-card/50 p-12 text-center">
             <p className="text-lg font-medium">No underdogs to show yet</p>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              This board fills up as low-authority sites (DR {UNDERDOG_DR_CAP} or
-              under) start racking up verified clicks. Connect Search Console and
-              you could be the first to punch above your weight.
+              This board fills up as small sites start racking up verified clicks.
+              Connect Search Console and you could be the first to punch above your weight.
             </p>
             <Button asChild className="mt-5">
               <Link href="/login">Get ranked</Link>
@@ -93,12 +92,12 @@ export default async function UnderdogsPage() {
             <Reason
               icon={<ShieldCheck className="size-5" />}
               title="Clicks are the rank"
-              body="Every position is decided by verified Search Console clicks. Domain Rating never moves the ranking — it's shown only for context."
+              body="Every position is decided by verified Search Console clicks. Nothing else moves the ranking."
             />
             <Reason
               icon={<TrendingUp className="size-5" />}
-              title="Momentum over authority"
-              body="A DR 3 site growing fast can out-rank a DR 60 incumbent. That gap — high momentum, low authority — is exactly the underdog story."
+              title="Momentum over size"
+              body="A tiny site growing fast can out-rank a high-traffic incumbent. That gap — high momentum, small footprint — is exactly the underdog story."
             />
             <Reason
               icon={<Swords className="size-5" />}
@@ -142,17 +141,15 @@ function UnderdogCard({ row }: { row: RankedSite }) {
         </div>
       </div>
 
-      {/* The underdog line: low DR, real rank. */}
-      {row.domainRank != null && (
-        <p className="text-xs text-muted-foreground">
-          <span className="font-semibold text-foreground tabular-nums">
-            DR {Math.round(row.domainRank)}
-          </span>{" "}
-          authority, but ranked{" "}
-          <span className="font-semibold text-foreground">#{row.rank}</span> on verified
-          clicks.
-        </p>
-      )}
+      {/* The underdog line: small by volume, real rank. */}
+      <p className="text-xs text-muted-foreground">
+        <span className="font-semibold text-foreground tabular-nums">
+          {formatCompact(row.clicks28d)}
+        </span>{" "}
+        clicks in 28 days, but ranked{" "}
+        <span className="font-semibold text-foreground">#{row.rank}</span> on verified
+        momentum.
+      </p>
 
       <div className="flex items-end justify-between gap-3">
         <div className="flex gap-4">

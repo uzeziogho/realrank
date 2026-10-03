@@ -72,18 +72,6 @@ export default async function ComparePage({ params }: { params: Params }) {
     row("Growth (7d vs prior)", formatGrowth(a.growthRate), formatGrowth(b.growthRate), a.growthRate, b.growthRate, "higher"),
     row("Volume rank", `#${aProfile.volumeRank}`, `#${bProfile.volumeRank}`, aProfile.volumeRank, bProfile.volumeRank, "lower"),
   ];
-  if (a.domainRank != null || b.domainRank != null) {
-    rows.push(
-      row(
-        "Domain authority (DR)",
-        a.domainRank != null ? `${Math.round(a.domainRank)}/100` : "—",
-        b.domainRank != null ? `${Math.round(b.domainRank)}/100` : "—",
-        a.domainRank ?? -1,
-        b.domainRank ?? -1,
-        "higher",
-      ),
-    );
-  }
 
   return (
     <div className="container max-w-3xl py-12">

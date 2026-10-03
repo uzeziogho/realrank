@@ -21,8 +21,8 @@ export function Leaderboard({
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
       {/* Column header — hidden on mobile where rows stack.
           Ordered by importance: rank, identity, the ranking metric and its
-          supporting clicks, then the trend, then the third-party DR estimate. */}
-      <div className="hidden grid-cols-[3.75rem_1fr_7rem_6.5rem_5rem_3.5rem] items-center gap-4 border-b border-border bg-muted/30 px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground md:grid">
+          supporting clicks, then the trend. */}
+      <div className="hidden grid-cols-[3.75rem_1fr_7rem_6.5rem_5rem] items-center gap-4 border-b border-border bg-muted/30 px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground md:grid">
         <span>Rank</span>
         <span>Site</span>
         <span className="text-right">
@@ -32,7 +32,6 @@ export function Leaderboard({
           {view === "momentum" ? "7-day clicks" : "Momentum"}
         </span>
         <span className="text-right">Trend</span>
-        <span className="text-right" title="Domain Rating (Ahrefs, 0–100)">DR</span>
       </div>
 
       <ol className="divide-y divide-border/70">
@@ -93,7 +92,7 @@ function OrganicRowItem({
   return (
     <li
       className={cn(
-        "group relative grid grid-cols-[3rem_1fr] items-center gap-4 px-4 py-4 transition-colors hover:bg-accent/40 md:grid-cols-[3.75rem_1fr_7rem_6.5rem_5rem_3.5rem] md:px-6 md:py-4",
+        "group relative grid grid-cols-[3rem_1fr] items-center gap-4 px-4 py-4 transition-colors hover:bg-accent/40 md:grid-cols-[3.75rem_1fr_7rem_6.5rem_5rem] md:px-6 md:py-4",
         pending && "bg-muted/20",
       )}
     >
@@ -191,16 +190,6 @@ function OrganicRowItem({
               {categoryLabel(row.category)}
             </Badge>
           )}
-          {/* DR pill on the sm breakpoint only — below md, where the DR column
-              is hidden but there's still room beside the name. */}
-          {row.domainRank != null && (
-            <span
-              title="Domain Rating (Ahrefs, 0–100)"
-              className="hidden shrink-0 rounded-full border border-border px-2 py-0.5 text-xs font-medium tabular-nums text-muted-foreground sm:inline-flex md:hidden"
-            >
-              DR {Math.round(row.domainRank)}
-            </span>
-          )}
         </div>
         <p className="mt-0.5 truncate text-sm text-muted-foreground">
           <span className="text-muted-foreground/70">{hostname(row.siteUrl)}</span>
@@ -278,28 +267,13 @@ function OrganicRowItem({
           <Sparkline data={row.spark} />
         )}
       </div>
-
-      {/* DR (domain authority) column — desktop. Third-party estimate, so it
-          sits last, after the metrics the ranking is actually built on. */}
-      <div
-        className="hidden items-center justify-end md:flex"
-        title="Domain Rating (Ahrefs, 0–100)"
-      >
-        {row.domainRank != null ? (
-          <span className="tabular-nums text-sm font-medium text-muted-foreground">
-            {Math.round(row.domainRank)}
-          </span>
-        ) : (
-          <span className="text-sm text-muted-foreground/40">—</span>
-        )}
-      </div>
     </li>
   );
 }
 
 function SponsoredRowItem({ row }: { row: SponsoredRow }) {
   return (
-    <li className="grid grid-cols-[3rem_1fr] items-center gap-4 bg-amber-500/[0.06] px-4 py-4 md:grid-cols-[3.75rem_1fr_7rem_6.5rem_5rem_3.5rem] md:px-6">
+    <li className="grid grid-cols-[3rem_1fr] items-center gap-4 bg-amber-500/[0.06] px-4 py-4 md:grid-cols-[3.75rem_1fr_7rem_6.5rem_5rem] md:px-6">
       <div className="flex items-center justify-center">
         <span className="rounded-md border border-amber-500/30 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-500/80">
           Ad
@@ -321,7 +295,7 @@ function SponsoredRowItem({ row }: { row: SponsoredRow }) {
         </div>
         <p className="truncate text-sm text-muted-foreground">{row.description}</p>
       </div>
-      <div className="col-span-2 md:col-span-4 md:col-start-3 md:flex md:items-center md:justify-end">
+      <div className="col-span-2 md:col-span-3 md:col-start-3 md:flex md:items-center md:justify-end">
         <a
           href={row.siteUrl}
           target="_blank"

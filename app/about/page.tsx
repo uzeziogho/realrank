@@ -223,8 +223,8 @@ const FEATURES = [
   },
   {
     icon: BarChart3,
-    title: "Domain authority (DR)",
-    body: "A DR-style authority score shown alongside verified traffic. Context, never a way to game the rank.",
+    title: "Underdogs",
+    body: "Small sites outranking the giants — ranked by momentum earned per unit of traffic, on their own board.",
     href: "/underdogs",
     cta: "See the underdogs",
   },
