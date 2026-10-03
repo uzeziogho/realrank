@@ -134,24 +134,11 @@ export default async function SiteProfilePage({ params }: { params: Params }) {
       )}
 
       {/* Metrics */}
-      <div
-        className={`mt-4 grid grid-cols-2 gap-4 rounded-xl border border-border bg-card p-6 ${
-          site.domainRank != null ? "sm:grid-cols-4" : "sm:grid-cols-3"
-        }`}
-      >
+      <div className="mt-4 grid grid-cols-2 gap-4 rounded-xl border border-border bg-card p-6 sm:grid-cols-3">
         <Metric label="7-day clicks" value={formatCompact(site.clicks7d)} />
         <Metric label="28-day clicks" value={formatCompact(site.clicks28d)} />
         <Metric label="Momentum score" value={site.momentumScore.toFixed(0)} />
-        {site.domainRank != null && (
-          <Metric label="Domain authority (DR)" value={`${Math.round(site.domainRank)}/100`} />
-        )}
       </div>
-      {site.domainRank != null && (
-        <p className="mt-2 text-xs text-muted-foreground">
-          DR is a third-party domain-authority estimate (Ahrefs Domain Rating, 0–100) — shown for
-          context; it does not affect momentum or volume ranking.
-        </p>
-      )}
 
       {/* Momentum timeline */}
       <section className="mt-8">

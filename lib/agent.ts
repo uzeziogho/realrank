@@ -30,7 +30,6 @@ export interface LeaderRow {
   category: string | null;
   verified_since: string | null;
   days_of_verified_history: number;
-  domain_rank: number | null;
 }
 
 export interface TrustProfile {
@@ -119,7 +118,6 @@ function leaderRow(site: RankedSite, verifiedSince: string | null): LeaderRow {
     category: site.category,
     verified_since: verifiedSince,
     days_of_verified_history: daysSince(verifiedSince),
-    domain_rank: site.domainRank,
   };
 }
 

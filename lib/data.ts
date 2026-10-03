@@ -548,16 +548,13 @@ export interface UnderdogsData {
   usingDummyData: boolean;
 }
 
-/** DR at or below this (Ahrefs Domain Rating, 0–100) counts as a low-authority "underdog". */
-export const UNDERDOG_DR_CAP = 30;
-
 /**
- * "Punching above their DR" — sites with a low third-party authority score
- * (Ahrefs Domain Rating) that are nonetheless ranking well on verified momentum. DR is
- * only ever context here, never a ranking input: the board still ranks on real
- * clicks. This cut just surfaces the underdog story — small domains beating big
- * ones on actual growth. Sites without a DR value can't be judged, so they're
- * excluded rather than assumed to be underdogs.
+ * "Punching above their weight" — small sites (by verified traffic volume) that
+ * are nonetheless ranking well on momentum. Size is only context here, never a
+ * ranking input: the board still ranks on real clicks. This cut surfaces the
+ * underdog story — small domains beating big ones on actual growth — by scoring
+ * momentum earned per unit of volume, so a low-traffic site growing fast rises
+ * above a high-traffic incumbent that's merely coasting.
  */
 export async function getUnderdogs(limit = 9): Promise<UnderdogsData> {
   const { sites, usingDummyData } = await loadRaw();
@@ -565,20 +562,15 @@ export async function getUnderdogs(limit = 9): Promise<UnderdogsData> {
   const ranked = rankSites(withTraffic, "momentum");
 
   const underdogs = ranked
-    .filter(
-      (s) =>
-        !s.pending &&
-        s.domainRank != null &&
-        s.domainRank <= UNDERDOG_DR_CAP &&
-        s.momentumScore > 0,
-    )
-    // Momentum earned per unit of authority: the more momentum a small domain
-    // shows, the further "above its weight" it's punching. (+1 avoids blowing up
-    // toward DR 0 and keeps the ordering stable.)
+    .filter((s) => !s.pending && s.momentumScore > 0)
+    // Momentum earned per unit of size: the more momentum a small domain shows
+    // relative to its 28-day volume, the further "above its weight" it's
+    // punching. log10 dampens volume so the metric isn't dominated by tiny
+    // sites; +10 avoids a blow-up as clicks approach zero.
     .sort(
       (a, b) =>
-        b.momentumScore / ((b.domainRank ?? 0) + 1) -
-        a.momentumScore / ((a.domainRank ?? 0) + 1),
+        b.momentumScore / Math.log10(b.clicks28d + 10) -
+        a.momentumScore / Math.log10(a.clicks28d + 10),
     )
     .slice(0, limit);
 

@@ -6,16 +6,17 @@
 -- confirm the app is reading from Postgres (not the built-in seed fallback).
 -- ─────────────────────────────────────────────────────────────
 
--- ── Sponsored placements (real ads you'd actually want to keep) ──
--- Injected after organic rank #10 and #20 by the app.
-insert into public.sponsored_slots
-  (position_after_rank, display_name, site_url, description, cta_label, is_active)
-values
-  (10, 'Semrush', 'https://www.semrush.com',
-   'See every keyword your competitors rank for. Free 7-day trial.', 'Try free', true),
-  (20, 'Ahrefs', 'https://ahrefs.com',
-   'Grow your search traffic with the industry-standard SEO toolset.', 'Start now', true)
-on conflict do nothing;
+-- ── Sponsored placements (template — add only REAL, paid ads) ──
+-- Active rows here are injected into the public board after the given organic
+-- rank, so never seed placeholder/competitor ads: anything active is shown to
+-- every visitor as a sponsor. Fill in a real advertiser and uncomment to use.
+--
+-- insert into public.sponsored_slots
+--   (position_after_rank, display_name, site_url, description, cta_label, is_active)
+-- values
+--   (10, 'Your Sponsor', 'https://sponsor.example',
+--    'One-line pitch for the placement.', 'Learn more', true)
+-- on conflict do nothing;
 
 -- ── Optional: demo leaderboard rows (TEST DATA — delete after verifying) ──
 -- These let you see live rows immediately. `user_id` uses the all-zero UUID,

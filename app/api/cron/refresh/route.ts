@@ -5,8 +5,6 @@ import { LEADERBOARD_TAG } from "@/lib/data";
 import { decryptToken } from "@/lib/crypto";
 import { clientFromRefreshToken, fetchSiteMetrics } from "@/lib/google";
 import { upsertSiteHistory } from "@/lib/gsc-server";
-import { fetchDomainRatings, newDomainRatingDiag, type DomainRatingDiag } from "@/lib/domainrating";
-import { hostname } from "@/lib/utils";
 import { categories } from "@/lib/config";
 import type { OAuth2Client } from "google-auth-library";
 
@@ -34,18 +32,12 @@ export async function GET(req: NextRequest) {
   // Pull active sites and the encrypted token for each owner.
   const { data: sites, error } = await supabase
     .from("published_sites")
-    .select("id, user_id, site_url, momentum_score, clicks_28d, domain_rank_at")
+    .select("id, user_id, site_url, momentum_score, clicks_28d")
     .eq("is_active", true);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
-
-  // Domain Rating (Ahrefs, 0–100) via AnyAPI. Per-domain, paid, and slow, so we
-  // only refresh sites missing a rating or older than a week, capped per run —
-  // DR moves slowly, so this covers the board over a few runs at trivial cost.
-  const drDiag = newDomainRatingDiag();
-  const drRefreshed = await refreshDomainRatings(supabase, sites ?? [], drDiag);
 
   const clientCache = new Map<string, OAuth2Client | null>();
   let updated = 0;
@@ -98,52 +90,10 @@ export async function GET(req: NextRequest) {
     ok: true,
     total: sites?.length ?? 0,
     updated,
-    drRefreshed,
-    // DR outcome counts, so a blank DR column is diagnosable from this response
-    // alone: dr.ok === 0 with dr.failed > 0 and a sampleError points at the
-    // gateway (bad host → connection error, bad key → HTTP 401); keyConfigured
-    // false means ANYAPI_KEY isn't set on this deployment.
-    dr: drDiag,
     failed: failures.length,
     failures: failures.slice(0, 20),
     ranAt: new Date().toISOString(),
   });
-}
-
-/** A DR fetch is stale after this many days; refresh at most this many per run. */
-const DR_STALE_DAYS = 7;
-const DR_MAX_PER_RUN = 15;
-
-/**
- * Refresh Domain Rating for the active sites that most need it — those missing a
- * rating or last checked over a week ago — capped per run because the Ahrefs
- * endpoint is paid and slow. Stamps `domain_rank_at` on every attempt (even a
- * miss) so a not-found domain isn't re-billed every run; only writes the value
- * when one comes back. Returns how many domains were refreshed with a value.
- */
-async function refreshDomainRatings(
-  supabase: ReturnType<typeof createServiceClient>,
-  sites: { id: string; site_url: string; domain_rank_at: string | null }[],
-  diag: DomainRatingDiag,
-): Promise<number> {
-  const cutoff = Date.now() - DR_STALE_DAYS * 86_400_000;
-  const targets = sites
-    .filter((s) => !s.domain_rank_at || new Date(s.domain_rank_at).getTime() < cutoff)
-    .slice(0, DR_MAX_PER_RUN);
-  if (targets.length === 0) return 0;
-
-  const ratings = await fetchDomainRatings(targets.map((s) => hostname(s.site_url)), diag);
-  const now = new Date().toISOString();
-  let written = 0;
-  for (const s of targets) {
-    const dr = ratings.get(hostname(s.site_url));
-    await supabase
-      .from("published_sites")
-      .update({ ...(dr != null ? { domain_rank: dr } : {}), domain_rank_at: now })
-      .eq("id", s.id);
-    if (dr != null) written += 1;
-  }
-  return written;
 }
 
 async function getClientForUser(

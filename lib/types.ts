@@ -23,8 +23,6 @@ export interface RankedSite {
   rankDelta: number | null;
   /** Compact recent daily-click series for the row sparkline (ascending). */
   spark: number[];
-  /** Domain Rating (Ahrefs, 0–100). Third-party estimate; null if none. */
-  domainRank: number | null;
   /**
    * True when the site has no clicks in the current view's window, so it's shown
    * at the bottom of the board in a "no clicks yet / pending data" state rather
@@ -69,7 +67,6 @@ export function toRankedSite(
     createdAt: site.created_at,
     rankDelta,
     spark: [],
-    domainRank: site.domain_rank ?? null,
     pending,
   };
 }
