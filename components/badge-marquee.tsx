@@ -153,6 +153,28 @@ const BADGES: Badge[] = [
     width: 250,
     height: 54,
   },
+  {
+    href: "https://swipetolaunch.com/p/realrank?ref=badge",
+    src: "https://swipetolaunch.com/api/badge/realrank",
+    alt: "Featured on SwipeToLaunch",
+    width: 220,
+    height: 48,
+  },
+  {
+    href: "https://devhunt.org/tool/realrank",
+    src: "https://devhunt.org/badge/realrank.svg",
+    alt: "realrank - Featured on DevHunt",
+    width: 220,
+    height: 54,
+    title: "realrank on DevHunt",
+  },
+  {
+    href: "https://wired.business",
+    src: "https://wired.business/badge0-white.svg",
+    alt: "Featured on Wired Business",
+    width: 200,
+    height: 54,
+  },
 ];
 
 function BadgeGroup({ ariaHidden = false }: { ariaHidden?: boolean }) {
