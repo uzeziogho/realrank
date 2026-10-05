@@ -30,10 +30,11 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
   icons: {
     icon: [
+      { url: "/favicon.ico", sizes: "any" },
       { url: "/logo.svg", type: "image/svg+xml" },
       { url: "/logo-120.png", type: "image/png", sizes: "120x120" },
     ],
-    shortcut: "/logo-120.png",
+    shortcut: "/favicon.ico",
     apple: "/logo-120.png",
   },
   openGraph: {
