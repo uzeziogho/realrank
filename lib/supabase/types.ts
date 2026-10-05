@@ -424,6 +424,7 @@ export interface Database {
           tagline: string | null;
           description: string | null;
           category: string | null;
+          alternative_to: string | null;
           submitter_email: string | null;
           /** 'listed' (unverified) | 'owner_verified' (badge/link proven). */
           status: string;
@@ -442,6 +443,7 @@ export interface Database {
           tagline?: string | null;
           description?: string | null;
           category?: string | null;
+          alternative_to?: string | null;
           submitter_email?: string | null;
           status?: string;
           owner_verified?: boolean;
@@ -459,6 +461,7 @@ export interface Database {
           tagline?: string | null;
           description?: string | null;
           category?: string | null;
+          alternative_to?: string | null;
           submitter_email?: string | null;
           status?: string;
           owner_verified?: boolean;

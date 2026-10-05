@@ -23,6 +23,7 @@ export async function POST(req: Request) {
     tagline?: string;
     description?: string;
     category?: string;
+    alternativeTo?: string;
     email?: string;
     company?: string; // honeypot — must stay empty
   } = {};
@@ -51,6 +52,7 @@ export async function POST(req: Request) {
       tagline: body.tagline,
       description: body.description,
       category: body.category,
+      alternativeTo: body.alternativeTo,
       email: body.email,
     },
     ip,

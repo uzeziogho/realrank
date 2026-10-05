@@ -515,6 +515,7 @@ create table if not exists public.listed_sites (
   tagline text,                          -- one-line pitch shown on the board
   description text,
   category text,
+  alternative_to text,                   -- e.g. "Notion" — the tool this is a free alternative to
   submitter_email text,                  -- optional, for "claim/verify" follow-up
   -- Ownership proof. 'listed' = unverified (noindex/nofollow); 'owner_verified'
   -- = RealRank badge/link detected on the site (dofollow); a site that connects

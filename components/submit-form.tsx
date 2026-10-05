@@ -35,6 +35,7 @@ export function SubmitForm() {
       tagline: String(fd.get("tagline") ?? ""),
       description: String(fd.get("description") ?? ""),
       category: String(fd.get("category") ?? ""),
+      alternativeTo: String(fd.get("alternativeTo") ?? ""),
       email: String(fd.get("email") ?? ""),
       company: String(fd.get("company") ?? ""), // honeypot
     };
@@ -128,6 +129,16 @@ export function SubmitForm() {
               </option>
             ))}
           </select>
+        </Field>
+
+        <Field label="Alternative to" hint="Optional — a tool yours replaces, e.g. Notion.">
+          <input
+            name="alternativeTo"
+            type="text"
+            maxLength={60}
+            placeholder="Notion"
+            className={inputClass}
+          />
         </Field>
 
         <Field label="Description" hint="Optional — a sentence or two.">
