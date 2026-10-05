@@ -22,6 +22,60 @@ const A = (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
 
 export const articles: Article[] = [
   {
+    slug: "free-alternatives-to-the-tools-you-pay-for",
+    title: "Free, independent alternatives to the tools you already pay for",
+    description:
+      "A growing directory of indie projects that set out to replace the expensive, closed tools — self-declared, owner-verified with a badge, and listed free on RealRank. How the directory works, and why it's deliberately not a traffic ranking.",
+    date: "2026-10-05",
+    keywords: [
+      "free alternatives",
+      "open source alternatives",
+      "indie SaaS alternatives",
+      "alternative to",
+      "indie maker directory",
+    ],
+    Body: () => (
+      <>
+        <p>
+          Every popular tool spawns a wave of leaner, cheaper, often open-source
+          alternatives built by indie makers. The hard part is finding them — they don&apos;t
+          have the marketing budget to outrank the incumbent they&apos;re replacing. So we
+          added a simple directory: projects list themselves free and say which tool they&apos;re
+          an alternative to. You can browse the whole thing from{" "}
+          <Link href="/alternatives-to">alternatives to popular tools</Link>.
+        </p>
+        <h2>How a project gets listed</h2>
+        <p>
+          Listing is free, with one condition: the project has to add a RealRank badge to its
+          own site. We check for it before the listing goes live, so every entry is
+          owner-verified — a real person who controls the site put it there. It&apos;s a
+          reciprocal link, not a paid placement, and it keeps the directory free of drive-by
+          spam. If you&apos;ve built something, you can{" "}
+          <Link href="/submit">list it in under a minute</Link> and name the tool it replaces.
+        </p>
+        <h2>Why this is a directory, not a ranking</h2>
+        <p>
+          It would be easy to slap numbers on these and call it a &quot;top 10,&quot; but that
+          would quietly undo the one thing RealRank is strict about. Our{" "}
+          <Link href="/leaderboard">main leaderboard</Link> ranks sites only by{" "}
+          <strong>verified</strong> Google Search Console clicks — real, measured organic
+          momentum that no one can buy or fake. The alternatives directory is a different,
+          lighter thing: a self-declared list, useful for discovery, honest about what it is.
+          A project that wants to prove it&apos;s genuinely growing can{" "}
+          <Link href="/login">connect Search Console</Link> and earn a verified, ranked spot.
+        </p>
+        <h2>Finding an alternative</h2>
+        <p>
+          Start from the tool you want to replace on the{" "}
+          <Link href="/alternatives-to">directory index</Link>, open its page, and you&apos;ll
+          see the indie projects taking it on. Each links straight out to the real product —
+          no interstitials, no affiliate gymnastics. If the alternative you know about
+          isn&apos;t there yet, the maker just hasn&apos;t listed it; point them our way.
+        </p>
+      </>
+    ),
+  },
+  {
     slug: "similarweb-alternative-verified-traffic",
     title: "A free SimilarWeb alternative for your own traffic (and where it isn't one)",
     description:

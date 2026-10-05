@@ -28,6 +28,8 @@ export interface Listing {
   tagline: string | null;
   description: string | null;
   category: string | null;
+  /** The established tool this project is a free/indie alternative to, if declared. */
+  alternativeTo: string | null;
   ownerVerified: boolean;
   createdAt: string;
 }
@@ -40,12 +42,13 @@ function toListing(row: ListedSite): Listing {
     tagline: row.tagline,
     description: row.description,
     category: row.category,
+    alternativeTo: row.alternative_to,
     ownerVerified: row.owner_verified,
     createdAt: row.created_at,
   };
 }
 
-const MAX = { name: 80, tagline: 120, description: 300 } as const;
+const MAX = { name: 80, tagline: 120, description: 300, alternativeTo: 60 } as const;
 const VALID_CATEGORIES = new Set<string>(categories.map((c) => c.slug));
 
 /**
@@ -84,6 +87,7 @@ export interface CreateListingInput {
   tagline?: string;
   description?: string;
   category?: string;
+  alternativeTo?: string;
   email?: string;
 }
 
@@ -147,6 +151,7 @@ export async function createListing(
   const tagline = input.tagline?.trim().slice(0, MAX.tagline) || null;
   const description = input.description?.trim().slice(0, MAX.description) || null;
   const category = input.category && VALID_CATEGORIES.has(input.category) ? input.category : null;
+  const alternativeTo = input.alternativeTo?.trim().slice(0, MAX.alternativeTo) || null;
   const email = input.email?.trim().slice(0, 200) || null;
 
   if (!isSupabaseConfigured()) {
@@ -215,6 +220,7 @@ export async function createListing(
       tagline,
       description,
       category,
+      alternative_to: alternativeTo,
       submitter_email: email,
       submitted_ip: ip,
       status: "owner_verified",
@@ -283,6 +289,54 @@ export async function getListingByHost(host: string): Promise<Listing | null> {
 export async function getListedHosts(): Promise<string[]> {
   const sites = await getListedSites();
   return sites.map((s) => s.host);
+}
+
+/** Slugify a tool name for /alternatives-to/<slug> grouping. */
+export function altToSlug(name: string): string {
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/** A tool that one or more listed projects declare themselves an alternative to. */
+export interface AlternativeTarget {
+  slug: string;
+  name: string;
+  count: number;
+}
+
+/**
+ * Distinct "alternative to" targets across active listings, most-listed first.
+ * Derived from the cached getListedSites() read (the directory is small), so no
+ * extra query. Powers the /alternatives-to index + static params.
+ */
+export async function getAlternativeTargets(): Promise<AlternativeTarget[]> {
+  const sites = await getListedSites();
+  const map = new Map<string, { name: string; count: number }>();
+  for (const s of sites) {
+    if (!s.alternativeTo) continue;
+    const slug = altToSlug(s.alternativeTo);
+    if (!slug) continue;
+    const cur = map.get(slug);
+    if (cur) cur.count += 1;
+    else map.set(slug, { name: s.alternativeTo.trim(), count: 1 });
+  }
+  return Array.from(map.entries())
+    .map(([slug, v]) => ({ slug, name: v.name, count: v.count }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+}
+
+/** Listings that declare themselves an alternative to the given target slug. */
+export async function getListingsForAlternative(
+  slug: string,
+): Promise<{ name: string; listings: Listing[] } | null> {
+  const sites = await getListedSites();
+  const matches = sites.filter((s) => s.alternativeTo && altToSlug(s.alternativeTo) === slug);
+  if (matches.length === 0) return null;
+  return { name: matches[0].alternativeTo!.trim(), listings: matches };
 }
 
 export type VerifyResult =

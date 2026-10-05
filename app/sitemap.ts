@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { siteConfig, categories } from "@/lib/config";
 import { getAllSiteSlugs } from "@/lib/site";
-import { getListedSites } from "@/lib/listed";
+import { getListedSites, getAlternativeTargets } from "@/lib/listed";
 import { articles } from "@/lib/articles";
 
 const LANDING_PAGES = ["lol-directories", "fastest-growing-saas-websites"];
@@ -34,6 +34,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .slice(0, 5000);
   } catch {
     verifiedListedHosts = [];
+  }
+
+  // "Alternative to <tool>" directory pages — one per declared target.
+  let altSlugs: string[] = [];
+  try {
+    altSlugs = (await getAlternativeTargets()).map((t) => t.slug).slice(0, 2000);
+  } catch {
+    altSlugs = [];
   }
 
   return [
@@ -164,6 +172,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: "daily" as const,
       priority: 0.6,
+    })),
+    // Open directory: "alternatives to <tool>" index + one page per target.
+    ...(altSlugs.length > 0
+      ? [
+          {
+            url: `${base}/alternatives-to`,
+            lastModified: now,
+            changeFrequency: "daily" as const,
+            priority: 0.6,
+          },
+        ]
+      : []),
+    ...altSlugs.map((slug) => ({
+      url: `${base}/alternatives-to/${slug}`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.5,
     })),
     {
       url: `${base}/blog`,

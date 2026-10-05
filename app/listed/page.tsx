@@ -62,7 +62,12 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
               <Link href="/leaderboard" className="text-primary hover:underline">
                 ranked board
               </Link>{" "}
-              goes further: verified-only by real Google Search Console clicks.
+              goes further: verified-only by real Google Search Console clicks. Browse by what they
+              replace in{" "}
+              <Link href="/alternatives-to" className="text-primary hover:underline">
+                alternatives to popular tools
+              </Link>
+              .
             </p>
           </div>
           <Button asChild size="lg" className="shrink-0">
