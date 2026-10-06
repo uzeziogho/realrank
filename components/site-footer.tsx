@@ -86,6 +86,7 @@ export function SiteFooter() {
                   <Link href={l.href} className="hover:text-foreground">{l.label}</Link>
                 </li>
               ))}
+              <li><Link href="/pricing" className="hover:text-foreground">Pricing</Link></li>
               <li><Link href="/privacy" className="hover:text-foreground">Privacy</Link></li>
               <li><Link href="/terms" className="hover:text-foreground">Terms</Link></li>
             </ul>
