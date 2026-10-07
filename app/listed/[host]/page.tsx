@@ -88,15 +88,16 @@ export default async function ListingProfilePage({ params }: { params: Params })
         )}
       </div>
 
-      {/* A listing is owner-verified (it carries our badge), but that is not a
-          ranked spot — make the difference (and the path to a real rank) explicit. */}
+      {/* A listing isn't a ranked spot — make the difference (and the path to a
+          real rank) explicit. Copy adapts to whether the owner has verified. */}
       <div className="mt-10 rounded-xl border border-dashed border-primary/40 bg-primary/[0.05] p-6 text-center">
         <ShieldCheck className="mx-auto size-6 text-primary" />
-        <p className="mt-2 font-medium">A verified listing — not a ranked spot.</p>
+        <p className="mt-2 font-medium">A free listing — not a ranked spot.</p>
         <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-          {listing.displayName} is a verified listing (it carries the {siteConfig.name} badge) but
-          hasn&apos;t connected Google Search Console, so it isn&apos;t on the ranked momentum board.
-          Own this site? Connect Search Console to claim a ranked spot.
+          {listing.ownerVerified
+            ? `${listing.displayName} is an owner-verified listing, but it hasn't connected Google Search Console, so it isn't on the ranked momentum board.`
+            : `${listing.displayName} is listed but hasn't connected Google Search Console, so it isn't on the ranked momentum board.`}{" "}
+          Own this site? Connect Search Console to claim a verified, ranked spot.
         </p>
         <div className="mt-4 flex items-center justify-center">
           <Button asChild>
