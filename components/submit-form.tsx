@@ -9,14 +9,12 @@ import { track } from "@/lib/track";
 
 type Phase = "form" | "done";
 
-/** The generic badge every lister must embed before listing (links to us). */
-const GENERIC_BADGE = `<a href="${siteConfig.url}" target="_blank" rel="noopener">Listed on ${siteConfig.name} →</a>`;
-
 /**
- * The open "$0 listing" form. Listing is free but REQUIRES the RealRank badge
- * on the site: the server fetches the site and only lists it if the badge is
- * present (see createListing). So the form leads with the badge embed, then
- * takes the details. A successful listing is already owner-verified.
+ * The open "$0 listing" form. Posts to /api/list (spam guards + honeypot live
+ * server-side). Listing is free and does not require the badge; on success it
+ * shows the permanent link and offers the badge embed, then lets the owner
+ * prove ownership (POST /api/list/verify) to earn a dofollow verified
+ * checkmark — short of connecting Search Console for a full ranked spot.
  */
 export function SubmitForm() {
   const [phase, setPhase] = useState<Phase>("form");
@@ -65,124 +63,122 @@ export function SubmitForm() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Step 1 — the badge is the price of a free listing. It must be live on
-          the site before submitting, because the server checks for it. */}
-      <div className="rounded-xl border border-border bg-muted/30 p-5">
-        <p className="flex items-center gap-2 font-medium">
-          <ShieldCheck className="size-4 text-primary" /> Step 1 — add our badge to your site
-        </p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Listing is free in exchange for a link back. Paste this anywhere on your site
-          (footer is perfect), publish it, then list below — we check for it before listing.
-        </p>
-        <CopyField value={GENERIC_BADGE} />
-        <p className="mt-2 text-xs text-muted-foreground">
-          It renders as: <span className="underline">Listed on {siteConfig.name} →</span>
-        </p>
-      </div>
+    <form onSubmit={onSubmit} className="flex flex-col gap-4">
+      {/* Honeypot: hidden from users, tempting to bots. */}
+      <input
+        type="text"
+        name="company"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        className="absolute left-[-9999px] h-0 w-0 opacity-0"
+      />
 
-      <form onSubmit={onSubmit} className="flex flex-col gap-4">
-        <p className="text-sm font-medium">Step 2 — your project</p>
-
-        {/* Honeypot: hidden from users, tempting to bots. */}
+      <Field label="Website URL" hint="The site you want listed.">
         <input
+          name="url"
           type="text"
-          name="company"
-          tabIndex={-1}
-          autoComplete="off"
-          aria-hidden="true"
-          className="absolute left-[-9999px] h-0 w-0 opacity-0"
+          required
+          inputMode="url"
+          placeholder="yourdomain.com"
+          className={inputClass}
         />
+      </Field>
 
-        <Field label="Website URL" hint="The site with the badge on it.">
-          <input
-            name="url"
-            type="text"
-            required
-            inputMode="url"
-            placeholder="yourdomain.com"
-            className={inputClass}
-          />
-        </Field>
+      <Field label="Project name">
+        <input name="name" type="text" required maxLength={80} placeholder="RealRank" className={inputClass} />
+      </Field>
 
-        <Field label="Project name">
-          <input name="name" type="text" required maxLength={80} placeholder="RealRank" className={inputClass} />
-        </Field>
+      <Field label="One-line pitch" hint="Shown on the board. Keep it tight.">
+        <input
+          name="tagline"
+          type="text"
+          maxLength={120}
+          placeholder="The organic-growth leaderboard for real websites."
+          className={inputClass}
+        />
+      </Field>
 
-        <Field label="One-line pitch" hint="Shown on the board. Keep it tight.">
-          <input
-            name="tagline"
-            type="text"
-            maxLength={120}
-            placeholder="The organic-growth leaderboard for real websites."
-            className={inputClass}
-          />
-        </Field>
+      <Field label="Category">
+        <select name="category" defaultValue="" className={inputClass}>
+          <option value="">Uncategorized</option>
+          {categories.map((c) => (
+            <option key={c.slug} value={c.slug}>
+              {c.label}
+            </option>
+          ))}
+        </select>
+      </Field>
 
-        <Field label="Category">
-          <select name="category" defaultValue="" className={inputClass}>
-            <option value="">Uncategorized</option>
-            {categories.map((c) => (
-              <option key={c.slug} value={c.slug}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-        </Field>
+      <Field label="Alternative to" hint="Optional — a tool yours replaces, e.g. Notion.">
+        <input
+          name="alternativeTo"
+          type="text"
+          maxLength={60}
+          placeholder="Notion"
+          className={inputClass}
+        />
+      </Field>
 
-        <Field label="Alternative to" hint="Optional — a tool yours replaces, e.g. Notion.">
-          <input
-            name="alternativeTo"
-            type="text"
-            maxLength={60}
-            placeholder="Notion"
-            className={inputClass}
-          />
-        </Field>
+      <Field label="Description" hint="Optional — a sentence or two.">
+        <textarea name="description" maxLength={300} rows={3} className={inputClass} />
+      </Field>
 
-        <Field label="Description" hint="Optional — a sentence or two.">
-          <textarea name="description" maxLength={300} rows={3} className={inputClass} />
-        </Field>
+      <Field label="Email" hint="Optional — we'll only use it to reach you about this listing.">
+        <input name="email" type="email" placeholder="you@company.com" className={inputClass} />
+      </Field>
 
-        <Field label="Email" hint="Optional — we'll only use it to reach you about this listing.">
-          <input name="email" type="email" placeholder="you@company.com" className={inputClass} />
-        </Field>
+      {error && (
+        <p className="rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p>
+      )}
 
-        {error && (
-          <p className="rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p>
-        )}
-
-        <Button type="submit" size="lg" disabled={pending} className="mt-1">
-          {pending ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <>
-              Check badge &amp; list — free <ArrowRight className="size-4" />
-            </>
-          )}
-        </Button>
-        <p className="text-center text-xs text-muted-foreground">
-          Free forever · no account needed · we verify the badge, then you&apos;re listed with a permanent link
-        </p>
-      </form>
-    </div>
+      <Button type="submit" size="lg" disabled={pending} className="mt-1">
+        {pending ? <Loader2 className="size-4 animate-spin" /> : <>List my project — free <ArrowRight className="size-4" /></>}
+      </Button>
+      <p className="text-center text-xs text-muted-foreground">
+        Free forever · no account needed · you get a permanent link
+      </p>
+    </form>
   );
 }
 
 function ListedSuccess({ host }: { host: string }) {
   const permalink = `${siteConfig.url}/listed/${host}`;
-  // Optional upgrade: point the badge at the listing page instead of the root.
-  const listingBadge = `<a href="${permalink}" target="_blank" rel="noopener">Listed on ${siteConfig.name} →</a>`;
+  const badge = `<a href="${permalink}" target="_blank" rel="noopener">Listed on ${siteConfig.name} →</a>`;
+
+  const [verifying, setVerifying] = useState(false);
+  const [verified, setVerified] = useState(false);
+  const [verifyError, setVerifyError] = useState<string | null>(null);
+
+  async function verify() {
+    setVerifyError(null);
+    setVerifying(true);
+    try {
+      const res = await fetch("/api/list/verify", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ host }),
+      });
+      const data = (await res.json()) as { ok: boolean; error?: string };
+      if (data.ok) {
+        track("listing_verified", host);
+        setVerified(true);
+      } else {
+        setVerifyError(data.error ?? "Couldn't verify yet.");
+      }
+    } catch {
+      setVerifyError("Couldn't reach the server. Please try again.");
+    }
+    setVerifying(false);
+  }
 
   return (
     <div className="flex flex-col gap-6">
       <div className="rounded-xl border border-success/30 bg-success/10 p-5 text-center">
         <Check className="mx-auto size-7 text-success" />
-        <p className="mt-2 text-lg font-semibold">You&apos;re listed &amp; verified.</p>
+        <p className="mt-2 text-lg font-semibold">You&apos;re listed.</p>
         <p className="mt-1 text-sm text-muted-foreground">
-          We found your badge, so {host} is on the board with a verified checkmark and a
-          followed link — and a permanent link of its own.
+          {host} is on the board with a permanent link.
         </p>
       </div>
 
@@ -195,16 +191,29 @@ function ListedSuccess({ host }: { host: string }) {
         </Link>
       </div>
 
-      {/* Optional: upgrade the badge to point at the listing */}
+      {/* Badge → verify ownership (optional) */}
       <div className="rounded-xl border border-border bg-card p-5">
         <p className="flex items-center gap-2 font-medium">
-          <ShieldCheck className="size-4 text-primary" /> Optional — point your badge at your listing
+          <ShieldCheck className="size-4 text-primary" /> Get a verified checkmark
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
-          Keep the badge you added (it&apos;s what verified you), or swap it for this version that
-          links straight to your {siteConfig.name} listing page.
+          Optional: add this badge to your site, then verify. We&apos;ll confirm it&apos;s really
+          yours and mark your listing verified (a followed link).
         </p>
-        <CopyField value={listingBadge} />
+        <CopyField value={badge} />
+
+        {verified ? (
+          <p className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-success">
+            <Check className="size-4" /> Verified — your listing shows a checkmark.
+          </p>
+        ) : (
+          <div className="mt-4 flex flex-col gap-2">
+            <Button type="button" onClick={verify} disabled={verifying} className="self-start">
+              {verifying ? <Loader2 className="size-4 animate-spin" /> : "I've added the badge — verify"}
+            </Button>
+            {verifyError && <p className="text-sm text-danger">{verifyError}</p>}
+          </div>
+        )}
       </div>
 
       {/* Upgrade path */}

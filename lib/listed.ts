@@ -92,10 +92,12 @@ export interface CreateListingInput {
 }
 
 export type CreateListingResult =
-  | { ok: true; host: string; ownerVerified: true }
+  | { ok: true; host: string; ownerVerified: false }
   | {
       ok: false;
       error: string;
+      // badge_missing / unreachable are retained so the badge requirement can be
+      // switched back on without reshaping the type; currently unused.
       code: "invalid" | "duplicate" | "rate_limited" | "unavailable" | "server" | "badge_missing" | "unreachable";
     };
 
@@ -148,13 +150,13 @@ async function siteCarriesMarker(
 }
 
 /**
- * Create a listing. Listing is free but REQUIRES the RealRank badge on the
- * site: the free tier is a reciprocal link in exchange for the listing, so the
- * badge is checked up front and the listing is created owner-verified — there
- * is no unverified placeholder tier any more. Server-side validation + spam
- * guards (the API route adds a honeypot on top): host must be a real public
- * domain, text within limits, a known category, not already listed or ranked,
- * and the site must carry the badge. A coarse per-IP hourly cap blunts floods.
+ * Create a listing. Listing is free and does NOT require the badge: the site is
+ * listed immediately as unverified (noindex/nofollow) and the owner can prove
+ * ownership later with the badge (verifyOwnership) to earn a dofollow verified
+ * checkmark. Server-side validation + spam guards (the API route adds a honeypot
+ * on top): host must be a real public domain, text within limits, a known
+ * category, and not already listed or ranked. A coarse per-IP hourly cap blunts
+ * floods.
  */
 export async function createListing(
   input: CreateListingInput,
@@ -218,25 +220,8 @@ export async function createListing(
     // The badge is the price of a free listing: the site must carry a RealRank
     // badge/link before we'll list it. Verify up front and list as
     // owner-verified — no unverified placeholder rows.
-    const marker = await siteCarriesMarker(host);
-    if (!marker.ok) {
-      // We couldn't load the site at all (bot protection, slow host, DNS).
-      // Don't dead-end them — point to manual verification.
-      return {
-        ok: false,
-        code: "unreachable",
-        error: `We couldn't reach ${host} to check for the badge — your site may be blocking our checker. Email support@realrank.lol with your domain and we'll verify it manually.`,
-      };
-    }
-    if (!marker.found) {
-      return {
-        ok: false,
-        code: "badge_missing",
-        error: `We loaded ${host} but couldn't find the ${siteConfig.name} badge. Add it to your home page's HTML (a footer is ideal) — note it must be in the page source, not added by JavaScript — then list again.`,
-      };
-    }
-
-    const nowIso = new Date().toISOString();
+    // Badge requirement is OFF for now: list immediately as unverified. The
+    // owner can verify later with the badge (verifyOwnership) for a checkmark.
     const { error } = await supabase.from("listed_sites").insert({
       host,
       site_url: listingUrl(host),
@@ -247,9 +232,7 @@ export async function createListing(
       alternative_to: alternativeTo,
       submitter_email: email,
       submitted_ip: ip,
-      status: "owner_verified",
-      owner_verified: true,
-      verified_at: nowIso,
+      status: "listed",
     });
     if (error) {
       // Unique-violation race → treat as duplicate.
@@ -260,7 +243,7 @@ export async function createListing(
     }
 
     revalidateTag(LISTED_TAG);
-    return { ok: true, host, ownerVerified: true };
+    return { ok: true, host, ownerVerified: false };
   } catch (err) {
     console.error("[listed] create failed:", err);
     return { ok: false, error: "Couldn't save the listing. Please try again.", code: "server" };
