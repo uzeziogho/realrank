@@ -3,6 +3,8 @@ import { normalizeHost, verifyOwnership } from "@/lib/listed";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+// Badge check may fetch the site twice (bare + www), 10s each — give it room.
+export const maxDuration = 30;
 
 /**
  * Prove ownership of a listing: fetch the site and look for the RealRank

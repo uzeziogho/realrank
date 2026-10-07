@@ -99,34 +99,52 @@ export type CreateListingResult =
       code: "invalid" | "duplicate" | "rate_limited" | "unavailable" | "server" | "badge_missing" | "unreachable";
     };
 
-const BADGE_FETCH_TIMEOUT_MS = 8000;
+const BADGE_FETCH_TIMEOUT_MS = 10000;
 const BADGE_MAX_BYTES = 512 * 1024;
+
+/** Homepage URLs to check for the badge: bare host and www variant. */
+function badgeCandidates(host: string): string[] {
+  const bare = host.replace(/^www\./, "");
+  return [`https://${bare}/`, `https://www.${bare}/`];
+}
 
 /**
  * Fetch a host's homepage and report whether it carries a RealRank badge/link
- * (any mention of our domain). Bounded fetch (timeout + size cap) so a hostile
- * page can't hang or balloon memory. Shared by createListing (the list-time
+ * (any mention of our domain). Tries the bare host and its www variant, and
+ * reports whether we reached the site at all — so callers can tell "we loaded
+ * your page but the badge isn't in the HTML" apart from "we couldn't reach your
+ * site" (bot-blocked / slow host). Bounded per fetch (timeout + size cap) so a
+ * hostile page can't hang or balloon memory. Reads raw HTML only — a badge
+ * injected by JavaScript won't be seen. Shared by createListing (the list-time
  * requirement) and verifyOwnership (re-check of an existing listing).
  */
 async function siteCarriesMarker(
   host: string,
 ): Promise<{ ok: true; found: boolean } | { ok: false; error: string }> {
   const marker = new URL(siteConfig.url).hostname.replace(/^www\./, ""); // e.g. realrank.lol
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), BADGE_FETCH_TIMEOUT_MS);
-    const res = await fetch(listingUrl(host), {
-      redirect: "follow",
-      signal: controller.signal,
-      headers: { "user-agent": `${siteConfig.name}Bot/1.0 (+${siteConfig.url})` },
-    }).finally(() => clearTimeout(timeout));
-    if (!res.ok) return { ok: false, error: `Couldn't reach ${host} (HTTP ${res.status}).` };
-    const buf = await res.arrayBuffer();
-    const html = new TextDecoder().decode(buf.slice(0, BADGE_MAX_BYTES)).toLowerCase();
-    return { ok: true, found: html.includes(marker) };
-  } catch {
-    return { ok: false, error: `Couldn't reach ${host} to check for the badge.` };
+  let reachedAny = false;
+
+  for (const url of badgeCandidates(host)) {
+    try {
+      const res = await fetch(url, {
+        redirect: "follow",
+        signal: AbortSignal.timeout(BADGE_FETCH_TIMEOUT_MS),
+        headers: { "user-agent": `${siteConfig.name}Bot/1.0 (+${siteConfig.url})` },
+      });
+      if (!res.ok) continue; // try the next candidate (e.g. www) before giving up
+      reachedAny = true;
+      const buf = await res.arrayBuffer();
+      const html = new TextDecoder().decode(buf.slice(0, BADGE_MAX_BYTES)).toLowerCase();
+      if (html.includes(marker)) return { ok: true, found: true };
+    } catch {
+      // Timeout or network error on this candidate — try the next one.
+    }
   }
+
+  // Reached at least one page but no badge in the HTML → a real "missing badge".
+  if (reachedAny) return { ok: true, found: false };
+  // Couldn't load any variant → bot-blocked, slow host, or DNS. Distinct case.
+  return { ok: false, error: `Couldn't reach ${host} to check for the badge.` };
 }
 
 /**
@@ -202,13 +220,19 @@ export async function createListing(
     // owner-verified — no unverified placeholder rows.
     const marker = await siteCarriesMarker(host);
     if (!marker.ok) {
-      return { ok: false, error: marker.error, code: "unreachable" };
+      // We couldn't load the site at all (bot protection, slow host, DNS).
+      // Don't dead-end them — point to manual verification.
+      return {
+        ok: false,
+        code: "unreachable",
+        error: `We couldn't reach ${host} to check for the badge — your site may be blocking our checker. Email support@realrank.lol with your domain and we'll verify it manually.`,
+      };
     }
     if (!marker.found) {
       return {
         ok: false,
         code: "badge_missing",
-        error: `Add the ${siteConfig.name} badge to ${host}, then list — it's free in exchange for a link back.`,
+        error: `We loaded ${host} but couldn't find the ${siteConfig.name} badge. Add it to your home page's HTML (a footer is ideal) — note it must be in the page source, not added by JavaScript — then list again.`,
       };
     }
 

@@ -4,6 +4,8 @@ import { createListing } from "@/lib/listed";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+// Badge check may fetch the site twice (bare + www), 10s each — give it room.
+export const maxDuration = 30;
 
 /** First hop of X-Forwarded-For, for a coarse per-IP rate limit. */
 function clientIp(xff: string | null, real: string | null): string | null {
