@@ -78,6 +78,15 @@ export default async function FoundingPage() {
             </a>
             <CopyLink url={shareUrl} label="Copy invite link" />
           </div>
+          {/* Objection-killer right under the primary CTA — read-only, free, fast. */}
+          <ConnectNote className="mt-3" />
+          <p className="mt-2 text-xs text-muted-foreground">
+            No Search Console yet?{" "}
+            <Link href="/submit" className="underline underline-offset-2 hover:text-foreground">
+              List free in seconds
+            </Link>{" "}
+            and claim your rank later.
+          </p>
         </div>
       </section>
 

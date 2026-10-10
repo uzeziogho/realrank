@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Loader2, Check, ArrowRight, Copy, ShieldCheck } from "lucide-react";
+import { Loader2, Check, ArrowRight, Copy, ShieldCheck, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { categories, siteConfig } from "@/lib/config";
 import { track } from "@/lib/track";
@@ -21,6 +21,9 @@ export function SubmitForm() {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [host, setHost] = useState<string>("");
+  // Only URL + name + pitch show up front; the rest (all optional) stay tucked
+  // behind a toggle so the form reads as a 30-second task, not a 7-field wall.
+  const [showMore, setShowMore] = useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -99,34 +102,50 @@ export function SubmitForm() {
         />
       </Field>
 
-      <Field label="Category">
-        <select name="category" defaultValue="" className={inputClass}>
-          <option value="">Uncategorized</option>
-          {categories.map((c) => (
-            <option key={c.slug} value={c.slug}>
-              {c.label}
-            </option>
-          ))}
-        </select>
-      </Field>
+      {/* Everything below is optional. Hidden by default so the form stays
+          short; inputs stay mounted (hidden) so their values still submit. */}
+      <div className={showMore ? "flex flex-col gap-4" : "hidden"}>
+        <Field label="Category">
+          <select name="category" defaultValue="" className={inputClass}>
+            <option value="">Uncategorized</option>
+            {categories.map((c) => (
+              <option key={c.slug} value={c.slug}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+        </Field>
 
-      <Field label="Alternative to" hint="Optional — a tool yours replaces, e.g. Notion.">
-        <input
-          name="alternativeTo"
-          type="text"
-          maxLength={60}
-          placeholder="Notion"
-          className={inputClass}
-        />
-      </Field>
+        <Field label="Alternative to" hint="A tool yours replaces, e.g. Notion.">
+          <input
+            name="alternativeTo"
+            type="text"
+            maxLength={60}
+            placeholder="Notion"
+            className={inputClass}
+          />
+        </Field>
 
-      <Field label="Description" hint="Optional — a sentence or two.">
-        <textarea name="description" maxLength={300} rows={3} className={inputClass} />
-      </Field>
+        <Field label="Description" hint="A sentence or two.">
+          <textarea name="description" maxLength={300} rows={3} className={inputClass} />
+        </Field>
 
-      <Field label="Email" hint="Optional — we'll only use it to reach you about this listing.">
-        <input name="email" type="email" placeholder="you@company.com" className={inputClass} />
-      </Field>
+        <Field label="Email" hint="We'll only use it to reach you about this listing.">
+          <input name="email" type="email" placeholder="you@company.com" className={inputClass} />
+        </Field>
+      </div>
+
+      {!showMore && (
+        <button
+          type="button"
+          onClick={() => setShowMore(true)}
+          className="inline-flex items-center gap-1.5 self-start text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ChevronDown className="size-4" />
+          Add category, description &amp; more{" "}
+          <span className="font-normal text-muted-foreground/70">(optional)</span>
+        </button>
+      )}
 
       {error && (
         <p className="rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p>
