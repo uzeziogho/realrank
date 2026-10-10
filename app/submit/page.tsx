@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { SubmitForm } from "@/components/submit-form";
+import { getListedSites } from "@/lib/listed";
 import { siteConfig } from "@/lib/config";
+
+// Keep in step with the directory's cache so the social-proof count stays fresh.
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "List your project — free",
@@ -17,7 +21,10 @@ const PERKS = [
   "Upgrade to a ranked spot by connecting Search Console",
 ];
 
-export default function SubmitPage() {
+export default async function SubmitPage() {
+  const listed = await getListedSites();
+  const count = listed.length;
+
   return (
     <div className="container max-w-2xl py-14">
       <div className="text-center">
@@ -27,6 +34,16 @@ export default function SubmitPage() {
           add a badge to verify whenever you like, and connect Search Console when you&apos;re
           ready for a ranked spot.
         </p>
+        {count > 0 && (
+          <p className="mt-4 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3.5 py-1.5 text-sm text-muted-foreground">
+            <span className="relative flex size-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+              <span className="relative inline-flex size-2 rounded-full bg-primary" />
+            </span>
+            Join <strong className="font-semibold tabular-nums text-foreground">{count}</strong>{" "}
+            {count === 1 ? "project" : "projects"} already listed
+          </p>
+        )}
       </div>
 
       <ul className="mx-auto mt-8 flex max-w-md flex-col gap-2">
