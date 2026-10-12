@@ -195,6 +195,13 @@ const BADGES: Badge[] = [
     height: 56,
     dataAttrs: { "data-launchaf-badge": "true" },
   },
+  {
+    href: "https://launchstreak.dev/marketing/realrank",
+    src: "https://launchstreak.dev/badge/launch-streak-badge-light.svg",
+    alt: "Launched on Launch Streak",
+    width: 248,
+    height: 68,
+  },
 ];
 
 function BadgeGroup({ ariaHidden = false }: { ariaHidden?: boolean }) {
