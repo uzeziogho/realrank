@@ -202,6 +202,13 @@ const BADGES: Badge[] = [
     width: 248,
     height: 68,
   },
+  {
+    href: "https://bricklaun.ch/marketing/real-rank",
+    src: "https://bricklaun.ch/badge/brick-launch-badge-a-light.svg",
+    alt: "Featured on Brick Launch",
+    width: 140,
+    height: 54,
+  },
 ];
 
 function BadgeGroup({ ariaHidden = false }: { ariaHidden?: boolean }) {
