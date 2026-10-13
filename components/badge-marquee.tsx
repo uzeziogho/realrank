@@ -209,6 +209,20 @@ const BADGES: Badge[] = [
     width: 140,
     height: 54,
   },
+  {
+    href: "https://lemonlaunch.dev/marketing/realrank",
+    src: "https://lemonlaunch.dev/badge/lemonlaunch-badge-light.svg",
+    alt: "Featured on LemonLaunch",
+    width: 188,
+    height: 56,
+  },
+  {
+    href: "https://easydofollow.dev/marketing/realrank",
+    src: "https://easydofollow.dev/badge/easydofollow-badge-light.svg",
+    alt: "Featured on EasyDoFollow",
+    width: 188,
+    height: 56,
+  },
 ];
 
 function BadgeGroup({ ariaHidden = false }: { ariaHidden?: boolean }) {
