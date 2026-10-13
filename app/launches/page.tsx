@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { SiteFavicon } from "@/components/site-favicon";
 import { Sparkline } from "@/components/sparkline";
 import { getLeaderboardData, attachSparklines, getMovers } from "@/lib/data";
+import { getListedSites } from "@/lib/listed";
+import { ListingCard } from "@/components/listing-card";
 import { siteConfig, categoryLabel } from "@/lib/config";
 import { formatCompact, formatGrowth, hostname, siteHref, timeAgo } from "@/lib/utils";
 import type { RankedSite } from "@/lib/types";
@@ -35,10 +37,15 @@ function isoWeek(d: Date): number {
 }
 
 export default async function LaunchesPage() {
-  const [board, movers] = await Promise.all([
+  const [board, movers, listed] = await Promise.all([
     getLeaderboardData("momentum"),
     getMovers(8),
+    getListedSites().catch(() => []),
   ]);
+
+  // Free directory listings (not ranked) — newest first, so listing (not just
+  // connecting Search Console) also earns a visible launch moment here.
+  const freshListings = listed.slice(0, 6);
 
   // Newest verified sites first (includes warming-up sites so a launch is visible
   // the moment it connects).
@@ -187,6 +194,38 @@ export default async function LaunchesPage() {
                 ))}
               </div>
             </section>
+
+            {/* Fresh listings — the free directory feed. Not ranked (no momentum
+                here), so listing is a launch moment even before Search Console. */}
+            {freshListings.length > 0 && (
+              <section>
+                <div className="mb-4 flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
+                  <div className="flex items-center gap-2">
+                    <Rocket className="size-5 text-primary" />
+                    <h2 className="text-xl font-semibold tracking-tight">Fresh listings</h2>
+                  </div>
+                  <Button asChild variant="outline" size="sm" className="shrink-0">
+                    <Link href="/listed">
+                      Browse all {listed.length} <ArrowUpRight className="size-4" />
+                    </Link>
+                  </Button>
+                </div>
+                <p className="mb-4 max-w-xl text-sm text-muted-foreground">
+                  Newly listed projects — free and open to join, no account needed. Not
+                  ranked: connect Search Console to earn a verified spot above.
+                </p>
+                <ul className="grid gap-3 sm:grid-cols-2">
+                  {freshListings.map((l) => (
+                    <ListingCard key={l.host} listing={l} />
+                  ))}
+                </ul>
+                <div className="mt-5">
+                  <Button asChild>
+                    <Link href="/submit">List your project — free</Link>
+                  </Button>
+                </div>
+              </section>
+            )}
 
             {/* Climbing this week */}
             {climbing.length > 0 && (
