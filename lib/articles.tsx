@@ -22,6 +22,182 @@ const A = (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
 
 export const articles: Article[] = [
   {
+    slug: "where-to-launch-your-project-launch-directories",
+    title: "Where to launch your project in 2026: a working map of the launch directories",
+    description:
+      "Launching is no longer one big day on one big site - it's a distributed launch across dozens of directories, each worth a backlink, a trickle of referral traffic, and a badge. Here's a practical map of the launch-directory landscape, how to run a launch across it without losing a weekend, and why a listing is a claim while a verified rank is proof.",
+    date: "2026-10-13",
+    keywords: [
+      "where to launch a startup",
+      "launch directories",
+      "startup directories 2026",
+      "product launch sites",
+      "dofollow backlink directories",
+      "indie hacker launch",
+    ],
+    Body: () => (
+      <>
+        <p>
+          Launching a project used to mean one big day on one big site. You saved it up,
+          you posted at 12:01am Pacific, and you refreshed for twelve hours. That still
+          exists, but it&apos;s no longer the whole game. A modern launch is{" "}
+          <strong>distributed</strong>: you submit to a long tail of smaller directories,
+          each of which sends a trickle of referral traffic, hands you a backlink, and
+          gives you a badge to show. Individually they&apos;re tiny. Together they&apos;re
+          a launch.
+        </p>
+        <p>
+          We know because we did it. The directories scrolling past in RealRank&apos;s
+          &quot;Featured on&quot; strip are the ones we actually submitted to. This is the
+          map we wish we&apos;d had before we started - what these sites are, how to work
+          through them without losing a weekend, and the one thing a listing can&apos;t do
+          that you&apos;ll still need.
+        </p>
+
+        <h2>Why launch directories still work</h2>
+        <p>
+          Three reasons, in order of how long the value lasts:
+        </p>
+        <ul>
+          <li>
+            <strong>Backlinks.</strong> Most of these directories give you a followed link
+            back to your site when you list (or when you add their badge). One link is
+            noise; thirty relevant links from launch and maker sites is a real, compounding
+            SEO signal that keeps paying long after launch week.
+          </li>
+          <li>
+            <strong>Referral traffic and discovery.</strong> Each directory has its own
+            audience of makers, early adopters and other founders browsing for tools. The
+            per-site numbers are small, but it&apos;s qualified traffic, and a few of them
+            will convert or share.
+          </li>
+          <li>
+            <strong>Social proof.</strong> The badges stack into a &quot;featured on&quot;
+            row that tells a first-time visitor other people have already vetted you. It
+            costs you a reciprocal link and buys you credibility.
+          </li>
+        </ul>
+        <p>
+          The honest caveat: none of these is a growth strategy on its own. The value is in
+          the aggregate and in the backlinks that compound. Treat a launch sweep as a
+          one-time foundation, not a channel you return to weekly.
+        </p>
+
+        <h2>The modern launch-directory map</h2>
+        <p>
+          The landscape sorts into a few rough types. Plenty of sites span more than one,
+          but thinking in groups makes a launch sweep far faster to plan.
+        </p>
+
+        <p>
+          <strong>Launch feeds and &quot;new this week&quot; boards.</strong> The closest
+          thing to the classic launch-day format - you post, you appear in a dated feed,
+          sometimes you get upvotes or a daily/weekly ranking.{" "}
+          <A href="https://devhunt.org">DevHunt</A>,{" "}
+          <A href="https://startupfa.me">Startup Fame</A>,{" "}
+          <A href="https://twelve.tools">Twelve Tools</A>,{" "}
+          <A href="https://www.superlaun.ch">Super Launch</A>,{" "}
+          <A href="https://launchigniter.com">LaunchIgniter</A>,{" "}
+          <A href="https://noonlaunch.com">Noonlaunch</A>,{" "}
+          <A href="https://nicklaunches.com">Nick Launches</A>,{" "}
+          <A href="https://letslaunch.today">LetsLaunch</A>,{" "}
+          <A href="https://launchstreak.dev">Launch Streak</A>,{" "}
+          <A href="https://bricklaun.ch">Brick Launch</A>,{" "}
+          <A href="https://lemonlaunch.dev">LemonLaunch</A>,{" "}
+          <A href="https://easylaunch.dev">EasyLaunch</A> and{" "}
+          <A href="https://launchaf.com">LaunchAF</A> all live here.
+        </p>
+
+        <p>
+          <strong>Curated tool and maker directories.</strong> Less about a launch moment,
+          more about being catalogued where people browse by category over time.{" "}
+          <A href="https://findly.tools">Findly.tools</A>,{" "}
+          <A href="https://www.founder.best">Founder.best</A>,{" "}
+          <A href="https://www.tinyshelf.co">tinyshelf</A>,{" "}
+          <A href="https://www.foundrlist.com">FoundrList</A>,{" "}
+          <A href="https://spacerrapps.com">SpacerrApps</A>,{" "}
+          <A href="https://confettisaas.com">ConfettiSaaS</A>,{" "}
+          <A href="https://codehype.ai">CodeHype</A>,{" "}
+          <A href="https://swipetolaunch.com">SwipeToLaunch</A>,{" "}
+          <A href="https://marketingdb.live">MarketingDB</A> and{" "}
+          <A href="https://wired.business">Wired Business</A> are the kind you submit once
+          and leave working in the background.
+        </p>
+
+        <p>
+          <strong>SEO / dofollow badge directories.</strong> These lean explicitly into the
+          backlink value - you add their badge, they give you a followed link, and
+          verification is the badge itself.{" "}
+          <A href="https://dang.ai">DANG!</A> and{" "}
+          <A href="https://easydofollow.dev">EasyDoFollow</A> are the clearest examples. The
+          trade is simple and fair: a link out from your footer for a link back from theirs.
+        </p>
+
+        <p>
+          <strong>Alternative-finders.</strong> A newer, high-intent niche:{" "}
+          <A href="https://findalternative.to">findalternative.to</A> catalogues projects by
+          the established tool they replace, catching people who are actively shopping for a
+          switch. If your product is &quot;a cheaper/simpler/open X,&quot; this is where that
+          framing pays off. (We liked the model enough to build{" "}
+          <Link href="/alternatives-to">our own alternatives directory</Link>.)
+        </p>
+
+        <h2>How to run a launch across them without losing a weekend</h2>
+        <ol>
+          <li>
+            <strong>Write your assets once.</strong> Name, a one-line tagline, a 2-3
+            sentence description, a square logo, one or two screenshots, and your links.
+            Keep them in a single doc and paste - every directory asks for the same six
+            things in a different order.
+          </li>
+          <li>
+            <strong>Batch the submissions, stagger the backlinks.</strong> Submitting to
+            twenty directories in an afternoon is fine. What you don&apos;t want is twenty
+            brand-new footer links appearing on your site in the same hour - add the badges
+            over a few days so the link profile looks like what it is: organic.
+          </li>
+          <li>
+            <strong>Actually add the badges.</strong> The reciprocal link is the deal, and
+            it&apos;s where most of the durable SEO value is. A &quot;featured on&quot; strip
+            like the one at the bottom of our homepage is the natural home for them.
+          </li>
+          <li>
+            <strong>Tag your links and watch referrals.</strong> Add a UTM to each
+            submission so you can see which directories actually send humans, not just
+            crawlers. Most won&apos;t move the needle; a couple will surprise you, and
+            those are worth a second pass.
+          </li>
+        </ol>
+
+        <h2>A listing is a claim. A rank is proof.</h2>
+        <p>
+          Here&apos;s the thing every one of these directories has in common, and it&apos;s
+          the reason we built RealRank. The moment you submit, most of them hand you a badge
+          - &quot;Featured on,&quot; &quot;Launched on,&quot; &quot;Verified on.&quot; That
+          badge proves exactly one thing: you filled out a form. It says nothing about
+          whether the project gets traffic. And after the launch dust settles, that&apos;s
+          the only question anyone - an investor, a customer, an acquirer - actually asks.
+        </p>
+        <p>
+          RealRank is the directory for the answer to that question. You{" "}
+          <Link href="/submit">list your project free in under a minute</Link>, the same as
+          anywhere else - a permanent link, a spot on the directory, a badge. But you can
+          also <Link href="/login">connect Google Search Console</Link> (read-only) and let
+          your <em>verified</em> organic clicks rank you on a public board that no one can
+          buy their way onto. A listing says you launched. A verified rank says it worked.
+        </p>
+        <p>
+          So run the sweep - all of it. Submit to the feeds, get catalogued in the
+          directories, collect the badges, earn the backlinks. Then come{" "}
+          <Link href="/submit">list on RealRank</Link> too, watch the newest projects land
+          on the <Link href="/launches">launches feed</Link>, and when you&apos;re ready to
+          turn &quot;we launched&quot; into &quot;here&apos;s the proof,&quot; connect your
+          Search Console and claim a rank you didn&apos;t have to pay for.
+        </p>
+      </>
+    ),
+  },
+  {
     slug: "free-alternatives-to-the-tools-you-pay-for",
     title: "Free, independent alternatives to the tools you already pay for",
     description:

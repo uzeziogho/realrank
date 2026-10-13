@@ -20,6 +20,11 @@ interface Badge {
    * verification checkers require the exact link form (e.g. tinyshelf).
    */
   plain?: boolean;
+  /**
+   * Extra attributes spread onto the <a> — some checkers look for a specific
+   * data attribute on the link (e.g. LaunchAF's data-launchaf-badge).
+   */
+  dataAttrs?: Record<string, string>;
 }
 
 const BADGES: Badge[] = [
@@ -175,6 +180,49 @@ const BADGES: Badge[] = [
     width: 200,
     height: 54,
   },
+  {
+    href: "https://easylaunch.dev/marketing/realrank",
+    src: "https://easylaunch.dev/badge/easylaunch-badge-light.svg",
+    alt: "Featured on EasyLaunch",
+    width: 188,
+    height: 56,
+  },
+  {
+    href: "https://launchaf.com/",
+    src: "https://launchaf.com/api/badge/light?v=launchaf-blue-2026-2",
+    alt: "Featured on LaunchAF",
+    width: 200,
+    height: 56,
+    dataAttrs: { "data-launchaf-badge": "true" },
+  },
+  {
+    href: "https://launchstreak.dev/marketing/realrank",
+    src: "https://launchstreak.dev/badge/launch-streak-badge-light.svg",
+    alt: "Launched on Launch Streak",
+    width: 248,
+    height: 68,
+  },
+  {
+    href: "https://bricklaun.ch/marketing/real-rank",
+    src: "https://bricklaun.ch/badge/brick-launch-badge-a-light.svg",
+    alt: "Featured on Brick Launch",
+    width: 140,
+    height: 54,
+  },
+  {
+    href: "https://lemonlaunch.dev/marketing/realrank",
+    src: "https://lemonlaunch.dev/badge/lemonlaunch-badge-light.svg",
+    alt: "Featured on LemonLaunch",
+    width: 188,
+    height: 56,
+  },
+  {
+    href: "https://easydofollow.dev/marketing/realrank",
+    src: "https://easydofollow.dev/badge/easydofollow-badge-light.svg",
+    alt: "Featured on EasyDoFollow",
+    width: 188,
+    height: 56,
+  },
 ];
 
 function BadgeGroup({ ariaHidden = false }: { ariaHidden?: boolean }) {
@@ -190,6 +238,7 @@ function BadgeGroup({ ariaHidden = false }: { ariaHidden?: boolean }) {
             title={b.title}
             target={b.plain ? undefined : "_blank"}
             rel={b.plain ? undefined : b.rel ?? "noopener"}
+            {...b.dataAttrs}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
