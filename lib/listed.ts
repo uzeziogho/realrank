@@ -5,6 +5,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createServiceClient } from "@/lib/supabase/server";
 import { hostname } from "@/lib/utils";
 import { categories, siteConfig } from "@/lib/config";
+import { enrichListing } from "@/lib/listing-enrich";
 import type { ListedSite } from "@/lib/supabase/types";
 
 /**
@@ -217,9 +218,25 @@ export async function createListing(
       }
     }
 
-    // The badge is the price of a free listing: the site must carry a RealRank
-    // badge/link before we'll list it. Verify up front and list as
-    // owner-verified — no unverified placeholder rows.
+    // AI enrichment (TypeSafe/Jev): fill category and/or "alternative to" ONLY
+    // when the submitter left them blank, and only when the judgment is
+    // confident (see lib/listing-enrich.ts). Best-effort: a no key / error /
+    // timeout leaves the fields as-is, so listing never fails on this.
+    let category2 = category;
+    let alternativeTo2 = alternativeTo;
+    if (!category || !alternativeTo) {
+      try {
+        const enriched = await enrichListing(
+          { displayName, tagline, description },
+          { needCategory: !category, needAlternativeTo: !alternativeTo },
+        );
+        if (!category2 && enriched.category) category2 = enriched.category;
+        if (!alternativeTo2 && enriched.alternativeTo) alternativeTo2 = enriched.alternativeTo;
+      } catch {
+        /* best-effort enrichment — ignore and insert what we have */
+      }
+    }
+
     // Badge requirement is OFF for now: list immediately as unverified. The
     // owner can verify later with the badge (verifyOwnership) for a checkmark.
     const { error } = await supabase.from("listed_sites").insert({
@@ -228,8 +245,8 @@ export async function createListing(
       display_name: displayName,
       tagline,
       description,
-      category,
-      alternative_to: alternativeTo,
+      category: category2,
+      alternative_to: alternativeTo2,
       submitter_email: email,
       submitted_ip: ip,
       status: "listed",

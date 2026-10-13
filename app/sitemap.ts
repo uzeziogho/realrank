@@ -4,7 +4,13 @@ import { getAllSiteSlugs } from "@/lib/site";
 import { getListedSites, getAlternativeTargets } from "@/lib/listed";
 import { articles } from "@/lib/articles";
 
-const LANDING_PAGES = ["lol-directories", "fastest-growing-saas-websites"];
+const LANDING_PAGES = [
+  "lol-directories",
+  "fastest-growing-saas-websites",
+  "product-hunt-alternatives",
+  "where-to-launch-your-startup",
+  "free-dofollow-backlink-directories",
+];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
