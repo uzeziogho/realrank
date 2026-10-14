@@ -91,7 +91,7 @@ export default async function SiteProfilePage({ params }: { params: Params }) {
       </div>
 
       {/* Rank cards */}
-      <div className="mt-8 grid gap-4 sm:grid-cols-2">
+      <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <RankCard
           icon={<TrendingUp className="size-4" />}
           label="Momentum rank"

@@ -92,7 +92,7 @@ export default async function FoundingPage() {
 
       {/* Perks */}
       <section className="container max-w-4xl py-14">
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Perk
             icon={<Award className="size-5" />}
             title="Permanent Founder badge"

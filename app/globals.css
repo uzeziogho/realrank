@@ -83,6 +83,10 @@ body {
   color: hsl(var(--foreground));
   font-feature-settings: "rlig" 1, "calt" 1;
   -webkit-font-smoothing: antialiased;
+  /* Mobile safety net: never allow a stray wide element to force horizontal
+     scroll / zoom-out. `clip` (not `hidden`) doesn't create a scroll container,
+     so the sticky header keeps working. */
+  overflow-x: clip;
 }
 
 /* Subtle radial glow behind the hero, common in Linear/Vercel layouts. */

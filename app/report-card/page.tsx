@@ -40,7 +40,7 @@ export default function ReportCardLanding() {
       </section>
 
       <div className="container max-w-2xl py-14">
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Perk icon={<ShieldCheck className="size-5" />} title="Verified, not estimated" body="Grades come from real Google Search Console clicks — no third-party guesses." />
           <Perk icon={<ClipboardCheck className="size-5" />} title="Instant grade" body="An A–F momentum grade and the site's live rank, in one click." />
           <Perk icon={<Share2 className="size-5" />} title="Shareable" body="Every report card has its own link — post it, or challenge a competitor." />

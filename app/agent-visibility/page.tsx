@@ -75,7 +75,7 @@ export default function AgentVisibilityPage() {
         <p className="mt-1 text-sm text-muted-foreground">
           Read-only. Agents can query the rankings; they can never change them, submit data, or bid.
         </p>
-        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {tools.map((t) => (
             <div key={t.name} className="rounded-xl border border-border bg-card p-5">
               <t.icon className="size-5 text-primary" />

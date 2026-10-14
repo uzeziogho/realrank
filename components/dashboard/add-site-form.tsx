@@ -23,7 +23,7 @@ export function AddSiteForm() {
 
   return (
     <form ref={formRef} action={formAction} className="flex flex-col gap-4">
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="display_name" className="text-sm font-medium">
             Site name
@@ -40,7 +40,7 @@ export function AddSiteForm() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="category" className="text-sm font-medium">
             Category
@@ -68,7 +68,7 @@ export function AddSiteForm() {
         Seed click counts (optional)
       </button>
       {showAdvanced && (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <label htmlFor="clicks_7d" className="text-sm font-medium">7-day clicks</label>
             <input id="clicks_7d" name="clicks_7d" type="number" min={0} defaultValue={0} className={inputCls} />

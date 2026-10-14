@@ -25,7 +25,7 @@ export default function PricingPage() {
         </p>
       </div>
 
-      <div className="mt-12 grid gap-5 lg:grid-cols-3">
+      <div className="mt-12 grid grid-cols-1 gap-5 lg:grid-cols-3">
         {/* List — free */}
         <Tier
           icon={<Plus className="size-5" />}
@@ -98,7 +98,7 @@ export default function PricingPage() {
       </div>
 
       {/* FAQ */}
-      <section className="mt-12 grid gap-6 sm:grid-cols-2">
+      <section className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2">
         <Faq q="Is it really free?">
           Yes. Listing is free, and a verified ranked spot is free — you only need to connect
           Google Search Console (read-only) so we can measure your real clicks. No subscription,
