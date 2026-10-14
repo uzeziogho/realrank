@@ -55,7 +55,7 @@ export default function AboutPage() {
         decides who ranks first.
       </p>
 
-      <div className="mt-12 grid gap-6 sm:grid-cols-2">
+      <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2">
         {steps.map((s) => (
           <div key={s.title} className="rounded-xl border border-border bg-card p-6">
             <s.icon className="size-6 text-primary" />
@@ -90,7 +90,7 @@ momentum = (1 + growth) × log10(clicks_7d + 1) × 100`}
           A verified leaderboard, plus the tools to prove and grow your traffic. Free
           while it&apos;s new.
         </p>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {FEATURES.map((f) => (
             <Link
               key={f.title}

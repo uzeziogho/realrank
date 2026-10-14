@@ -156,7 +156,7 @@ export default async function DashboardPage() {
                 Refreshes every {siteConfig.refreshCadenceHours} hours
               </span>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {myRows.map((row) => (
                 <SiteOverviewCard key={row.id} row={row} />
               ))}
@@ -356,7 +356,7 @@ function BadgeShowcase({ sites }: { sites: PublishedSite[] }) {
         links back to your RealRank profile - a proof badge that can&apos;t be faked
         and updates itself as your traffic moves.
       </p>
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {sites.map((s) => {
           const slug = siteSlug(s.site_url);
           return (
@@ -401,7 +401,7 @@ function Onboarding({ googleConnected }: { googleConnected: boolean }) {
           </a>
         </Button>
       )}
-      <div className="mx-auto mt-8 grid max-w-lg gap-3 text-left sm:grid-cols-3">
+      <div className="mx-auto mt-8 grid grid-cols-1 max-w-lg gap-3 text-left sm:grid-cols-3">
         <Step n={1} title="Connect" body="Read-only Search Console access." />
         <Step n={2} title="Publish" body="Pick which sites go on the board." />
         <Step n={3} title="Rank" body="Real momentum decides your spot." />

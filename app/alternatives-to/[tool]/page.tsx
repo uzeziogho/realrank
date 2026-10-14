@@ -60,7 +60,7 @@ export default async function AlternativesToPage({ params }: { params: Params })
         Each one added our badge to earn its spot — a community directory, not a paid ranking.
       </p>
 
-      <ul className="mt-8 grid gap-3 md:grid-cols-2">
+      <ul className="mt-8 grid grid-cols-1 gap-3 md:grid-cols-2">
         {listings.map((l) => (
           <ListingCard key={l.host} listing={l} />
         ))}

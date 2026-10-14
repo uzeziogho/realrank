@@ -113,7 +113,7 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
             </p>
           </div>
         ) : (
-          <ul className="grid gap-3 md:grid-cols-2">
+          <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {listings.map((l) => (
               <ListingCard key={l.host} listing={l} />
             ))}

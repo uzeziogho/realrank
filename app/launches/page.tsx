@@ -188,7 +188,7 @@ export default async function LaunchesPage() {
                 <Sparkles className="size-5 text-primary" />
                 <h2 className="text-xl font-semibold tracking-tight">Just launched</h2>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {justLaunched.map((row) => (
                   <LaunchCard key={row.id} row={row} showJoined />
                 ))}
@@ -214,7 +214,7 @@ export default async function LaunchesPage() {
                   Newly listed projects — free and open to join, no account needed. Not
                   ranked: connect Search Console to earn a verified spot above.
                 </p>
-                <ul className="grid gap-3 sm:grid-cols-2">
+                <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {freshListings.map((l) => (
                     <ListingCard key={l.host} listing={l} />
                   ))}
@@ -236,7 +236,7 @@ export default async function LaunchesPage() {
                     Climbing this week
                   </h2>
                 </div>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {climbing.map((row) => (
                     <LaunchCard key={row.id} row={row} />
                   ))}
@@ -248,7 +248,7 @@ export default async function LaunchesPage() {
 
         {/* Why launch here */}
         <section className="rounded-2xl border border-border bg-card p-6 sm:p-8">
-          <div className="grid gap-6 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
             <Reason
               icon={<ShieldCheck className="size-5" />}
               title="Verified, not pay-to-list"

@@ -62,7 +62,7 @@ export function ShareRank({
 
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card">
-      <div className="grid gap-0 sm:grid-cols-[1.4fr_1fr]">
+      <div className="grid grid-cols-1 gap-0 sm:grid-cols-[1.4fr_1fr]">
         {/* Preview — the actual card that gets shared */}
         <div className="border-b border-border bg-muted/40 p-5 sm:border-b-0 sm:border-r">
           {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -92,7 +92,7 @@ export function SiteManager({ sites }: { sites: PublishedSite[] }) {
               <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
                 <Pencil className="size-3" /> Edit details
               </summary>
-              <form action={updateSiteDetails} className="mt-3 grid gap-3 sm:grid-cols-[1fr_1fr] sm:items-end">
+              <form action={updateSiteDetails} className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr] sm:items-end">
                 <input type="hidden" name="id" value={site.id} />
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-medium">Display name</label>

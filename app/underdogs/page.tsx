@@ -78,7 +78,7 @@ export default async function UnderdogsPage() {
                 Overperforming their authority
               </h2>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {underdogs.map((row) => (
                 <UnderdogCard key={row.id} row={row} />
               ))}
@@ -88,7 +88,7 @@ export default async function UnderdogsPage() {
 
         {/* What this means */}
         <section className="rounded-2xl border border-border bg-card p-6 sm:p-8">
-          <div className="grid gap-6 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
             <Reason
               icon={<ShieldCheck className="size-5" />}
               title="Clicks are the rank"

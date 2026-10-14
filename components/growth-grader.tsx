@@ -63,7 +63,7 @@ export function GrowthGrader() {
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5 sm:p-7">
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Organic clicks — last 7 days" value={d7} onChange={setD7} />
         <Field label="Organic clicks — last 28 days" value={d28} onChange={setD28} />
       </div>

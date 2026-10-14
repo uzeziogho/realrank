@@ -71,7 +71,7 @@ export function ChannelsPanel({
           One link per channel (an X post, a subreddit, a directory, an outbid board…).
           Share the tracking link; RealRank counts the clicks and attributes revenue.
         </p>
-        <form ref={formRef} action={formAction} className="mt-4 grid gap-4 sm:grid-cols-[1fr_1.5fr_auto] sm:items-end">
+        <form ref={formRef} action={formAction} className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-[1fr_1.5fr_auto] sm:items-end">
           <div className="flex flex-col gap-1.5">
             <label htmlFor="name" className="text-sm font-medium">Channel name</label>
             <input id="name" name="name" required maxLength={60} placeholder="Reddit — r/SaaS" className={inputCls} />

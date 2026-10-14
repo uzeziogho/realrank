@@ -30,7 +30,7 @@ export function TrafficBreakdown({ data }: { data: TrafficBreakdown }) {
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <Card color="blue" icon={<ExternalLink className="size-4" />} title="Top sources" items={data.sources} />
       <Card color="violet" icon={<FileText className="size-4" />} title="Landing pages" items={data.pages} />
       <Card

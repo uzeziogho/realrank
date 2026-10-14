@@ -35,7 +35,7 @@ export function JustListed({ listings, total }: { listings: Listing[]; total: nu
           </Button>
         </div>
 
-        <ul className="grid gap-3 md:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {listings.map((l) => (
             <ListingCard key={l.host} listing={l} />
           ))}
