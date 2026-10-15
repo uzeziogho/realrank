@@ -84,7 +84,9 @@ export default async function SiteProfilePage({ params }: { params: Params }) {
           {site.description && <p className="mt-2 text-sm text-muted-foreground">{site.description}</p>}
         </div>
         <Button asChild variant="outline">
-          <a href={siteHref(site.siteUrl)} target="_blank" rel="noopener nofollow">
+          {/* Profiles on /site are Search-Console-connected sites — the top rung
+              of the ladder, where the outbound link is followed (dofollow). */}
+          <a href={siteHref(site.siteUrl)} target="_blank" rel="noopener">
             Visit site <ExternalLink className="size-4" />
           </a>
         </Button>

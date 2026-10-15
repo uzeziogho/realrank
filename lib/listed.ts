@@ -11,12 +11,14 @@ import type { ListedSite } from "@/lib/supabase/types";
 /**
  * The open "$0 listing" tier. Anyone can list a project without connecting
  * Search Console; listings live in their own table and on their own /listed
- * board, kept off the verified momentum leaderboard. Listing is free but
- * requires the RealRank badge on the site, so listings are owner-verified at
- * creation (indexed, dofollow) — there is no unverified placeholder tier.
- * Connecting Search Console is the next rung: it promotes the site into
- * published_sites. All writes go through this module with the service role;
- * the table has no open insert policy.
+ * board, kept off the verified momentum leaderboard. Listing is free and starts
+ * unverified (noindex, nofollow). Proving ownership with the RealRank badge
+ * (verifyOwnership) earns the verified checkmark and gets the listing indexed,
+ * but its outbound link stays nofollow. Dofollow is the top rung and is gated on
+ * Search Console verification, not the badge: connecting GSC promotes the site
+ * into published_sites, where the /site profile carries a followed link. All
+ * writes go through this module with the service role; the table has no open
+ * insert policy.
  */
 
 export const LISTED_TAG = "listed-sites";
@@ -153,8 +155,9 @@ async function siteCarriesMarker(
 /**
  * Create a listing. Listing is free and does NOT require the badge: the site is
  * listed immediately as unverified (noindex/nofollow) and the owner can prove
- * ownership later with the badge (verifyOwnership) to earn a dofollow verified
- * checkmark. Server-side validation + spam guards (the API route adds a honeypot
+ * ownership later with the badge (verifyOwnership) to earn the verified
+ * checkmark and get the listing indexed (the link stays nofollow — dofollow is
+ * gated on Search Console, not the badge). Server-side validation + spam guards (the API route adds a honeypot
  * on top): host must be a real public domain, text within limits, a known
  * category, and not already listed or ranked. A coarse per-IP hourly cap blunts
  * floods.
@@ -371,9 +374,10 @@ export type VerifyResult =
  * Prove ownership by fetching the listed site and checking for a RealRank
  * badge/link (a link back to realrank.lol). This is the reciprocal-badge
  * verification directories use: only someone who controls the site can add the
- * embed, so finding it lets us flip the listing to owner_verified (dofollow).
- * Fetch is bounded (timeout, redirect + size caps) so a hostile page can't hang
- * or balloon the request.
+ * embed, so finding it lets us flip the listing to owner_verified — which earns
+ * the checkmark and gets the listing indexed, but NOT a dofollow link (that is
+ * gated on Search Console verification). Fetch is bounded (timeout, redirect +
+ * size caps) so a hostile page can't hang or balloon the request.
  */
 export async function verifyOwnership(host: string): Promise<VerifyResult> {
   if (!isSupabaseConfigured()) {
