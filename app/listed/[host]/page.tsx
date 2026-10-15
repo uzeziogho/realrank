@@ -22,8 +22,10 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     title: `${listing.displayName} — listed on ${siteConfig.name}`,
     description: listing.tagline ?? listing.description ?? `${listing.displayName} is listed on ${siteConfig.name}.`,
     alternates: { canonical: `/listed/${host}` },
-    // Listings are badge-verified at creation, so they index normally. The
-    // guard stays as a defensive fallback for any legacy unverified row.
+    // Badge-verified listings index normally; unverified listings stay noindex.
+    // (Dofollow is a separate, higher rung — gated on Search Console, not the
+    // badge — so a verified listing is indexed but its outbound link is still
+    // nofollow.)
     robots: listing.ownerVerified ? undefined : { index: false, follow: false },
   };
 }
@@ -73,7 +75,7 @@ export default async function ListingProfilePage({ params }: { params: Params })
           <a
             href={listing.siteUrl}
             target="_blank"
-            rel={listing.ownerVerified ? "noopener" : "noopener nofollow"}
+            rel="noopener nofollow"
           >
             Visit {listing.host} <ArrowUpRight className="size-4" />
           </a>

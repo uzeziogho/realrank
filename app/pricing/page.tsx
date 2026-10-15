@@ -37,7 +37,7 @@ export default function PricingPage() {
             "A permanent link to your listing",
             "A spot on the public directory",
             "Owner-verified check (add our badge)",
-            "A followed link back to your site",
+            "Verified listings get indexed by Google",
           ]}
           cta={
             <Button asChild size="lg" variant="outline" className="w-full">
@@ -59,8 +59,8 @@ export default function PricingPage() {
           features={[
             "A verified spot on the momentum board",
             "Ranked by real Google Search Console clicks",
+            "A dofollow link on your verified profile page",
             "Eligible for Movers, Underdogs & Founding",
-            "A public, verified profile page",
           ]}
           cta={<ConnectCTA label="Get ranked — free" source="pricing" className="w-full" />}
         />

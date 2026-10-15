@@ -8,8 +8,9 @@ import type { Listing } from "@/lib/listed";
  * A single directory listing ($0 tier). Deliberately NOT a ranked row: no rank
  * number, no momentum score — a listing is not a ranking. Shared by the /listed
  * directory and the homepage "Just listed" section so both stay identical.
- * Outbound links are nofollow until the owner proves the listing (owner_verified
- * via the badge), which also shows the verified checkmark.
+ * Outbound links are always nofollow here: dofollow is gated on Search Console
+ * verification (the /site profile), not on the badge. Badge verification earns
+ * the checkmark and an indexed listing, but the link stays nofollow.
  */
 export function ListingCard({ listing }: { listing: Listing }) {
   return (
@@ -44,7 +45,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
       <a
         href={listing.siteUrl}
         target="_blank"
-        rel={listing.ownerVerified ? "noopener" : "noopener nofollow"}
+        rel="noopener nofollow"
         className="inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-input text-muted-foreground transition-colors group-hover:border-primary/40 hover:bg-accent hover:text-foreground"
         aria-label={`Visit ${listing.displayName}`}
       >
