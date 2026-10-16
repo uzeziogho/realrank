@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 // Same bot filter as the pulse beacon — keep product-analytics counts honest.
 const BOT_RE =
-  /bot|crawl|spider|slurp|bing|google|facebook|embedly|preview|monitor|curl|wget|headless|lighthouse|pingdom|uptime|screenshot|whatsapp|telegram|discord|slack/i;
+  /bot|crawl|spider|slurp|bing|google|facebook|embedly|preview|monitor|curl|wget|headless|lighthouse|pingdom|uptime|screenshot|whatsapp|telegram|discord|slack|playwright|puppeteer|selenium|webdriver|phantomjs|python-requests|axios|node-fetch|http-client/i;
 
 /**
  * Named feature-usage events (Umami-style custom events). Fire-and-forget from

@@ -15,7 +15,7 @@ const SESSION_MAX_AGE = 60 * 30; // 30 min (sliding)
 // Obvious non-humans — keep the counters honest. The client beacon only fires
 // from real page loads, but this endpoint is public, so we still filter.
 const BOT_RE =
-  /bot|crawl|spider|slurp|bing|google|facebook|embedly|preview|monitor|curl|wget|headless|lighthouse|pingdom|uptime|screenshot|whatsapp|telegram|discord|slack/i;
+  /bot|crawl|spider|slurp|bing|google|facebook|embedly|preview|monitor|curl|wget|headless|lighthouse|pingdom|uptime|screenshot|whatsapp|telegram|discord|slack|playwright|puppeteer|selenium|webdriver|phantomjs|python-requests|axios|node-fetch|http-client/i;
 
 /**
  * First-party traffic beacon. Counts a page event against realrank.lol itself:

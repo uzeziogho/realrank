@@ -13,6 +13,13 @@ export function Pulse() {
   const pathname = usePathname();
 
   useEffect(() => {
+    // Headless automation (Playwright, Puppeteer, Selenium) sets this flag and
+    // usually sends an ordinary-looking user agent, so the server's UA filter
+    // never catches it. Clarity flags that traffic behaviourally — this is the
+    // cheap half of the same job, and it keeps the public session/visitor
+    // counters closer to real humans.
+    if (typeof navigator !== "undefined" && navigator.webdriver) return;
+
     const controller = new AbortController();
     // Send the page path, referrer, and utm_source so the server can attribute
     // the visit (source / landing page / country / device). No PII.
