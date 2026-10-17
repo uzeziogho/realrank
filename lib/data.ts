@@ -650,3 +650,222 @@ const loadRaw = cache(async function loadRaw(): Promise<{
     return { sites: [], slots: [], usingDummyData: false };
   }
 });
+
+// ---------------------------------------------------------------------------
+// Feature-usage report: the same site_events counter as getEventStats, but
+// aggregated into a current window and the comparable window before it, so the
+// owner dashboard can read usage week-over-week, month-over-month,
+// year-over-year or year-to-date instead of only "last 30 days".
+// ---------------------------------------------------------------------------
+
+export type ReportPeriod = "wow" | "mom" | "yoy" | "ytd";
+
+export const REPORT_PERIODS: { key: ReportPeriod; label: string; short: string }[] = [
+  { key: "wow", label: "Week over week", short: "WoW" },
+  { key: "mom", label: "Month over month", short: "MoM" },
+  { key: "yoy", label: "Year over year", short: "YoY" },
+  { key: "ytd", label: "Year to date", short: "YTD" },
+];
+
+export function isReportPeriod(v: string | undefined): v is ReportPeriod {
+  return v === "wow" || v === "mom" || v === "yoy" || v === "ytd";
+}
+
+export interface FeatureDelta {
+  event: string;
+  current: number;
+  previous: number;
+  /**
+   * Current vs previous as a ratio (0.5 = +50%), or null when the previous
+   * window is zero — a percentage against nothing is not a number worth
+   * showing, so the UI prints "new" instead of a fake infinity.
+   */
+  change: number | null;
+}
+
+export interface ReportWindow {
+  start: string; // YYYY-MM-DD inclusive
+  end: string; // YYYY-MM-DD inclusive
+}
+
+export interface FeatureUsageReport {
+  period: ReportPeriod;
+  /** Window currently being reported, and the one it is measured against. */
+  current: ReportWindow;
+  previous: ReportWindow;
+  features: FeatureDelta[];
+  totalCurrent: number;
+  totalPrevious: number;
+  totalChange: number | null;
+  /**
+   * True when the comparison window starts before the first event we ever
+   * recorded, so "previous" is zero because the site did not exist yet rather
+   * than because usage dropped. The UI says so instead of charting -100%.
+   */
+  insufficientHistory: boolean;
+}
+
+/** UTC day string, N days before the given date. */
+function dayOffset(from: Date, days: number): string {
+  const d = new Date(from);
+  d.setUTCDate(d.getUTCDate() - days);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Same calendar day one year earlier, as a UTC day string. */
+function yearBefore(iso: string): string {
+  const d = new Date(`${iso}T00:00:00Z`);
+  d.setUTCFullYear(d.getUTCFullYear() - 1);
+  return d.toISOString().slice(0, 10);
+}
+
+/**
+ * The current and comparison windows for a period. Trailing windows (not
+ * calendar weeks/months) so a report read mid-week still compares like with
+ * like; YTD is the one genuinely calendar-anchored period, so it runs from
+ * Jan 1 and compares against Jan 1 to the same day last year.
+ */
+function windowsFor(period: ReportPeriod, today: Date): { current: ReportWindow; previous: ReportWindow } {
+  const end = today.toISOString().slice(0, 10);
+  switch (period) {
+    case "wow":
+      return {
+        current: { start: dayOffset(today, 6), end },
+        previous: { start: dayOffset(today, 13), end: dayOffset(today, 7) },
+      };
+    case "mom":
+      return {
+        current: { start: dayOffset(today, 29), end },
+        previous: { start: dayOffset(today, 59), end: dayOffset(today, 30) },
+      };
+    case "yoy":
+      // Last 30 days against the same 30 days a year ago, so seasonality lines up.
+      return {
+        current: { start: dayOffset(today, 29), end },
+        previous: { start: yearBefore(dayOffset(today, 29)), end: yearBefore(end) },
+      };
+    case "ytd": {
+      const year = today.getUTCFullYear();
+      return {
+        current: { start: `${year}-01-01`, end },
+        previous: { start: `${year - 1}-01-01`, end: yearBefore(end) },
+      };
+    }
+  }
+}
+
+function ratio(current: number, previous: number): number | null {
+  if (previous <= 0) return null;
+  return (current - previous) / previous;
+}
+
+/** One page of site_events rows; PostgREST caps a single response. */
+const EVENT_PAGE_SIZE = 1000;
+
+/**
+ * Every (day, event, hits) row in an inclusive day range, paged until the
+ * source is exhausted so a long window cannot be silently truncated.
+ */
+async function readEventRows(
+  supabase: ReturnType<typeof createServiceClient>,
+  start: string,
+  end: string,
+): Promise<{ day: string; event: string; hits: number }[]> {
+  const out: { day: string; event: string; hits: number }[] = [];
+  for (let from = 0; ; from += EVENT_PAGE_SIZE) {
+    const { data, error } = await supabase
+      .from("site_events")
+      .select("day, event, hits")
+      .gte("day", start)
+      .lte("day", end)
+      // Order on the full primary key (day, event, label) so paging is
+      // deterministic — (day, event) alone is not unique, and an unstable sort
+      // would drop or double-count rows across page boundaries.
+      .order("day", { ascending: true })
+      .order("event", { ascending: true })
+      .order("label", { ascending: true })
+      .range(from, from + EVENT_PAGE_SIZE - 1);
+    if (error) throw error;
+    const page = data ?? [];
+    out.push(...page.map((r) => ({ day: r.day, event: r.event, hits: Number(r.hits) })));
+    if (page.length < EVENT_PAGE_SIZE) return out;
+  }
+}
+
+/**
+ * Feature usage for one period, with every event that appears in either
+ * window so a feature that went to zero still shows up (it would otherwise
+ * vanish from the report exactly when it most needs reading).
+ */
+export async function getFeatureUsageReport(
+  period: ReportPeriod,
+  now: Date = new Date(),
+): Promise<FeatureUsageReport> {
+  const { current, previous } = windowsFor(period, now);
+  const empty: FeatureUsageReport = {
+    period,
+    current,
+    previous,
+    features: [],
+    totalCurrent: 0,
+    totalPrevious: 0,
+    totalChange: null,
+    insufficientHistory: false,
+  };
+  if (!isSupabaseConfigured()) return empty;
+
+  try {
+    const supabase = createServiceClient();
+    // Both windows, plus the earliest day on record so a zero "previous" can be
+    // told apart from a window that predates the data. A YTD or YoY span can
+    // hold more (day, event, label) rows than one PostgREST response returns,
+    // so the rows are paged — an unpaged read would silently undercount.
+    const [rows, { data: firstRow, error: firstErr }] = await Promise.all([
+      readEventRows(supabase, previous.start, current.end),
+      supabase.from("site_events").select("day").order("day", { ascending: true }).limit(1),
+    ]);
+    if (firstErr) throw firstErr;
+    const data = rows;
+
+    const inWindow = (day: string, w: ReportWindow) => day >= w.start && day <= w.end;
+    const cur = new Map<string, number>();
+    const prev = new Map<string, number>();
+    let totalCurrent = 0;
+    let totalPrevious = 0;
+
+    for (const r of data ?? []) {
+      const hits = Number(r.hits);
+      if (inWindow(r.day, current)) {
+        cur.set(r.event, (cur.get(r.event) ?? 0) + hits);
+        totalCurrent += hits;
+      } else if (inWindow(r.day, previous)) {
+        prev.set(r.event, (prev.get(r.event) ?? 0) + hits);
+        totalPrevious += hits;
+      }
+    }
+
+    const features = [...new Set([...cur.keys(), ...prev.keys()])]
+      .map((event) => {
+        const c = cur.get(event) ?? 0;
+        const p = prev.get(event) ?? 0;
+        return { event, current: c, previous: p, change: ratio(c, p) };
+      })
+      .sort((a, b) => b.current - a.current || b.previous - a.previous);
+
+    const earliest = firstRow?.[0]?.day ?? null;
+    const insufficientHistory =
+      totalPrevious === 0 && (earliest === null || earliest > previous.end);
+
+    return {
+      ...empty,
+      features,
+      totalCurrent,
+      totalPrevious,
+      totalChange: ratio(totalCurrent, totalPrevious),
+      insufficientHistory,
+    };
+  } catch (err) {
+    console.error("[data] feature usage report read failed:", err);
+    return empty;
+  }
+}
