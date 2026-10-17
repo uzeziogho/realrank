@@ -502,7 +502,8 @@ export async function getConnectFunnel(days = 30): Promise<ConnectFunnel> {
 
 /**
  * Outbound click-throughs per site host over the last `days`, from the
- * first-party site_outbound_clicks counter (written by the /visit redirect).
+ * first-party site_outbound_clicks counter (written by the /api/visit beacon,
+ * and by the legacy /visit redirect for links already out in the world).
  * Keyed by lowercase host. Aggregate only. Returns an empty map on any failure
  * or before the migration is run, so callers stay safe while data accumulates.
  * Not yet wired into ranking — this is the read path for a future "most visited"
