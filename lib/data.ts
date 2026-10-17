@@ -194,9 +194,14 @@ function synthSpark(clicks7d: number, clicks28d: number, days: number): number[]
 }
 
 export interface SiteTraffic {
+  /** Human traffic — what the public figures show. */
   visitors: number;
   sessions: number;
   pageviews: number;
+  /** Hits the beacon classified as automated (see lib/bot.ts). */
+  botVisitors: number;
+  botSessions: number;
+  botPageviews: number;
 }
 
 /**
@@ -206,19 +211,52 @@ export interface SiteTraffic {
  * traffic display must never break the page.
  */
 export async function getSiteTraffic(): Promise<SiteTraffic> {
-  const empty: SiteTraffic = { visitors: 0, sessions: 0, pageviews: 0 };
+  const empty: SiteTraffic = {
+    visitors: 0,
+    sessions: 0,
+    pageviews: 0,
+    botVisitors: 0,
+    botSessions: 0,
+    botPageviews: 0,
+  };
   if (!isSupabaseConfigured()) return empty;
   try {
     const supabase = createServiceClient();
-    const { data, error } = await supabase
+    // The bot_* columns arrive with the classify-bot-traffic migration. This
+    // read is the public homepage pill, so it must not depend on the migration
+    // having landed before this code did: if the wide select fails, fall back
+    // to the columns that have always existed and report zero bots rather than
+    // zero traffic.
+    let rows: {
+      visitors: number;
+      sessions: number;
+      pageviews: number;
+      bot_visitors?: number;
+      bot_sessions?: number;
+      bot_pageviews?: number;
+    }[];
+    const wide = await supabase
       .from("site_traffic_daily")
-      .select("visitors, sessions, pageviews");
-    if (error) throw error;
-    return (data ?? []).reduce<SiteTraffic>(
+      .select("visitors, sessions, pageviews, bot_visitors, bot_sessions, bot_pageviews");
+    if (wide.error) {
+      console.error("[data] traffic bot columns unavailable, falling back:", wide.error);
+      const narrow = await supabase
+        .from("site_traffic_daily")
+        .select("visitors, sessions, pageviews");
+      if (narrow.error) throw narrow.error;
+      rows = narrow.data ?? [];
+    } else {
+      rows = wide.data ?? [];
+    }
+
+    return rows.reduce<SiteTraffic>(
       (acc, r) => ({
         visitors: acc.visitors + Number(r.visitors),
         sessions: acc.sessions + Number(r.sessions),
         pageviews: acc.pageviews + Number(r.pageviews),
+        botVisitors: acc.botVisitors + Number(r.bot_visitors ?? 0),
+        botSessions: acc.botSessions + Number(r.bot_sessions ?? 0),
+        botPageviews: acc.botPageviews + Number(r.bot_pageviews ?? 0),
       }),
       empty,
     );
@@ -464,11 +502,13 @@ export async function getConnectFunnel(days = 30): Promise<ConnectFunnel> {
 
 /**
  * Outbound click-throughs per site host over the last `days`, from the
- * first-party site_outbound_clicks counter (written by the /visit redirect).
+ * first-party site_outbound_clicks counter (written by the /api/visit beacon,
+ * and by the legacy /visit redirect for links already out in the world).
  * Keyed by lowercase host. Aggregate only. Returns an empty map on any failure
  * or before the migration is run, so callers stay safe while data accumulates.
- * Not yet wired into ranking — this is the read path for a future "most visited"
- * view.
+ * Not wired into ranking — ranking is Search Console clicks. This is what a
+ * listing can be shown as proof its listing did something, so see
+ * VISITS_FLOOR (lib/config.ts) before putting a number on a page.
  */
 export async function getOutboundClicks(days = 28): Promise<Map<string, number>> {
   const out = new Map<string, number>();
@@ -650,3 +690,316 @@ const loadRaw = cache(async function loadRaw(): Promise<{
     return { sites: [], slots: [], usingDummyData: false };
   }
 });
+
+// ---------------------------------------------------------------------------
+// Feature-usage report: the same site_events counter as getEventStats, but
+// aggregated into a current window and the comparable window before it, so the
+// owner dashboard can read usage week-over-week, month-over-month,
+// year-over-year or year-to-date instead of only "last 30 days".
+// ---------------------------------------------------------------------------
+
+export type ReportPeriod = "wow" | "mom" | "yoy" | "ytd";
+
+export const REPORT_PERIODS: { key: ReportPeriod; label: string; short: string }[] = [
+  { key: "wow", label: "Week over week", short: "WoW" },
+  { key: "mom", label: "Month over month", short: "MoM" },
+  { key: "yoy", label: "Year over year", short: "YoY" },
+  { key: "ytd", label: "Year to date", short: "YTD" },
+];
+
+export function isReportPeriod(v: string | undefined): v is ReportPeriod {
+  return v === "wow" || v === "mom" || v === "yoy" || v === "ytd";
+}
+
+export interface FeatureDelta {
+  event: string;
+  current: number;
+  previous: number;
+  /**
+   * Current vs previous as a ratio (0.5 = +50%), or null when the previous
+   * window is zero — a percentage against nothing is not a number worth
+   * showing, so the UI prints "new" instead of a fake infinity.
+   */
+  change: number | null;
+}
+
+export interface ReportWindow {
+  start: string; // YYYY-MM-DD inclusive
+  end: string; // YYYY-MM-DD inclusive
+}
+
+export interface FeatureUsageReport {
+  period: ReportPeriod;
+  /** Window currently being reported, and the one it is measured against. */
+  current: ReportWindow;
+  previous: ReportWindow;
+  features: FeatureDelta[];
+  totalCurrent: number;
+  totalPrevious: number;
+  totalChange: number | null;
+  /**
+   * True when the comparison window starts before the first event we ever
+   * recorded, so "previous" is zero because the site did not exist yet rather
+   * than because usage dropped. The UI says so instead of charting -100%.
+   */
+  insufficientHistory: boolean;
+}
+
+/** UTC day string, N days before the given date. */
+function dayOffset(from: Date, days: number): string {
+  const d = new Date(from);
+  d.setUTCDate(d.getUTCDate() - days);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Same calendar day one year earlier, as a UTC day string. */
+function yearBefore(iso: string): string {
+  const d = new Date(`${iso}T00:00:00Z`);
+  d.setUTCFullYear(d.getUTCFullYear() - 1);
+  return d.toISOString().slice(0, 10);
+}
+
+/**
+ * The current and comparison windows for a period. Trailing windows (not
+ * calendar weeks/months) so a report read mid-week still compares like with
+ * like; YTD is the one genuinely calendar-anchored period, so it runs from
+ * Jan 1 and compares against Jan 1 to the same day last year.
+ */
+function windowsFor(period: ReportPeriod, today: Date): { current: ReportWindow; previous: ReportWindow } {
+  const end = today.toISOString().slice(0, 10);
+  switch (period) {
+    case "wow":
+      return {
+        current: { start: dayOffset(today, 6), end },
+        previous: { start: dayOffset(today, 13), end: dayOffset(today, 7) },
+      };
+    case "mom":
+      return {
+        current: { start: dayOffset(today, 29), end },
+        previous: { start: dayOffset(today, 59), end: dayOffset(today, 30) },
+      };
+    case "yoy":
+      // Last 30 days against the same 30 days a year ago, so seasonality lines up.
+      return {
+        current: { start: dayOffset(today, 29), end },
+        previous: { start: yearBefore(dayOffset(today, 29)), end: yearBefore(end) },
+      };
+    case "ytd": {
+      const year = today.getUTCFullYear();
+      return {
+        current: { start: `${year}-01-01`, end },
+        previous: { start: `${year - 1}-01-01`, end: yearBefore(end) },
+      };
+    }
+  }
+}
+
+function ratio(current: number, previous: number): number | null {
+  if (previous <= 0) return null;
+  return (current - previous) / previous;
+}
+
+/** One page of site_events rows; PostgREST caps a single response. */
+const EVENT_PAGE_SIZE = 1000;
+
+/**
+ * Every (day, event, hits) row in an inclusive day range, paged until the
+ * source is exhausted so a long window cannot be silently truncated.
+ */
+async function readEventRows(
+  supabase: ReturnType<typeof createServiceClient>,
+  start: string,
+  end: string,
+): Promise<{ day: string; event: string; hits: number }[]> {
+  const out: { day: string; event: string; hits: number }[] = [];
+  for (let from = 0; ; from += EVENT_PAGE_SIZE) {
+    const { data, error } = await supabase
+      .from("site_events")
+      .select("day, event, hits")
+      .gte("day", start)
+      .lte("day", end)
+      // Order on the full primary key (day, event, label) so paging is
+      // deterministic — (day, event) alone is not unique, and an unstable sort
+      // would drop or double-count rows across page boundaries.
+      .order("day", { ascending: true })
+      .order("event", { ascending: true })
+      .order("label", { ascending: true })
+      .range(from, from + EVENT_PAGE_SIZE - 1);
+    if (error) throw error;
+    const page = data ?? [];
+    out.push(...page.map((r) => ({ day: r.day, event: r.event, hits: Number(r.hits) })));
+    if (page.length < EVENT_PAGE_SIZE) return out;
+  }
+}
+
+/**
+ * Feature usage for one period, with every event that appears in either
+ * window so a feature that went to zero still shows up (it would otherwise
+ * vanish from the report exactly when it most needs reading).
+ */
+export async function getFeatureUsageReport(
+  period: ReportPeriod,
+  now: Date = new Date(),
+): Promise<FeatureUsageReport> {
+  const { current, previous } = windowsFor(period, now);
+  const empty: FeatureUsageReport = {
+    period,
+    current,
+    previous,
+    features: [],
+    totalCurrent: 0,
+    totalPrevious: 0,
+    totalChange: null,
+    insufficientHistory: false,
+  };
+  if (!isSupabaseConfigured()) return empty;
+
+  try {
+    const supabase = createServiceClient();
+    // Both windows, plus the earliest day on record so a zero "previous" can be
+    // told apart from a window that predates the data. A YTD or YoY span can
+    // hold more (day, event, label) rows than one PostgREST response returns,
+    // so the rows are paged — an unpaged read would silently undercount.
+    const [rows, { data: firstRow, error: firstErr }] = await Promise.all([
+      readEventRows(supabase, previous.start, current.end),
+      supabase.from("site_events").select("day").order("day", { ascending: true }).limit(1),
+    ]);
+    if (firstErr) throw firstErr;
+    const data = rows;
+
+    const inWindow = (day: string, w: ReportWindow) => day >= w.start && day <= w.end;
+    const cur = new Map<string, number>();
+    const prev = new Map<string, number>();
+    let totalCurrent = 0;
+    let totalPrevious = 0;
+
+    for (const r of data ?? []) {
+      const hits = Number(r.hits);
+      if (inWindow(r.day, current)) {
+        cur.set(r.event, (cur.get(r.event) ?? 0) + hits);
+        totalCurrent += hits;
+      } else if (inWindow(r.day, previous)) {
+        prev.set(r.event, (prev.get(r.event) ?? 0) + hits);
+        totalPrevious += hits;
+      }
+    }
+
+    const features = [...new Set([...cur.keys(), ...prev.keys()])]
+      .map((event) => {
+        const c = cur.get(event) ?? 0;
+        const p = prev.get(event) ?? 0;
+        return { event, current: c, previous: p, change: ratio(c, p) };
+      })
+      .sort((a, b) => b.current - a.current || b.previous - a.previous);
+
+    const earliest = firstRow?.[0]?.day ?? null;
+    const insufficientHistory =
+      totalPrevious === 0 && (earliest === null || earliest > previous.end);
+
+    return {
+      ...empty,
+      features,
+      totalCurrent,
+      totalPrevious,
+      totalChange: ratio(totalCurrent, totalPrevious),
+      insufficientHistory,
+    };
+  } catch (err) {
+    console.error("[data] feature usage report read failed:", err);
+    return empty;
+  }
+}
+
+
+/** One classification reason and how many hits it accounted for. */
+export interface BotReasonCount {
+  reason: string;
+  hits: number;
+}
+
+export interface BotTrafficSummary {
+  /** Automated sessions and pageviews over the window. */
+  botSessions: number;
+  botPageviews: number;
+  /** Human sessions and pageviews over the same window, for the share. */
+  humanSessions: number;
+  humanPageviews: number;
+  /** Bot share of all sessions, 0-1; null when there were no sessions at all. */
+  botShare: number | null;
+  /** Why hits were classified as bots, most common first. */
+  reasons: BotReasonCount[];
+  days: number;
+}
+
+/**
+ * What the beacon filtered out, for the owner dashboard. Reads the bot_*
+ * columns written by bump_bot_traffic plus the 'bot_reason' breakdown rows, so
+ * the dashboard can show both how much automated traffic arrived and which
+ * signal identified it.
+ */
+export async function getBotTraffic(days = 30): Promise<BotTrafficSummary> {
+  const empty: BotTrafficSummary = {
+    botSessions: 0,
+    botPageviews: 0,
+    humanSessions: 0,
+    humanPageviews: 0,
+    botShare: null,
+    reasons: [],
+    days,
+  };
+  if (!isSupabaseConfigured()) return empty;
+
+  try {
+    const since = new Date();
+    since.setUTCDate(since.getUTCDate() - days);
+    const sinceDay = since.toISOString().slice(0, 10);
+    const supabase = createServiceClient();
+
+    const [daily, breakdown] = await Promise.all([
+      supabase
+        .from("site_traffic_daily")
+        .select("sessions, pageviews, bot_sessions, bot_pageviews")
+        .gte("day", sinceDay),
+      supabase
+        .from("site_traffic_breakdown")
+        .select("label, hits")
+        .eq("dimension", "bot_reason")
+        .gte("day", sinceDay),
+    ]);
+    if (daily.error) throw daily.error;
+    if (breakdown.error) throw breakdown.error;
+
+    let botSessions = 0;
+    let botPageviews = 0;
+    let humanSessions = 0;
+    let humanPageviews = 0;
+    for (const r of daily.data ?? []) {
+      humanSessions += Number(r.sessions);
+      humanPageviews += Number(r.pageviews);
+      botSessions += Number(r.bot_sessions ?? 0);
+      botPageviews += Number(r.bot_pageviews ?? 0);
+    }
+
+    const byReason = new Map<string, number>();
+    for (const r of breakdown.data ?? []) {
+      byReason.set(r.label, (byReason.get(r.label) ?? 0) + Number(r.hits));
+    }
+    const reasons = [...byReason.entries()]
+      .map(([reason, hits]) => ({ reason, hits }))
+      .sort((a, b) => b.hits - a.hits);
+
+    const allSessions = botSessions + humanSessions;
+    return {
+      botSessions,
+      botPageviews,
+      humanSessions,
+      humanPageviews,
+      botShare: allSessions > 0 ? botSessions / allSessions : null,
+      reasons,
+      days,
+    };
+  } catch (err) {
+    console.error("[data] bot traffic read failed:", err);
+    return empty;
+  }
+}

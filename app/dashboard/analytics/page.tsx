@@ -1,13 +1,28 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Activity, Layers, Sparkles, Filter } from "lucide-react";
+import { Activity, Layers, Sparkles, Filter, CalendarRange, Bot } from "lucide-react";
 import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
 import { StatTile } from "@/components/dash/stat-tile";
-import { getEventStats, getConnectFunnel } from "@/lib/data";
-import type { EventDay, EventStat, ConnectFunnel } from "@/lib/data";
+import {
+  getEventStats,
+  getConnectFunnel,
+  getFeatureUsageReport,
+  getBotTraffic,
+  isReportPeriod,
+  REPORT_PERIODS,
+} from "@/lib/data";
+import type {
+  EventDay,
+  EventStat,
+  ConnectFunnel,
+  FeatureUsageReport,
+  ReportPeriod,
+  BotTrafficSummary,
+} from "@/lib/data";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { getOptionalUser, isOwner } from "@/lib/auth";
-import { formatCompact } from "@/lib/utils";
+import { cn, formatCompact, formatGrowth } from "@/lib/utils";
 import { dashVar, dashColorAt } from "@/lib/dash-colors";
 
 export const metadata: Metadata = {
@@ -29,13 +44,21 @@ const EVENT_LABELS: Record<string, string> = {
   connect_click: "Connect clicked",
   movers_post_copy: "Movers post copied",
   movers_post_share: "Movers post shared",
+  listing_created: "Listing created",
+  listing_verified: "Listing verified",
+  outbound_click: "Outbound click to a listed site",
+  signup: "Signed up",
 };
 
 function labelFor(event: string): string {
   return EVENT_LABELS[event] ?? event.replace(/_/g, " ");
 }
 
-export default async function AnalyticsPage() {
+export default async function AnalyticsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ period?: string }>;
+}) {
   if (!isSupabaseConfigured()) redirect("/dashboard");
 
   const user = await getOptionalUser();
@@ -43,7 +66,16 @@ export default async function AnalyticsPage() {
   // Owner-only surface — everyone else lands back on their own dashboard.
   if (!isOwner(user.email)) redirect("/dashboard");
 
-  const [stats, funnel] = await Promise.all([getEventStats(30), getConnectFunnel(30)]);
+  // ?period= drives the comparison report; anything unrecognised reads as WoW.
+  const { period: rawPeriod } = await searchParams;
+  const period: ReportPeriod = isReportPeriod(rawPeriod) ? rawPeriod : "wow";
+
+  const [stats, funnel, report, bots] = await Promise.all([
+    getEventStats(30),
+    getConnectFunnel(30),
+    getFeatureUsageReport(period),
+    getBotTraffic(30),
+  ]);
   const topFeature = stats.events[0] ? labelFor(stats.events[0].event) : "—";
 
   return (
@@ -82,6 +114,36 @@ export default async function AnalyticsPage() {
           sub={stats.events[0] ? `${formatCompact(stats.events[0].hits)} uses` : "no data yet"}
           icon={<Sparkles className="size-4" />}
         />
+      </section>
+
+      {/* Period comparison — the same events read against the window before */}
+      <section className="mt-10">
+        <div className="mb-1 flex items-center gap-2">
+          <CalendarRange className="size-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold">Feature usage report</h2>
+        </div>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Every feature event in the current window against the one before it.
+        </p>
+        <PeriodTabs active={report.period} />
+        <div className="mt-4 rounded-xl border border-border bg-card p-6">
+          <UsageReport report={report} />
+        </div>
+      </section>
+
+      {/* Filtered bot traffic — what the beacon classified as automated */}
+      <section className="mt-10">
+        <div className="mb-1 flex items-center gap-2">
+          <Bot className="size-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold">Filtered bot traffic</h2>
+        </div>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Automated hits the beacon classified and kept out of the public
+          figures, last {bots.days} days.
+        </p>
+        <div className="rounded-xl border border-border bg-card p-6">
+          <BotTrafficView bots={bots} />
+        </div>
       </section>
 
       {/* Connect funnel — visits to sites on the board */}
@@ -302,4 +364,209 @@ function EventsChart({ days }: { days: EventDay[] }) {
 
 function fmtShort(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+/** Period selector — plain links, so the page stays a server component. */
+function PeriodTabs({ active }: { active: ReportPeriod }) {
+  return (
+    <div
+      role="tablist"
+      aria-label="Comparison period"
+      className="inline-flex items-center rounded-lg border border-border bg-card p-1"
+    >
+      {REPORT_PERIODS.map((p) => (
+        <Link
+          key={p.key}
+          href={`/dashboard/analytics?period=${p.key}`}
+          role="tab"
+          aria-selected={p.key === active}
+          title={p.label}
+          className={cn(
+            "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+            p.key === active
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {p.short}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function fmtRange(w: { start: string; end: string }): string {
+  return `${fmtShort(w.start)} – ${fmtShort(w.end)}`;
+}
+
+/** Current vs previous per feature, with the totals line on top. */
+function UsageReport({ report }: { report: FeatureUsageReport }) {
+  const periodLabel =
+    REPORT_PERIODS.find((p) => p.key === report.period)?.label ?? report.period;
+
+  if (report.features.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        No feature events in {fmtRange(report.current)} or the window before it.
+        Usage will appear here as visitors use the tools.
+      </p>
+    );
+  }
+
+  return (
+    <>
+      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <div>
+          <div className="text-sm font-medium">{periodLabel}</div>
+          <div className="text-xs text-muted-foreground">
+            {fmtRange(report.current)} vs {fmtRange(report.previous)}
+          </div>
+        </div>
+        <div className="flex items-baseline gap-2">
+          <span className="text-2xl font-bold tabular-nums">
+            {formatCompact(report.totalCurrent)}
+          </span>
+          <span className="text-xs text-muted-foreground">events</span>
+          <ChangeBadge change={report.totalChange} />
+        </div>
+      </div>
+
+      {/* A zero "previous" means two very different things — usage stopped, or
+          the site had no data back then. Say which, rather than print -100%. */}
+      {report.insufficientHistory && (
+        <p className="mb-4 rounded-lg border border-dashed border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+          No events recorded in {fmtRange(report.previous)} — that window predates
+          the data, so treat these as first-period figures rather than a decline.
+        </p>
+      )}
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-border text-left text-[11px] uppercase tracking-wider text-muted-foreground">
+              <th scope="col" className="pb-2 font-semibold">Feature</th>
+              <th scope="col" className="pb-2 text-right font-semibold">Current</th>
+              <th scope="col" className="pb-2 text-right font-semibold">Previous</th>
+              <th scope="col" className="pb-2 text-right font-semibold">Change</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border/70">
+            {report.features.map((f) => (
+              <tr key={f.event}>
+                <td className="py-2.5 pr-3 font-medium">{labelFor(f.event)}</td>
+                <td className="py-2.5 text-right tabular-nums">{formatCompact(f.current)}</td>
+                <td className="py-2.5 text-right tabular-nums text-muted-foreground">
+                  {formatCompact(f.previous)}
+                </td>
+                <td className="py-2.5 text-right">
+                  <ChangeBadge change={f.change} isNew={f.previous === 0 && f.current > 0} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
+/** A signed percentage, or "new"/"—" when there is no prior figure to divide by. */
+function ChangeBadge({ change, isNew = false }: { change: number | null; isNew?: boolean }) {
+  if (change === null) {
+    return (
+      <span className="text-xs text-muted-foreground">{isNew ? "new" : "—"}</span>
+    );
+  }
+  const tone =
+    change > 0.005 ? "text-success" : change < -0.005 ? "text-danger" : "text-muted-foreground";
+  return <span className={`text-sm font-medium tabular-nums ${tone}`}>{formatGrowth(change)}</span>;
+}
+
+const BOT_REASON_LABELS: Record<string, string> = {
+  "user-agent": "Named itself (crawler, monitor or HTTP client)",
+  webdriver: "Headless automation (navigator.webdriver)",
+  "no-user-agent": "Sent no user-agent",
+};
+
+/** How much automated traffic arrived, and which signal caught it. */
+function BotTrafficView({ bots }: { bots: BotTrafficSummary }) {
+  const totalSessions = bots.botSessions + bots.humanSessions;
+
+  if (totalSessions === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        No sessions recorded in the last {bots.days} days, so there is nothing
+        to classify yet.
+      </p>
+    );
+  }
+
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <Reading
+          label="Bot sessions"
+          value={formatCompact(bots.botSessions)}
+          sub={`of ${formatCompact(totalSessions)} total`}
+        />
+        <Reading
+          label="Bot share"
+          value={bots.botShare === null ? "—" : `${Math.round(bots.botShare * 100)}%`}
+          sub="of all sessions"
+        />
+        <Reading
+          label="Human sessions"
+          value={formatCompact(bots.humanSessions)}
+          sub="in the public figures"
+        />
+      </div>
+
+      {bots.reasons.length > 0 ? (
+        <div className="mt-6">
+          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            What identified them
+          </p>
+          <ul className="flex flex-col gap-1.5">
+            {bots.reasons.map((r) => (
+              <li key={r.reason} className="flex items-baseline justify-between gap-3 text-sm">
+                <span className="truncate text-muted-foreground">
+                  {BOT_REASON_LABELS[r.reason] ?? r.reason}
+                </span>
+                <span className="shrink-0 font-semibold tabular-nums">
+                  {formatCompact(r.hits)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <p className="mt-6 text-sm text-muted-foreground">
+          No automated hits classified yet in this window.
+        </p>
+      )}
+
+      {/* Be honest about the ceiling: these are self-disclosure signals, so this
+          figure reads lower than a behavioural tool's and should not be
+          expected to match it. */}
+      <p className="mt-6 border-t border-border pt-4 text-xs text-muted-foreground">
+        Counts automation that identifies itself — a named user-agent, a missing
+        one, or <code>navigator.webdriver</code>. Behavioural detection
+        (interaction and device patterns, as Microsoft Clarity does it) needs
+        per-visitor signals the beacon deliberately does not collect, so expect
+        this share to read lower than Clarity&apos;s and treat them as separate
+        measurements.
+      </p>
+    </>
+  );
+}
+
+/** Small labelled figure, shared by the bot panel. */
+function Reading({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-4">
+      <div className="text-2xl font-bold tabular-nums">{value}</div>
+      <div className="mt-0.5 text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
+      {sub && <div className="mt-0.5 text-xs text-muted-foreground">{sub}</div>}
+    </div>
+  );
 }

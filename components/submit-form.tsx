@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Loader2, Check, ArrowRight, Copy, ShieldCheck, ChevronDown } from "lucide-react";
+import { Loader2, Check, ArrowRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CopyField } from "@/components/copy-field";
+import { VerifyListing } from "@/components/verify-listing";
 import { categories, siteConfig } from "@/lib/config";
 import { track } from "@/lib/track";
 
@@ -12,9 +14,10 @@ type Phase = "form" | "done";
 /**
  * The open "$0 listing" form. Posts to /api/list (spam guards + honeypot live
  * server-side). Listing is free and does not require the badge; on success it
- * shows the permanent link and offers the badge embed, then lets the owner
- * prove ownership (POST /api/list/verify) to earn a dofollow verified
- * checkmark — short of connecting Search Console for a full ranked spot.
+ * shows the permanent link and the badge/verify panel (<VerifyListing />),
+ * which earns a dofollow verified checkmark — short of connecting Search
+ * Console for a full ranked spot. That panel also lives on /listed/<host>,
+ * because adding the badge means leaving this page and shipping a change.
  */
 export function SubmitForm() {
   const [phase, setPhase] = useState<Phase>("form");
@@ -165,32 +168,6 @@ function ListedSuccess({ host }: { host: string }) {
   const permalink = `${siteConfig.url}/listed/${host}`;
   const badge = `<a href="${permalink}" target="_blank" rel="noopener">Listed on ${siteConfig.name} →</a>`;
 
-  const [verifying, setVerifying] = useState(false);
-  const [verified, setVerified] = useState(false);
-  const [verifyError, setVerifyError] = useState<string | null>(null);
-
-  async function verify() {
-    setVerifyError(null);
-    setVerifying(true);
-    try {
-      const res = await fetch("/api/list/verify", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ host }),
-      });
-      const data = (await res.json()) as { ok: boolean; error?: string };
-      if (data.ok) {
-        track("listing_verified", host);
-        setVerified(true);
-      } else {
-        setVerifyError(data.error ?? "Couldn't verify yet.");
-      }
-    } catch {
-      setVerifyError("Couldn't reach the server. Please try again.");
-    }
-    setVerifying(false);
-  }
-
   return (
     <div className="flex flex-col gap-6">
       <div className="rounded-xl border border-success/30 bg-success/10 p-5 text-center">
@@ -210,30 +187,9 @@ function ListedSuccess({ host }: { host: string }) {
         </Link>
       </div>
 
-      {/* Badge → verify ownership (optional) */}
-      <div className="rounded-xl border border-border bg-card p-5">
-        <p className="flex items-center gap-2 font-medium">
-          <ShieldCheck className="size-4 text-primary" /> Get a verified checkmark
-        </p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Optional: add this badge to your site, then verify. We&apos;ll confirm it&apos;s really
-          yours and mark your listing verified (a followed link).
-        </p>
-        <CopyField value={badge} />
-
-        {verified ? (
-          <p className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-success">
-            <Check className="size-4" /> Verified — your listing shows a checkmark.
-          </p>
-        ) : (
-          <div className="mt-4 flex flex-col gap-2">
-            <Button type="button" onClick={verify} disabled={verifying} className="self-start">
-              {verifying ? <Loader2 className="size-4 animate-spin" /> : "I've added the badge — verify"}
-            </Button>
-            {verifyError && <p className="text-sm text-danger">{verifyError}</p>}
-          </div>
-        )}
-      </div>
+      {/* Badge → verify ownership (optional). The same panel the listing page
+          shows, so an owner who comes back later finds it in both places. */}
+      <VerifyListing host={host} />
 
       {/* Upgrade path */}
       <div className="rounded-xl border border-dashed border-primary/40 bg-primary/[0.05] p-5 text-center">
@@ -247,32 +203,6 @@ function ListedSuccess({ host }: { host: string }) {
           </Link>
         </Button>
       </div>
-    </div>
-  );
-}
-
-/** A read-only code value with a copy button. */
-function CopyField({ value, mono = false }: { value: string; mono?: boolean }) {
-  const [copied, setCopied] = useState(false);
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch {
-      /* clipboard blocked — no-op */
-    }
-  }
-  return (
-    <div className="mt-3 flex items-start gap-2">
-      <code
-        className={`flex-1 overflow-x-auto rounded-md border border-border bg-muted px-3 py-2 ${mono ? "truncate text-sm" : "text-xs"}`}
-      >
-        {value}
-      </code>
-      <Button type="button" variant="outline" size="sm" onClick={copy}>
-        {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
-      </Button>
     </div>
   );
 }

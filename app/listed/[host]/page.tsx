@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BadgeCheck, ArrowUpRight, ShieldCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { BadgeCheck, ArrowUpRight, ShieldCheck, MousePointerClick } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { SiteFavicon } from "@/components/site-favicon";
+import { VisitLink } from "@/components/visit-link";
+import { VerifyListing } from "@/components/verify-listing";
 import { getListingByHost, normalizeHost } from "@/lib/listed";
-import { categoryLabel, siteConfig } from "@/lib/config";
+import { getOutboundClicks } from "@/lib/data";
+import { categoryLabel, siteConfig, VISITS_FLOOR } from "@/lib/config";
 
 export const revalidate = 300;
 
@@ -33,6 +36,11 @@ export default async function ListingProfilePage({ params }: { params: Params })
   const host = normalizeHost(raw) ?? raw.toLowerCase();
   const listing = await getListingByHost(host);
   if (!listing) notFound();
+
+  // What this listing has actually done for the site: outbound clicks RealRank
+  // sent it over the last 28 days. Shown next to the Visit button so the proof
+  // sits beside the action, and only above VISITS_FLOOR — see lib/config.
+  const visits = (await getOutboundClicks(28)).get(listing.host) ?? 0;
 
   return (
     <div className="container max-w-2xl py-12">
@@ -69,15 +77,14 @@ export default async function ListingProfilePage({ params }: { params: Params })
       )}
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        <Button asChild>
-          <a
-            href={listing.siteUrl}
-            target="_blank"
-            rel={listing.ownerVerified ? "noopener" : "noopener nofollow"}
-          >
-            Visit {listing.host} <ArrowUpRight className="size-4" />
-          </a>
-        </Button>
+        <VisitLink
+          href={listing.siteUrl}
+          host={listing.host}
+          rel={listing.ownerVerified ? "noopener" : "noopener nofollow"}
+          className={buttonVariants()}
+        >
+          Visit {listing.host} <ArrowUpRight className="size-4" />
+        </VisitLink>
         {listing.category && (
           <Link
             href="/listed"
@@ -86,7 +93,24 @@ export default async function ListingProfilePage({ params }: { params: Params })
             {categoryLabel(listing.category)}
           </Link>
         )}
+        {visits >= VISITS_FLOOR && (
+          <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+            <MousePointerClick className="size-3.5" />
+            <strong className="font-semibold tabular-nums text-foreground">{visits}</strong> visits
+            sent from {siteConfig.name} in the last 28 days
+          </span>
+        )}
       </div>
+
+      {/* Verifying means adding the badge to your own site, which means leaving
+          the submit page and shipping a change — so the panel has to be here
+          too, or an owner who comes back can never finish. The host is in the
+          URL and the badge check is server-side, so nothing is granted here. */}
+      {!listing.ownerVerified && (
+        <div className="mt-8">
+          <VerifyListing host={listing.host} />
+        </div>
+      )}
 
       {/* A listing isn't a ranked spot — make the difference (and the path to a
           real rank) explicit. Copy adapts to whether the owner has verified. */}

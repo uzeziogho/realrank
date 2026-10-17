@@ -3,7 +3,8 @@ import { ArrowUpRight, TrendingUp, TrendingDown, Minus, ChevronUp, ChevronDown, 
 import { Badge } from "@/components/ui/badge";
 import { Sparkline } from "@/components/sparkline";
 import { SiteFavicon } from "@/components/site-favicon";
-import { cn, formatCompact, formatGrowth, hostname, visitHref } from "@/lib/utils";
+import { VisitLink } from "@/components/visit-link";
+import { cn, formatCompact, formatGrowth, hostname, siteHref } from "@/lib/utils";
 import { categoryLabel, type RankingView } from "@/lib/config";
 import type { LeaderboardRow, RankedSite, SponsoredRow } from "@/lib/types";
 
@@ -109,6 +110,19 @@ function OrganicRowItem({
         />
       )}
 
+      {/* The row-wide hover highlight promises the whole row is clickable, so
+          this overlay makes good on it — without it, every click outside the
+          site name lands on nothing (Clarity logged these as dead clicks).
+          Hidden from the a11y tree and the tab order: the site-name link below
+          is the real, focusable one, and the controls that sit above this
+          overlay are raised with `relative z-10`. */}
+      <Link
+        href={`/site/${hostname(row.siteUrl).toLowerCase()}`}
+        aria-hidden
+        tabIndex={-1}
+        className="absolute inset-0 z-0"
+      />
+
       {/* Rank + movement */}
       <div className="flex flex-col items-center gap-1">
         {pending ? (
@@ -155,19 +169,22 @@ function OrganicRowItem({
             </span>
             <Link
               href={`/site/${hostname(row.siteUrl).toLowerCase()}`}
-              className="truncate text-base font-semibold text-foreground hover:underline"
+              className="relative z-10 truncate text-base font-semibold text-foreground hover:underline"
             >
               {row.displayName}
             </Link>
-            <a
-              href={visitHref(row.siteUrl)}
-              target="_blank"
+            {/* Straight at the destination — no /visit redirect hop. The hop
+                got flagged as a 302 + spam by SEO crawlers; the click is
+                reported by VisitLink's beacons instead. rel is unchanged. */}
+            <VisitLink
+              href={siteHref(row.siteUrl)}
+              host={hostname(row.siteUrl).toLowerCase()}
               rel="noopener nofollow"
               aria-label={`Visit ${row.displayName}`}
-              className="shrink-0 text-muted-foreground opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
+              className="relative z-10 shrink-0 text-muted-foreground opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
             >
               <ArrowUpRight className="size-3.5" />
-            </a>
+            </VisitLink>
           </div>
           {pending && (
             <span

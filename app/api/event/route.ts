@@ -2,13 +2,11 @@ import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createServiceClient } from "@/lib/supabase/server";
+import { classifyTraffic } from "@/lib/bot";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Same bot filter as the pulse beacon — keep product-analytics counts honest.
-const BOT_RE =
-  /bot|crawl|spider|slurp|bing|google|facebook|embedly|preview|monitor|curl|wget|headless|lighthouse|pingdom|uptime|screenshot|whatsapp|telegram|discord|slack/i;
 
 /**
  * Named feature-usage events (Umami-style custom events). Fire-and-forget from
@@ -19,7 +17,12 @@ export async function POST(req: Request) {
   const res = new NextResponse(null, { status: 204 });
   try {
     const h = await headers();
-    if (BOT_RE.test(h.get("user-agent") ?? "")) return res;
+    // Same bot definition as the pulse beacon (lib/bot.ts). Feature-usage
+    // events from bots are dropped rather than counted: site_events answers
+    // "which features do people use", and there is no bot dimension to file
+    // them under. The traffic counters classify instead, because the bot share
+    // of traffic is itself worth reporting.
+    if (classifyTraffic({ ua: h.get("user-agent") }).isBot) return res;
 
     let body: { event?: string; label?: string } = {};
     try {
