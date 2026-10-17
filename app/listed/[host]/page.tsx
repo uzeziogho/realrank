@@ -6,6 +6,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { SiteFavicon } from "@/components/site-favicon";
 import { VisitLink } from "@/components/visit-link";
+import { VerifyListing } from "@/components/verify-listing";
 import { getListingByHost, normalizeHost } from "@/lib/listed";
 import { categoryLabel, siteConfig } from "@/lib/config";
 
@@ -87,6 +88,16 @@ export default async function ListingProfilePage({ params }: { params: Params })
           </Link>
         )}
       </div>
+
+      {/* Verifying means adding the badge to your own site, which means leaving
+          the submit page and shipping a change — so the panel has to be here
+          too, or an owner who comes back can never finish. The host is in the
+          URL and the badge check is server-side, so nothing is granted here. */}
+      {!listing.ownerVerified && (
+        <div className="mt-8">
+          <VerifyListing host={listing.host} />
+        </div>
+      )}
 
       {/* A listing isn't a ranked spot — make the difference (and the path to a
           real rank) explicit. Copy adapts to whether the owner has verified. */}
