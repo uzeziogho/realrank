@@ -194,9 +194,14 @@ function synthSpark(clicks7d: number, clicks28d: number, days: number): number[]
 }
 
 export interface SiteTraffic {
+  /** Human traffic — what the public figures show. */
   visitors: number;
   sessions: number;
   pageviews: number;
+  /** Hits the beacon classified as automated (see lib/bot.ts). */
+  botVisitors: number;
+  botSessions: number;
+  botPageviews: number;
 }
 
 /**
@@ -206,19 +211,52 @@ export interface SiteTraffic {
  * traffic display must never break the page.
  */
 export async function getSiteTraffic(): Promise<SiteTraffic> {
-  const empty: SiteTraffic = { visitors: 0, sessions: 0, pageviews: 0 };
+  const empty: SiteTraffic = {
+    visitors: 0,
+    sessions: 0,
+    pageviews: 0,
+    botVisitors: 0,
+    botSessions: 0,
+    botPageviews: 0,
+  };
   if (!isSupabaseConfigured()) return empty;
   try {
     const supabase = createServiceClient();
-    const { data, error } = await supabase
+    // The bot_* columns arrive with the classify-bot-traffic migration. This
+    // read is the public homepage pill, so it must not depend on the migration
+    // having landed before this code did: if the wide select fails, fall back
+    // to the columns that have always existed and report zero bots rather than
+    // zero traffic.
+    let rows: {
+      visitors: number;
+      sessions: number;
+      pageviews: number;
+      bot_visitors?: number;
+      bot_sessions?: number;
+      bot_pageviews?: number;
+    }[];
+    const wide = await supabase
       .from("site_traffic_daily")
-      .select("visitors, sessions, pageviews");
-    if (error) throw error;
-    return (data ?? []).reduce<SiteTraffic>(
+      .select("visitors, sessions, pageviews, bot_visitors, bot_sessions, bot_pageviews");
+    if (wide.error) {
+      console.error("[data] traffic bot columns unavailable, falling back:", wide.error);
+      const narrow = await supabase
+        .from("site_traffic_daily")
+        .select("visitors, sessions, pageviews");
+      if (narrow.error) throw narrow.error;
+      rows = narrow.data ?? [];
+    } else {
+      rows = wide.data ?? [];
+    }
+
+    return rows.reduce<SiteTraffic>(
       (acc, r) => ({
         visitors: acc.visitors + Number(r.visitors),
         sessions: acc.sessions + Number(r.sessions),
         pageviews: acc.pageviews + Number(r.pageviews),
+        botVisitors: acc.botVisitors + Number(r.bot_visitors ?? 0),
+        botSessions: acc.botSessions + Number(r.bot_sessions ?? 0),
+        botPageviews: acc.botPageviews + Number(r.bot_pageviews ?? 0),
       }),
       empty,
     );
@@ -866,6 +904,100 @@ export async function getFeatureUsageReport(
     };
   } catch (err) {
     console.error("[data] feature usage report read failed:", err);
+    return empty;
+  }
+}
+
+
+/** One classification reason and how many hits it accounted for. */
+export interface BotReasonCount {
+  reason: string;
+  hits: number;
+}
+
+export interface BotTrafficSummary {
+  /** Automated sessions and pageviews over the window. */
+  botSessions: number;
+  botPageviews: number;
+  /** Human sessions and pageviews over the same window, for the share. */
+  humanSessions: number;
+  humanPageviews: number;
+  /** Bot share of all sessions, 0-1; null when there were no sessions at all. */
+  botShare: number | null;
+  /** Why hits were classified as bots, most common first. */
+  reasons: BotReasonCount[];
+  days: number;
+}
+
+/**
+ * What the beacon filtered out, for the owner dashboard. Reads the bot_*
+ * columns written by bump_bot_traffic plus the 'bot_reason' breakdown rows, so
+ * the dashboard can show both how much automated traffic arrived and which
+ * signal identified it.
+ */
+export async function getBotTraffic(days = 30): Promise<BotTrafficSummary> {
+  const empty: BotTrafficSummary = {
+    botSessions: 0,
+    botPageviews: 0,
+    humanSessions: 0,
+    humanPageviews: 0,
+    botShare: null,
+    reasons: [],
+    days,
+  };
+  if (!isSupabaseConfigured()) return empty;
+
+  try {
+    const since = new Date();
+    since.setUTCDate(since.getUTCDate() - days);
+    const sinceDay = since.toISOString().slice(0, 10);
+    const supabase = createServiceClient();
+
+    const [daily, breakdown] = await Promise.all([
+      supabase
+        .from("site_traffic_daily")
+        .select("sessions, pageviews, bot_sessions, bot_pageviews")
+        .gte("day", sinceDay),
+      supabase
+        .from("site_traffic_breakdown")
+        .select("label, hits")
+        .eq("dimension", "bot_reason")
+        .gte("day", sinceDay),
+    ]);
+    if (daily.error) throw daily.error;
+    if (breakdown.error) throw breakdown.error;
+
+    let botSessions = 0;
+    let botPageviews = 0;
+    let humanSessions = 0;
+    let humanPageviews = 0;
+    for (const r of daily.data ?? []) {
+      humanSessions += Number(r.sessions);
+      humanPageviews += Number(r.pageviews);
+      botSessions += Number(r.bot_sessions ?? 0);
+      botPageviews += Number(r.bot_pageviews ?? 0);
+    }
+
+    const byReason = new Map<string, number>();
+    for (const r of breakdown.data ?? []) {
+      byReason.set(r.label, (byReason.get(r.label) ?? 0) + Number(r.hits));
+    }
+    const reasons = [...byReason.entries()]
+      .map(([reason, hits]) => ({ reason, hits }))
+      .sort((a, b) => b.hits - a.hits);
+
+    const allSessions = botSessions + humanSessions;
+    return {
+      botSessions,
+      botPageviews,
+      humanSessions,
+      humanPageviews,
+      botShare: allSessions > 0 ? botSessions / allSessions : null,
+      reasons,
+      days,
+    };
+  } catch (err) {
+    console.error("[data] bot traffic read failed:", err);
     return empty;
   }
 }

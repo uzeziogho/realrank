@@ -328,6 +328,9 @@ export interface Database {
           visitors: number;
           sessions: number;
           pageviews: number;
+          bot_visitors: number;
+          bot_sessions: number;
+          bot_pageviews: number;
           updated_at: string;
         };
         Insert: {
@@ -335,6 +338,9 @@ export interface Database {
           visitors?: number;
           sessions?: number;
           pageviews?: number;
+          bot_visitors?: number;
+          bot_sessions?: number;
+          bot_pageviews?: number;
           updated_at?: string;
         };
         Update: {
@@ -342,6 +348,9 @@ export interface Database {
           visitors?: number;
           sessions?: number;
           pageviews?: number;
+          bot_visitors?: number;
+          bot_sessions?: number;
+          bot_pageviews?: number;
           updated_at?: string;
         };
         Relationships: [];
@@ -480,6 +489,10 @@ export interface Database {
     Functions: {
       bump_site_traffic: {
         Args: { new_visitor: boolean; new_session: boolean };
+        Returns: undefined;
+      };
+      bump_bot_traffic: {
+        Args: { new_visitor: boolean; new_session: boolean; p_reason: string };
         Returns: undefined;
       };
       bump_traffic_breakdown: {

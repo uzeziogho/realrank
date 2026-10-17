@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Activity, Layers, Sparkles, Filter, CalendarRange } from "lucide-react";
+import { Activity, Layers, Sparkles, Filter, CalendarRange, Bot } from "lucide-react";
 import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
 import { StatTile } from "@/components/dash/stat-tile";
 import {
   getEventStats,
   getConnectFunnel,
   getFeatureUsageReport,
+  getBotTraffic,
   isReportPeriod,
   REPORT_PERIODS,
 } from "@/lib/data";
@@ -17,6 +18,7 @@ import type {
   ConnectFunnel,
   FeatureUsageReport,
   ReportPeriod,
+  BotTrafficSummary,
 } from "@/lib/data";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { getOptionalUser, isOwner } from "@/lib/auth";
@@ -68,10 +70,11 @@ export default async function AnalyticsPage({
   const { period: rawPeriod } = await searchParams;
   const period: ReportPeriod = isReportPeriod(rawPeriod) ? rawPeriod : "wow";
 
-  const [stats, funnel, report] = await Promise.all([
+  const [stats, funnel, report, bots] = await Promise.all([
     getEventStats(30),
     getConnectFunnel(30),
     getFeatureUsageReport(period),
+    getBotTraffic(30),
   ]);
   const topFeature = stats.events[0] ? labelFor(stats.events[0].event) : "—";
 
@@ -125,6 +128,21 @@ export default async function AnalyticsPage({
         <PeriodTabs active={report.period} />
         <div className="mt-4 rounded-xl border border-border bg-card p-6">
           <UsageReport report={report} />
+        </div>
+      </section>
+
+      {/* Filtered bot traffic — what the beacon classified as automated */}
+      <section className="mt-10">
+        <div className="mb-1 flex items-center gap-2">
+          <Bot className="size-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold">Filtered bot traffic</h2>
+        </div>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Automated hits the beacon classified and kept out of the public
+          figures, last {bots.days} days.
+        </p>
+        <div className="rounded-xl border border-border bg-card p-6">
+          <BotTrafficView bots={bots} />
         </div>
       </section>
 
@@ -462,4 +480,93 @@ function ChangeBadge({ change, isNew = false }: { change: number | null; isNew?:
   const tone =
     change > 0.005 ? "text-success" : change < -0.005 ? "text-danger" : "text-muted-foreground";
   return <span className={`text-sm font-medium tabular-nums ${tone}`}>{formatGrowth(change)}</span>;
+}
+
+const BOT_REASON_LABELS: Record<string, string> = {
+  "user-agent": "Named itself (crawler, monitor or HTTP client)",
+  webdriver: "Headless automation (navigator.webdriver)",
+  "no-user-agent": "Sent no user-agent",
+};
+
+/** How much automated traffic arrived, and which signal caught it. */
+function BotTrafficView({ bots }: { bots: BotTrafficSummary }) {
+  const totalSessions = bots.botSessions + bots.humanSessions;
+
+  if (totalSessions === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        No sessions recorded in the last {bots.days} days, so there is nothing
+        to classify yet.
+      </p>
+    );
+  }
+
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <Reading
+          label="Bot sessions"
+          value={formatCompact(bots.botSessions)}
+          sub={`of ${formatCompact(totalSessions)} total`}
+        />
+        <Reading
+          label="Bot share"
+          value={bots.botShare === null ? "—" : `${Math.round(bots.botShare * 100)}%`}
+          sub="of all sessions"
+        />
+        <Reading
+          label="Human sessions"
+          value={formatCompact(bots.humanSessions)}
+          sub="in the public figures"
+        />
+      </div>
+
+      {bots.reasons.length > 0 ? (
+        <div className="mt-6">
+          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            What identified them
+          </p>
+          <ul className="flex flex-col gap-1.5">
+            {bots.reasons.map((r) => (
+              <li key={r.reason} className="flex items-baseline justify-between gap-3 text-sm">
+                <span className="truncate text-muted-foreground">
+                  {BOT_REASON_LABELS[r.reason] ?? r.reason}
+                </span>
+                <span className="shrink-0 font-semibold tabular-nums">
+                  {formatCompact(r.hits)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <p className="mt-6 text-sm text-muted-foreground">
+          No automated hits classified yet in this window.
+        </p>
+      )}
+
+      {/* Be honest about the ceiling: these are self-disclosure signals, so this
+          figure reads lower than a behavioural tool's and should not be
+          expected to match it. */}
+      <p className="mt-6 border-t border-border pt-4 text-xs text-muted-foreground">
+        Counts automation that identifies itself — a named user-agent, a missing
+        one, or <code>navigator.webdriver</code>. Behavioural detection
+        (interaction and device patterns, as Microsoft Clarity does it) needs
+        per-visitor signals the beacon deliberately does not collect, so expect
+        this share to read lower than Clarity&apos;s and treat them as separate
+        measurements.
+      </p>
+    </>
+  );
+}
+
+/** Small labelled figure, shared by the bot panel. */
+function Reading({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-4">
+      <div className="text-2xl font-bold tabular-nums">{value}</div>
+      <div className="mt-0.5 text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
+      {sub && <div className="mt-0.5 text-xs text-muted-foreground">{sub}</div>}
+    </div>
+  );
 }

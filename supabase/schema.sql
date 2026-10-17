@@ -327,11 +327,18 @@ create policy "anyone can read active sponsored slots"
 -- stored: the visitor/session ids live only in the visitor's own cookies and
 -- are never persisted — we keep counts only. One row per UTC day (bounded
 -- growth; also enables future trend charts). The homepage pill shows SUM totals.
+-- visitors/sessions/pageviews are HUMAN traffic; the bot_* columns are hits the
+-- beacon classified as automated (see lib/bot.ts). Bots are counted, not
+-- dropped, so the owner dashboard can report what was filtered out while the
+-- public figures stay human-only.
 create table if not exists public.site_traffic_daily (
   day date primary key default (now() at time zone 'utc')::date,
   visitors bigint not null default 0,
   sessions bigint not null default 0,
   pageviews bigint not null default 0,
+  bot_visitors bigint not null default 0,
+  bot_sessions bigint not null default 0,
+  bot_pageviews bigint not null default 0,
   updated_at timestamptz not null default now()
 );
 
@@ -359,6 +366,47 @@ as $$
     sessions  = t.sessions  + excluded.sessions,
     pageviews = t.pageviews + excluded.pageviews,
     updated_at = now();
+$$;
+
+-- Same, for a hit classified as automated: writes the bot_* columns and records
+-- the deciding signal under the 'bot_reason' breakdown dimension. Kept as its
+-- own function rather than a defaulted parameter on bump_site_traffic, whose
+-- 2-argument signature must stay unambiguous for the running app.
+create or replace function public.bump_bot_traffic(
+  new_visitor boolean,
+  new_session boolean,
+  p_reason text
+)
+returns void
+language plpgsql
+set search_path = ''
+as $$
+declare
+  d date := (now() at time zone 'utc')::date;
+begin
+  insert into public.site_traffic_daily as t
+    (day, bot_visitors, bot_sessions, bot_pageviews, updated_at)
+  values (
+    d,
+    case when new_visitor then 1 else 0 end,
+    case when new_session then 1 else 0 end,
+    1,
+    now()
+  )
+  on conflict (day) do update set
+    bot_visitors  = t.bot_visitors  + excluded.bot_visitors,
+    bot_sessions  = t.bot_sessions  + excluded.bot_sessions,
+    bot_pageviews = t.bot_pageviews + excluded.bot_pageviews,
+    updated_at = now();
+
+  if p_reason is not null and length(trim(p_reason)) > 0 then
+    insert into public.site_traffic_breakdown as b (day, dimension, label, hits, updated_at)
+    values (d, 'bot_reason', left(trim(p_reason), 128), 1, now())
+    on conflict (day, dimension, label) do update set
+      hits = b.hits + 1,
+      updated_at = now();
+  end if;
+end;
 $$;
 
 -- ---------------------------------------------------------------------------

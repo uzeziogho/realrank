@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies, headers } from "next/headers";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createServiceClient } from "@/lib/supabase/server";
+import { classifyTraffic } from "@/lib/bot";
 
 export const runtime = "nodejs";
 // Never cache — every hit is a distinct event.
@@ -12,10 +13,6 @@ const SESSION_COOKIE = "rr_sid";
 const VISITOR_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
 const SESSION_MAX_AGE = 60 * 30; // 30 min (sliding)
 
-// Obvious non-humans — keep the counters honest. The client beacon only fires
-// from real page loads, but this endpoint is public, so we still filter.
-const BOT_RE =
-  /bot|crawl|spider|slurp|bing|google|facebook|embedly|preview|monitor|curl|wget|headless|lighthouse|pingdom|uptime|screenshot|whatsapp|telegram|discord|slack|playwright|puppeteer|selenium|webdriver|phantomjs|python-requests|axios|node-fetch|http-client/i;
 
 /**
  * First-party traffic beacon. Counts a page event against realrank.lol itself:
@@ -29,16 +26,20 @@ export async function POST(req: Request) {
   try {
     const h = await headers();
     const ua = h.get("user-agent") ?? "";
-    if (BOT_RE.test(ua)) return res; // ignore bots, but 204 so the client is quiet
 
-    // Beacon body: the caller's own page path, referrer, and utm_source (if any).
-    // All optional; parsing never blocks the count.
-    let body: { path?: string; ref?: string; src?: string } = {};
+    // Beacon body: the caller's own page path, referrer, utm_source and its
+    // navigator.webdriver flag (if any). All optional; parsing never blocks the
+    // count.
+    let body: { path?: string; ref?: string; src?: string; wd?: boolean } = {};
     try {
       body = (await req.json()) as typeof body;
     } catch {
       /* no/invalid body — dimensions just default */
     }
+
+    // Bots are counted, not dropped: a discarded hit can never be reported on
+    // or re-filtered. The verdict routes the hit to the bot columns instead.
+    const verdict = classifyTraffic({ ua, webdriver: body.wd === true });
 
     const store = await cookies();
     const hasVisitor = Boolean(store.get(VISITOR_COOKIE)?.value);
@@ -60,6 +61,18 @@ export async function POST(req: Request) {
 
     if (isSupabaseConfigured()) {
       const supabase = createServiceClient();
+      if (verdict.isBot) {
+        const { error } = await supabase.rpc("bump_bot_traffic", {
+          new_visitor: newVisitor,
+          new_session: newSession,
+          p_reason: verdict.reason ?? "",
+        });
+        if (error) throw error;
+        // Bot hits stop here: the source/page/country/device breakdowns answer
+        // "where do my visitors come from", and automated hits would skew them.
+        return res;
+      }
+
       const { error } = await supabase.rpc("bump_site_traffic", {
         new_visitor: newVisitor,
         new_session: newSession,

@@ -13,13 +13,6 @@ export function Pulse() {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Headless automation (Playwright, Puppeteer, Selenium) sets this flag and
-    // usually sends an ordinary-looking user agent, so the server's UA filter
-    // never catches it. Clarity flags that traffic behaviourally — this is the
-    // cheap half of the same job, and it keeps the public session/visitor
-    // counters closer to real humans.
-    if (typeof navigator !== "undefined" && navigator.webdriver) return;
-
     const controller = new AbortController();
     // Send the page path, referrer, and utm_source so the server can attribute
     // the visit (source / landing page / country / device). No PII.
@@ -29,6 +22,12 @@ export function Pulse() {
         path: window.location.pathname,
         ref: document.referrer || "",
         src: new URLSearchParams(window.location.search).get("utm_source") || "",
+        // Headless automation (Playwright, Puppeteer, Selenium) sets this and
+        // otherwise sends an ordinary-looking user agent, so the server's UA
+        // check never catches it. Reported rather than used to suppress the
+        // beacon, so the hit gets classified and counted as a bot instead of
+        // disappearing from the numbers entirely.
+        wd: typeof navigator !== "undefined" && navigator.webdriver === true,
       });
     } catch {
       /* fall back to empty body */
