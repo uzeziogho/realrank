@@ -4,6 +4,7 @@ import { BadgeCheck, Plus, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ListingCard } from "@/components/listing-card";
 import { getListedSites } from "@/lib/listed";
+import { getOutboundClicks } from "@/lib/data";
 import { categories, categoryLabel, siteConfig } from "@/lib/config";
 import { cn } from "@/lib/utils";
 
@@ -28,7 +29,9 @@ export async function generateMetadata({
 
 export default async function ListedPage({ searchParams }: { searchParams: SearchParams }) {
   const { category: activeRaw } = await searchParams;
-  const all = await getListedSites();
+  // Visit counts are the one thing a free listing can show for itself, so they
+  // ride along with the directory read (one query for every host).
+  const [all, visits] = await Promise.all([getListedSites(), getOutboundClicks(28)]);
 
   // Count per category (only categories that actually have listings show as chips).
   const counts = new Map<string, number>();
@@ -115,7 +118,7 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
         ) : (
           <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {listings.map((l) => (
-              <ListingCard key={l.host} listing={l} />
+              <ListingCard key={l.host} listing={l} visits={visits.get(l.host) ?? 0} />
             ))}
           </ul>
         )}

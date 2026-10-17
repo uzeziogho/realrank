@@ -506,8 +506,9 @@ export async function getConnectFunnel(days = 30): Promise<ConnectFunnel> {
  * and by the legacy /visit redirect for links already out in the world).
  * Keyed by lowercase host. Aggregate only. Returns an empty map on any failure
  * or before the migration is run, so callers stay safe while data accumulates.
- * Not yet wired into ranking — this is the read path for a future "most visited"
- * view.
+ * Not wired into ranking — ranking is Search Console clicks. This is what a
+ * listing can be shown as proof its listing did something, so see
+ * VISITS_FLOOR (lib/config.ts) before putting a number on a page.
  */
 export async function getOutboundClicks(days = 28): Promise<Map<string, number>> {
   const out = new Map<string, number>();

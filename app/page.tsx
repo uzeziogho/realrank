@@ -4,7 +4,7 @@ import { ShieldCheck, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LeaderboardSection } from "@/components/leaderboard-section";
 import { JustListed } from "@/components/just-listed";
-import { getLeaderboardData, getSiteTraffic } from "@/lib/data";
+import { getLeaderboardData, getSiteTraffic, getOutboundClicks } from "@/lib/data";
 import { getListedSites } from "@/lib/listed";
 import { BadgeMarquee } from "@/components/badge-marquee";
 import { siteConfig } from "@/lib/config";
@@ -29,10 +29,12 @@ export default async function HomePage() {
   // prerenders (ISR) and serves cached HTML — search, the volume toggle, the
   // rank checker and every marketing section live on their own pages
   // (/leaderboard, /about, /movers, /founding), reachable from the nav.
-  const [data, traffic, listed] = await Promise.all([
+  const [data, traffic, listed, outboundClicks] = await Promise.all([
     getLeaderboardData("momentum"),
     getSiteTraffic(),
     getListedSites(),
+    // Visits each listing has sent its site (28d) — social proof on the cards.
+    getOutboundClicks(28),
   ]);
 
   return (
@@ -102,7 +104,11 @@ export default async function HomePage() {
 
       {/* Board 2 — the open directory of freshly listed projects. Visually
           separated and unranked so it never reads as a verified ranking. */}
-      <JustListed listings={listed.slice(0, HOMEPAGE_LISTED_LIMIT)} total={listed.length} />
+      <JustListed
+        listings={listed.slice(0, HOMEPAGE_LISTED_LIMIT)}
+        total={listed.length}
+        visits={outboundClicks}
+      />
 
       {/* Featured-on badges — scrolling marquee */}
       <BadgeMarquee />

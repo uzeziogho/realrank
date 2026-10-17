@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createServiceClient } from "@/lib/supabase/server";
 import { classifyTraffic } from "@/lib/bot";
+import { getListedHosts } from "@/lib/listed";
 import { hostname } from "@/lib/utils";
 
 export const runtime = "nodejs";
@@ -38,16 +39,19 @@ export async function POST(req: Request) {
     if (!wanted || !isSupabaseConfigured()) return res;
 
     const supabase = createServiceClient();
-    // Only count hosts we actually list, so the table can't be filled with
-    // made-up hosts by anyone who finds this endpoint.
+    // Only count hosts we actually carry, so the table can't be filled with
+    // made-up hosts by anyone who finds this endpoint. Both tiers count: the
+    // ranked board (published_sites) and the free directory (listed_sites) —
+    // a listing's outbound clicks are the only value it can be shown.
     const { data: sites, error: sErr } = await supabase
       .from("published_sites")
       .select("site_url")
       .eq("is_active", true);
     if (sErr) throw sErr;
-    const known = (sites ?? []).some(
+    let known = (sites ?? []).some(
       (s) => hostname(s.site_url).toLowerCase() === wanted,
     );
+    if (!known) known = (await getListedHosts()).includes(wanted);
     if (!known) return res;
 
     const { error } = await supabase.rpc("bump_outbound_click", { p_host: wanted });

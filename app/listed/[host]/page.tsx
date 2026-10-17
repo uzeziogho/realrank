@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BadgeCheck, ArrowUpRight, ShieldCheck } from "lucide-react";
+import { BadgeCheck, ArrowUpRight, ShieldCheck, MousePointerClick } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { SiteFavicon } from "@/components/site-favicon";
 import { VisitLink } from "@/components/visit-link";
 import { VerifyListing } from "@/components/verify-listing";
 import { getListingByHost, normalizeHost } from "@/lib/listed";
-import { categoryLabel, siteConfig } from "@/lib/config";
+import { getOutboundClicks } from "@/lib/data";
+import { categoryLabel, siteConfig, VISITS_FLOOR } from "@/lib/config";
 
 export const revalidate = 300;
 
@@ -35,6 +36,11 @@ export default async function ListingProfilePage({ params }: { params: Params })
   const host = normalizeHost(raw) ?? raw.toLowerCase();
   const listing = await getListingByHost(host);
   if (!listing) notFound();
+
+  // What this listing has actually done for the site: outbound clicks RealRank
+  // sent it over the last 28 days. Shown next to the Visit button so the proof
+  // sits beside the action, and only above VISITS_FLOOR — see lib/config.
+  const visits = (await getOutboundClicks(28)).get(listing.host) ?? 0;
 
   return (
     <div className="container max-w-2xl py-12">
@@ -86,6 +92,13 @@ export default async function ListingProfilePage({ params }: { params: Params })
           >
             {categoryLabel(listing.category)}
           </Link>
+        )}
+        {visits >= VISITS_FLOOR && (
+          <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+            <MousePointerClick className="size-3.5" />
+            <strong className="font-semibold tabular-nums text-foreground">{visits}</strong> visits
+            sent from {siteConfig.name} in the last 28 days
+          </span>
         )}
       </div>
 

@@ -206,3 +206,12 @@ export const guideLinks: NavLink[] = [
     description: "The .lol leaderboards compared, and which to trust.",
   },
 ];
+
+/**
+ * Don't put a visit count on a public page below this. A listing showing
+ * "2 visits" reads as proof the listing is worthless — worse than showing
+ * nothing — and single-digit counts are noise anyway: one curious visitor, or
+ * the owner checking their own listing. Above it the number is social proof
+ * that cuts both ways honestly. Counts come from getOutboundClicks (lib/data).
+ */
+export const VISITS_FLOOR = 10;
