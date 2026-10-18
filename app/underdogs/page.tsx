@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SiteFavicon } from "@/components/site-favicon";
 import { Sparkline } from "@/components/sparkline";
+import { BoardViews } from "@/components/board-views";
 import { getUnderdogs, attachSparklines } from "@/lib/data";
 import { siteConfig, categoryLabel } from "@/lib/config";
 import { formatCompact, formatGrowth, hostname, siteHref } from "@/lib/utils";
@@ -47,6 +48,7 @@ export default async function UnderdogsPage() {
             Search Console clicks — so a fresh domain growing fast shows up right next
             to the incumbents.
           </p>
+          <BoardViews className="mt-6 justify-center" />
           <div className="mt-8 flex flex-col items-center gap-2">
             <Button asChild size="lg">
               <Link href="/login">Prove you&apos;re an underdog — launch your site</Link>

@@ -8,6 +8,7 @@ import { Sparkline } from "@/components/sparkline";
 import { getLeaderboardData, attachSparklines, getMovers } from "@/lib/data";
 import { getListedSites } from "@/lib/listed";
 import { ListingCard } from "@/components/listing-card";
+import { BoardViews } from "@/components/board-views";
 import { siteConfig, categoryLabel } from "@/lib/config";
 import { formatCompact, formatGrowth, hostname, siteHref, timeAgo } from "@/lib/utils";
 import type { RankedSite } from "@/lib/types";
@@ -87,6 +88,7 @@ export default async function LaunchesPage() {
             Every verified launch earns a badge, a profile buyers and AI assistants can
             cite, and a real backlink to your site.
           </p>
+          <BoardViews className="mt-6 justify-center" />
 
           {/* Social proof — real verified sites already on the board. */}
           {faviconRow.length > 0 && (

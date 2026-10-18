@@ -3,6 +3,7 @@ import Link from "next/link";
 import { BadgeCheck, Plus, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ListingCard } from "@/components/listing-card";
+import { BoardViews } from "@/components/board-views";
 import { getListedSites } from "@/lib/listed";
 import { categories, categoryLabel, siteConfig } from "@/lib/config";
 import { cn } from "@/lib/utils";
@@ -78,6 +79,7 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
       </section>
 
       <section className="container py-10">
+        <BoardViews className="mb-6" />
         {/* Category filter */}
         {chips.length > 0 && (
           <div className="mb-6 flex flex-wrap gap-2">

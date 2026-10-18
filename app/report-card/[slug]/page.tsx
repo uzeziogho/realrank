@@ -138,8 +138,8 @@ function Unverified({ domain }: { domain: string }) {
       </Button>
       <p className="mt-4 text-xs text-muted-foreground">
         Want to grade your growth without connecting?{" "}
-        <Link href="/organic-growth-grade" className="text-primary hover:underline">
-          Try the manual grader
+        <Link href="/momentum-score" className="text-primary hover:underline">
+          Try the manual calculator
         </Link>
         .
       </p>
