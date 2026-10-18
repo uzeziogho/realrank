@@ -429,6 +429,33 @@ export async function getListingClickStats(days = 30): Promise<ListingClickStats
   }
 }
 
+/**
+ * All-time outbound click counts per listed project (host → clicks), for the
+ * public "N clicks" badge on directory listings. Cheap single read; empty map
+ * when unconfigured or on error.
+ */
+export async function getListingClickCounts(): Promise<Map<string, number>> {
+  if (!isSupabaseConfigured()) return new Map();
+  try {
+    const supabase = createServiceClient();
+    const { data, error } = await supabase
+      .from("site_events")
+      .select("label, hits")
+      .eq("event", "listing_click");
+    if (error) throw error;
+    const m = new Map<string, number>();
+    for (const r of data ?? []) {
+      const host = (r.label ?? "").trim();
+      if (!host) continue;
+      m.set(host, (m.get(host) ?? 0) + Number(r.hits));
+    }
+    return m;
+  } catch (err) {
+    console.error("[data] listing click counts read failed:", err);
+    return new Map();
+  }
+}
+
 /** Free-tool usage events that count as "used a tool" in the connect funnel. */
 const FUNNEL_TOOL_EVENTS = [
   "momentum_calc",

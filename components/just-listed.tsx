@@ -14,7 +14,15 @@ import type { Listing } from "@/lib/listed";
  * Renders nothing when there are no listings, so the homepage never shows an
  * empty shell.
  */
-export function JustListed({ listings, total }: { listings: Listing[]; total: number }) {
+export function JustListed({
+  listings,
+  total,
+  clicks,
+}: {
+  listings: Listing[];
+  total: number;
+  clicks?: Map<string, number>;
+}) {
   if (listings.length === 0) return null;
 
   return (
@@ -37,7 +45,7 @@ export function JustListed({ listings, total }: { listings: Listing[]; total: nu
 
         <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {listings.map((l) => (
-            <ListingCard key={l.host} listing={l} />
+            <ListingCard key={l.host} listing={l} clicks={clicks?.get(l.host)} />
           ))}
         </ul>
       </div>

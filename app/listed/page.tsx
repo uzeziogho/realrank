@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ListingCard } from "@/components/listing-card";
 import { BoardViews } from "@/components/board-views";
 import { getListedSites } from "@/lib/listed";
+import { getListingClickCounts } from "@/lib/data";
 import { categories, categoryLabel, siteConfig } from "@/lib/config";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +31,7 @@ export async function generateMetadata({
 export default async function ListedPage({ searchParams }: { searchParams: SearchParams }) {
   const { category: activeRaw } = await searchParams;
   const all = await getListedSites();
+  const clickCounts = await getListingClickCounts();
 
   // Count per category (only categories that actually have listings show as chips).
   const counts = new Map<string, number>();
@@ -117,7 +119,7 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
         ) : (
           <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {listings.map((l) => (
-              <ListingCard key={l.host} listing={l} />
+              <ListingCard key={l.host} listing={l} clicks={clickCounts.get(l.host)} />
             ))}
           </ul>
         )}

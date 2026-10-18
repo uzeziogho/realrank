@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Search, Radio, BarChart3, type LucideIcon } from "lucide-react";
+import { LayoutDashboard, Search, BarChart3, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Tab = { href: string; label: string; icon: LucideIcon; exact?: boolean };
@@ -10,7 +10,6 @@ type Tab = { href: string; label: string; icon: LucideIcon; exact?: boolean };
 const TABS: Tab[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/dashboard/leaks", label: "Search leaks", icon: Search },
-  { href: "/dashboard/channels", label: "Channels", icon: Radio },
 ];
 
 const OWNER_TAB: Tab = {

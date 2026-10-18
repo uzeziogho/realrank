@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { BadgeCheck } from "lucide-react";
+import { BadgeCheck, MousePointerClick } from "lucide-react";
 import { SiteFavicon } from "@/components/site-favicon";
 import { ListingVisit } from "@/components/listing-visit";
 import { categoryLabel } from "@/lib/config";
+import { formatCompact } from "@/lib/utils";
 import type { Listing } from "@/lib/listed";
 
 /**
@@ -12,7 +13,7 @@ import type { Listing } from "@/lib/listed";
  * Outbound links are nofollow until the owner proves the listing (owner_verified
  * via the badge), which also shows the verified checkmark.
  */
-export function ListingCard({ listing }: { listing: Listing }) {
+export function ListingCard({ listing, clicks }: { listing: Listing; clicks?: number }) {
   return (
     <li className="group flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40">
       <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border/70 bg-background">
@@ -39,6 +40,15 @@ export function ListingCard({ listing }: { listing: Listing }) {
             >
               {categoryLabel(listing.category)}
             </Link>
+          )}
+          {clicks != null && clicks > 0 && (
+            <span
+              className="inline-flex shrink-0 items-center gap-1 text-muted-foreground"
+              title={`${clicks.toLocaleString()} clicks sent from ${"RealRank"}`}
+            >
+              <MousePointerClick className="size-3.5" />
+              <span className="tabular-nums">{formatCompact(clicks)}</span> clicks
+            </span>
           )}
         </div>
       </div>
