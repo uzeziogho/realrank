@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { Activity, Layers, Sparkles, Filter } from "lucide-react";
+import { Activity, Layers, Sparkles, Filter, MousePointerClick } from "lucide-react";
 import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
 import { StatTile } from "@/components/dash/stat-tile";
-import { getEventStats, getConnectFunnel } from "@/lib/data";
-import type { EventDay, EventStat, ConnectFunnel } from "@/lib/data";
+import { getEventStats, getConnectFunnel, getListingClickStats } from "@/lib/data";
+import type { EventDay, EventStat, ConnectFunnel, ListingClickStats } from "@/lib/data";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { getOptionalUser, isOwner } from "@/lib/auth";
 import { formatCompact } from "@/lib/utils";
@@ -29,6 +29,7 @@ const EVENT_LABELS: Record<string, string> = {
   connect_click: "Connect clicked",
   movers_post_copy: "Movers post copied",
   movers_post_share: "Movers post shared",
+  listing_click: "Outbound clicks to listings",
 };
 
 function labelFor(event: string): string {
@@ -43,7 +44,11 @@ export default async function AnalyticsPage() {
   // Owner-only surface — everyone else lands back on their own dashboard.
   if (!isOwner(user.email)) redirect("/dashboard");
 
-  const [stats, funnel] = await Promise.all([getEventStats(30), getConnectFunnel(30)]);
+  const [stats, funnel, listingClicks] = await Promise.all([
+    getEventStats(30),
+    getConnectFunnel(30),
+    getListingClickStats(30),
+  ]);
   const topFeature = stats.events[0] ? labelFor(stats.events[0].event) : "—";
 
   return (
@@ -96,6 +101,37 @@ export default async function AnalyticsPage() {
         </p>
         <div className="rounded-xl border border-border bg-card p-6">
           <ConnectFunnelView funnel={funnel} />
+        </div>
+      </section>
+
+      {/* Clicks RealRank sent to listed projects */}
+      <section className="mt-10">
+        <div className="mb-1 flex items-center gap-2">
+          <MousePointerClick className="size-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold">Clicks sent to listed projects</h2>
+        </div>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Outbound clicks from the directory and &quot;just listed&quot; board to each
+          project&apos;s site, last 30 days — the traffic RealRank actually sends them.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-[minmax(0,14rem)_1fr]">
+          <StatTile
+            color="amber"
+            label="Clicks out (30d)"
+            value={formatCompact(listingClicks.total)}
+            sub={`to ${listingClicks.distinct} ${listingClicks.distinct === 1 ? "project" : "projects"}`}
+            icon={<MousePointerClick className="size-4" />}
+          />
+          <div className="rounded-xl border border-border bg-card p-6">
+            {listingClicks.projects.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No outbound clicks yet. They start counting as visitors click through from a
+                listing to a project&apos;s site.
+              </p>
+            ) : (
+              <ListingClicksBars stats={listingClicks} />
+            )}
+          </div>
         </div>
       </section>
 
@@ -163,9 +199,43 @@ function FeatureBars({ events }: { events: EventStat[] }) {
   );
 }
 
+/** Top listed projects by outbound clicks RealRank sent them. */
+function ListingClicksBars({ stats }: { stats: ListingClickStats }) {
+  const top = stats.projects.slice(0, 10);
+  const max = Math.max(1, ...top.map((p) => p.hits));
+  return (
+    <ul className="flex flex-col gap-3">
+      {top.map((p, i) => {
+        const pct = Math.max(3, Math.round((p.hits / max) * 100));
+        const color = dashVar[dashColorAt(i)];
+        return (
+          <li key={p.host}>
+            <div className="mb-1 flex items-baseline justify-between gap-3">
+              <a
+                href={`https://${p.host}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex min-w-0 items-center gap-2 text-sm font-medium hover:underline"
+              >
+                <span className="size-2 shrink-0 rounded-[3px]" style={{ backgroundColor: color }} aria-hidden />
+                <span className="truncate">{p.host}</span>
+              </a>
+              <span className="shrink-0 text-sm font-semibold tabular-nums">
+                {formatCompact(p.hits)}
+              </span>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+              <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 /** Funnel: visits -> tool -> connect click -> on the board, with step conversion. */
-function ConnectFunnelView({ funnel }: { funnel: ConnectFunnel }) {
-  const stages = [
+function ConnectFunnelView({ funnel }: { funnel: ConnectFunnel }) {  const stages = [
     { label: "Visits", value: funnel.visits },
     { label: "Used a free tool", value: funnel.toolUses },
     { label: "Clicked connect", value: funnel.connectClicks },

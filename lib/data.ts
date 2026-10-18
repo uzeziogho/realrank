@@ -378,6 +378,57 @@ export async function getEventStats(days = 30): Promise<EventStats> {
   }
 }
 
+export interface ListingClickStat {
+  host: string;
+  hits: number;
+}
+export interface ListingClickStats {
+  /** Outbound clicks per listed project (host), most-clicked first. */
+  projects: ListingClickStat[];
+  /** Total outbound clicks RealRank sent to listed projects. */
+  total: number;
+  /** How many distinct projects got at least one click. */
+  distinct: number;
+}
+
+/**
+ * Outbound clicks to listed/launched projects, from the privacy-safe
+ * site_events counter (event "listing_click", label = host). Shows the operator
+ * how much traffic RealRank actually sends the projects on it. Aggregate only.
+ */
+export async function getListingClickStats(days = 30): Promise<ListingClickStats> {
+  const empty: ListingClickStats = { projects: [], total: 0, distinct: 0 };
+  if (!isSupabaseConfigured()) return empty;
+  try {
+    const since = new Date();
+    since.setUTCDate(since.getUTCDate() - days);
+    const supabase = createServiceClient();
+    const { data, error } = await supabase
+      .from("site_events")
+      .select("label, hits")
+      .eq("event", "listing_click")
+      .gte("day", since.toISOString().slice(0, 10));
+    if (error) throw error;
+
+    const byHost = new Map<string, number>();
+    let total = 0;
+    for (const r of data ?? []) {
+      const host = (r.label ?? "").trim();
+      if (!host) continue;
+      const hits = Number(r.hits);
+      total += hits;
+      byHost.set(host, (byHost.get(host) ?? 0) + hits);
+    }
+    const projects = [...byHost.entries()]
+      .map(([host, hits]) => ({ host, hits }))
+      .sort((a, b) => b.hits - a.hits);
+    return { projects, total, distinct: byHost.size };
+  } catch (err) {
+    console.error("[data] listing click stats read failed:", err);
+    return empty;
+  }
+}
+
 /** Free-tool usage events that count as "used a tool" in the connect funnel. */
 const FUNNEL_TOOL_EVENTS = [
   "momentum_calc",

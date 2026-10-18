@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BadgeCheck, ArrowUpRight, ShieldCheck } from "lucide-react";
+import { BadgeCheck, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ListingVisitButton } from "@/components/listing-visit-button";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { SiteFavicon } from "@/components/site-favicon";
 import { getListingByHost, normalizeHost } from "@/lib/listed";
@@ -69,15 +70,11 @@ export default async function ListingProfilePage({ params }: { params: Params })
       )}
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        <Button asChild>
-          <a
-            href={listing.siteUrl}
-            target="_blank"
-            rel={listing.ownerVerified ? "noopener" : "noopener nofollow"}
-          >
-            Visit {listing.host} <ArrowUpRight className="size-4" />
-          </a>
-        </Button>
+        <ListingVisitButton
+          url={listing.siteUrl}
+          host={listing.host}
+          verified={listing.ownerVerified}
+        />
         {listing.category && (
           <Link
             href="/listed"

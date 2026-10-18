@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { BadgeCheck, ArrowUpRight } from "lucide-react";
+import { BadgeCheck } from "lucide-react";
 import { SiteFavicon } from "@/components/site-favicon";
+import { ListingVisit } from "@/components/listing-visit";
 import { categoryLabel } from "@/lib/config";
 import type { Listing } from "@/lib/listed";
 
@@ -41,15 +42,12 @@ export function ListingCard({ listing }: { listing: Listing }) {
           )}
         </div>
       </div>
-      <a
-        href={listing.siteUrl}
-        target="_blank"
-        rel={listing.ownerVerified ? "noopener" : "noopener nofollow"}
-        className="inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-input text-muted-foreground transition-colors group-hover:border-primary/40 hover:bg-accent hover:text-foreground"
-        aria-label={`Visit ${listing.displayName}`}
-      >
-        <ArrowUpRight className="size-4" />
-      </a>
+      <ListingVisit
+        url={listing.siteUrl}
+        host={listing.host}
+        name={listing.displayName}
+        verified={listing.ownerVerified}
+      />
     </li>
   );
 }
