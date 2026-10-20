@@ -87,6 +87,17 @@ export function SiteFooter() {
                 </li>
               ))}
               <li><Link href="/pricing" className="hover:text-foreground">Pricing</Link></li>
+              {/* Ads, sponsorship and partnership offers arrive by email, and
+                  /pricing was the only page that gave an address — too far in
+                  for someone who lands on the board and wants to talk. */}
+              <li>
+                <a
+                  href={`mailto:${siteConfig.email.sponsors}?subject=${encodeURIComponent(`${siteConfig.name} — advertising / partnership`)}`}
+                  className="hover:text-foreground"
+                >
+                  Advertise or partner
+                </a>
+              </li>
               <li><Link href="/privacy" className="hover:text-foreground">Privacy</Link></li>
               <li><Link href="/terms" className="hover:text-foreground">Terms</Link></li>
             </ul>

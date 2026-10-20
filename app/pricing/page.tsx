@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { ConnectCTA } from "@/components/connect-cta";
 import { siteConfig } from "@/lib/config";
 
-const CONTACT = "support@realrank.lol";
+const CONTACT = siteConfig.email.support;
+const SPONSOR_CONTACT = siteConfig.email.sponsors;
 
 export const metadata: Metadata = {
   title: "Pricing — RealRank is free",
@@ -80,7 +81,7 @@ export default function PricingPage() {
           ]}
           cta={
             <Button asChild size="lg" variant="outline" className="w-full">
-              <a href={`mailto:${CONTACT}?subject=Sponsoring%20${siteConfig.name}`}>Get in touch</a>
+              <a href={`mailto:${SPONSOR_CONTACT}?subject=Sponsoring%20${siteConfig.name}`}>Get in touch</a>
             </Button>
           }
         />
@@ -115,7 +116,10 @@ export default function PricingPage() {
         <Faq q="How do sponsorships work?">
           A sponsored placement is a fixed, labeled slot in the leaderboard. It&apos;s excluded
           from scoring, so it never changes where any site ranks. Email{" "}
-          <a href={`mailto:${CONTACT}`} className="text-primary hover:underline">{CONTACT}</a> to ask.
+          <a href={`mailto:${SPONSOR_CONTACT}`} className="text-primary hover:underline">
+            {SPONSOR_CONTACT}
+          </a>{" "}
+          to ask.
         </Faq>
       </section>
     </div>

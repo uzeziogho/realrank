@@ -55,6 +55,24 @@ export const siteConfig = {
   // Founding program: the first N sites to connect become founding members
   // (permanent Founder badge). Powers the /founding recruitment page + scarcity.
   foundingSpots: 50,
+  /**
+   * Published contact addresses. Every one of these is printed on a public page
+   * (and so will be scraped), and mail to them must actually arrive: `privacy`
+   * is what the privacy policy promises for data requests, and `support` is
+   * what the pricing page gives sponsors. They don't need separate mailboxes —
+   * aliases forwarding to one inbox, plus a catch-all so nothing bounces, is
+   * enough at this size.
+   *
+   * `sponsors` deliberately points at `support` until a sponsors@ alias exists.
+   * Publishing an address before it can receive mail just bounces the offers
+   * this is meant to catch, and a push here reaches the live domain, so flip it
+   * to "sponsors@realrank.lol" in this one place once the alias is live.
+   */
+  email: {
+    support: "support@realrank.lol",
+    privacy: "privacy@realrank.lol",
+    sponsors: "support@realrank.lol",
+  },
 } as const;
 
 /**

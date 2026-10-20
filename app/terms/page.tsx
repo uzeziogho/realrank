@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 const UPDATED = "August 26, 2026";
-const CONTACT = "support@realrank.lol";
+const CONTACT = siteConfig.email.support;
 
 export default function TermsPage() {
   return (

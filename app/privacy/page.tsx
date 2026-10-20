@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 const UPDATED = "August 26, 2026";
-const CONTACT = "privacy@realrank.lol";
+const CONTACT = siteConfig.email.privacy;
 
 export default function PrivacyPage() {
   return (
