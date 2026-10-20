@@ -49,6 +49,14 @@ export default function PrivacyPage() {
               public leaderboard.
             </li>
             <li>
+              <strong className="text-foreground">Email address, if you give us one.</strong>{" "}
+              When you join the list without connecting Google, or leave a contact
+              address while listing a project. We use it to send you the weekly
+              movers digest and to reach you about your listing — nothing else.
+              Every digest carries a one-click unsubscribe link, and opting out is
+              permanent.
+            </li>
+            <li>
               <strong className="text-foreground">Basic technical data.</strong>{" "}
               Standard server logs and a session cookie required to keep you
               connected. We do not use advertising trackers.
@@ -61,6 +69,10 @@ export default function PrivacyPage() {
             <li>To compute momentum and volume rankings from your click totals.</li>
             <li>To display the sites you choose to publish on the public leaderboard.</li>
             <li>To refresh your published sites’ click totals on a schedule.</li>
+            <li>
+              To send the weekly movers digest to addresses on our list, each with
+              a one-click unsubscribe link. We never sell or share these addresses.
+            </li>
             <li>To operate, secure, and improve the service.</li>
           </ul>
           <p className="mt-3">

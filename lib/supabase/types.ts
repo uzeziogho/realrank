@@ -150,6 +150,24 @@ export interface Database {
         };
         Relationships: [];
       };
+      email_unsubscribes: {
+        Row: {
+          email: string;
+          source: string | null;
+          created_at: string;
+        };
+        Insert: {
+          email: string;
+          source?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          email?: string;
+          source?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       waitlist: {
         Row: {
           id: string;

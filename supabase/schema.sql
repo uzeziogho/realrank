@@ -594,3 +594,23 @@ create index if not exists listed_sites_category_idx
   on public.listed_sites (category) where is_active;
 create index if not exists listed_sites_verified_idx
   on public.listed_sites (owner_verified) where is_active;
+
+-- ---------------------------------------------------------------------------
+-- Weekly digest suppression list
+-- ---------------------------------------------------------------------------
+-- An address lands here when someone clicks unsubscribe in a digest (see
+-- /api/unsubscribe). Checked at send time, so a row here means that address
+-- never receives another digest, whichever list it came from — the waitlist or
+-- a listing's submitter email. Its own table rather than a flag on waitlist,
+-- because one opt-out has to cover the person, not the row holding the address.
+
+create table if not exists public.email_unsubscribes (
+  email text primary key,
+  source text,                           -- "digest", "manual", ... (triage only)
+  created_at timestamptz not null default now()
+);
+
+alter table public.email_unsubscribes enable row level security;
+
+-- No policies: service-role only. An opt-out list must never be publicly
+-- readable — it is a list of real addresses.
