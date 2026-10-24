@@ -3,7 +3,7 @@ import Link from "next/link";
 import { TrendingUp, TrendingDown, Minus, ShieldCheck, ArrowUpRight, Users, MousePointerClick, Eye, Gauge } from "lucide-react";
 import { getStatsData } from "@/lib/stats";
 import { getSiteTraffic, getSiteTrafficSeries, getTrafficBreakdown } from "@/lib/data";
-import { TrafficTrend } from "@/components/traffic-trend";
+import { TrafficChart } from "@/components/traffic-chart";
 import { TrafficBreakdown } from "@/components/traffic-breakdown";
 import { StatTile } from "@/components/dash/stat-tile";
 import { CiteIndex } from "@/components/cite-index";
@@ -28,8 +28,24 @@ export const metadata: Metadata = {
 export default async function StatsPage() {
   const stats = await getStatsData();
   const traffic = await getSiteTraffic();
-  const trafficSeries = await getSiteTrafficSeries(30);
+  const trafficSeries = await getSiteTrafficSeries(60);
   const breakdown = await getTrafficBreakdown(30);
+
+  // Last 30 days vs the prior 30, for the headline KPI deltas. The all-time
+  // cumulative totals stay available below the chart.
+  const cur = trafficSeries.slice(-30);
+  const prev = trafficSeries.slice(0, Math.max(0, trafficSeries.length - 30)).slice(-30);
+  const sum = (rows: typeof trafficSeries, key: "visitors" | "sessions" | "pageviews") =>
+    rows.reduce((s, d) => s + d[key], 0);
+  const delta = (c: number, p: number): { label: string; direction: "up" | "down" | "flat" } | undefined => {
+    if (p <= 0) return undefined;
+    const r = (c - p) / p;
+    const dir = r > 0.005 ? "up" : r < -0.005 ? "down" : "flat";
+    return { label: `${r > 0 ? "+" : ""}${Math.round(r * 100)}%`, direction: dir };
+  };
+  const v30 = sum(cur, "visitors");
+  const s30 = sum(cur, "sessions");
+  const p30 = sum(cur, "pageviews");
 
   const asOf = new Date(stats.lastUpdated ?? Date.now());
   const period = asOf.toLocaleDateString("en-US", { month: "long", year: "numeric" });
@@ -116,31 +132,34 @@ export default async function StatsPage() {
           .
         </p>
 
-        {/* KPI row — at-a-glance headline metrics */}
+        {/* KPI row — last 30 days with week-over-week deltas */}
         <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <StatTile
             color="blue"
             icon={<Users className="size-4" />}
             label="Visitors"
-            value={formatCompact(traffic.visitors)}
-            sub="all-time"
-            spark={trafficSeries.map((d) => d.visitors)}
+            value={formatCompact(v30)}
+            sub="vs prior 30 days"
+            delta={delta(v30, sum(prev, "visitors"))}
+            spark={cur.map((d) => d.visitors)}
           />
           <StatTile
             color="green"
             icon={<MousePointerClick className="size-4" />}
             label="Sessions"
-            value={formatCompact(traffic.sessions)}
-            sub="all-time"
-            spark={trafficSeries.map((d) => d.sessions)}
+            value={formatCompact(s30)}
+            sub="vs prior 30 days"
+            delta={delta(s30, sum(prev, "sessions"))}
+            spark={cur.map((d) => d.sessions)}
           />
           <StatTile
             color="amber"
             icon={<Eye className="size-4" />}
             label="Pageviews"
-            value={formatCompact(traffic.pageviews)}
-            sub="all-time"
-            spark={trafficSeries.map((d) => d.pageviews)}
+            value={formatCompact(p30)}
+            sub="vs prior 30 days"
+            delta={delta(p30, sum(prev, "pageviews"))}
+            spark={cur.map((d) => d.pageviews)}
           />
           <StatTile
             color="violet"
@@ -159,12 +178,16 @@ export default async function StatsPage() {
             {siteConfig.name} traffic
           </h2>
           <p className="text-sm text-muted-foreground">
-            Real visits to {siteConfig.name} itself — counted first-party, no
-            third-party trackers. Cumulative since launch.
+            Daily visitors and pageviews on {siteConfig.name} itself — counted
+            first-party, no third-party trackers. Toggle a series or hover a day.
           </p>
           <div className="mt-4">
-            <TrafficTrend totals={traffic} days={trafficSeries} showTotals={false} />
+            <TrafficChart days={cur} />
           </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            All-time since launch: {formatCompact(traffic.visitors)} visitors ·{" "}
+            {formatCompact(traffic.sessions)} sessions · {formatCompact(traffic.pageviews)} pageviews.
+          </p>
         </section>
 
         {/* Where traffic comes from */}

@@ -83,7 +83,7 @@ export async function POST(req: Request) {
       // read as visits per source/page/country/device. Aggregate + privacy-safe.
       if (newSession) {
         const { error: bErr } = await supabase.rpc("bump_traffic_breakdown", {
-          p_source: deriveSource(body.src, body.ref),
+          p_source: deriveSource(body.src, body.ref, ua, body.path),
           p_path: derivePath(body.path),
           p_country: (h.get("x-vercel-ip-country") || "Unknown").toUpperCase().slice(0, 2),
           p_device: deviceClass(ua),
@@ -99,21 +99,48 @@ export async function POST(req: Request) {
   return res;
 }
 
-/** Referrer/utm_source → a clean source label. Internal/no referrer = Direct. */
 const OWN_HOST_RE = /(^|\.)realrank\.lol$/i;
 
-function deriveSource(src?: string, ref?: string): string {
+/**
+ * Known in-app browsers that strip the referrer. Naming the app from the
+ * user-agent keeps these visits out of the blind "Direct" bucket. Most common
+ * first; the label carries the real host so it still gets a favicon.
+ */
+function inAppSource(ua: string): string | null {
+  if (/instagram/i.test(ua)) return "instagram.com · in-app";
+  if (/\bFBAN\b|\bFBAV\b|FB_IAB/i.test(ua)) return "facebook.com · in-app";
+  if (/twitter/i.test(ua)) return "x.com · in-app";
+  if (/tiktok|musical_ly|bytedancewebview/i.test(ua)) return "tiktok.com · in-app";
+  if (/linkedinapp/i.test(ua)) return "linkedin.com · in-app";
+  if (/pinterest/i.test(ua)) return "pinterest.com · in-app";
+  if (/snapchat/i.test(ua)) return "snapchat.com · in-app";
+  if (/\bLine\//.test(ua)) return "line · in-app";
+  return null;
+}
+
+/**
+ * Referrer/utm_source → a clean source label. An explicit utm_source wins; a
+ * real external referrer becomes its host. Otherwise there's no referrer, which
+ * most tools dump into one blind "Direct" bucket — instead we split it: an
+ * in-app browser named from the UA, a "shared link" (no referrer but a deep
+ * landing page, i.e. pasted into a chat/email/notes), or a genuine "typed or
+ * bookmark" visit to the homepage.
+ */
+function deriveSource(src?: string, ref?: string, ua = "", path?: string): string {
   const s = (src ?? "").trim();
   if (s) return s.toLowerCase().slice(0, 64);
   const r = (ref ?? "").trim();
-  if (!r) return "Direct";
-  try {
-    const host = new URL(r).hostname.replace(/^www\./i, "");
-    if (!host || OWN_HOST_RE.test(host)) return "Direct";
-    return host.slice(0, 64);
-  } catch {
-    return "Direct";
+  if (r) {
+    try {
+      const host = new URL(r).hostname.replace(/^www\./i, "");
+      if (host && !OWN_HOST_RE.test(host)) return host.slice(0, 64);
+    } catch {
+      /* unparseable referrer — fall through to the no-referrer split */
+    }
   }
+  const inApp = inAppSource(ua);
+  if (inApp) return inApp;
+  return derivePath(path) !== "/" ? "Direct · shared link" : "Direct · typed or bookmark";
 }
 
 /** The caller's own path, stripped of query/hash and trailing slash. */
