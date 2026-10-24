@@ -84,6 +84,13 @@ export default function RootLayout({
           // eslint-disable-next-line @next/next/no-sync-scripts
           <script defer src="https://clicks.page/t.js" data-site={CLICKS_SITE} />
         )}
+        {/* Ahrefs Web Analytics — loads async so it never blocks rendering. The
+            data-key is a public site key, not a secret. */}
+        <script
+          src="https://analytics.ahrefs.com/analytics.js"
+          data-key="nR8nEsmmrgMXGaUAuNEBUw"
+          async
+        />
         {/* Brand wordmark typeface (Space Grotesk). Loaded via stylesheet so it
             works without a build-time font fetch; the Logo falls back to the
             site sans until it arrives. */}
