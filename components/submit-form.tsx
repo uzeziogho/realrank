@@ -13,8 +13,9 @@ type Phase = "form" | "done";
  * The open "$0 listing" form. Posts to /api/list (spam guards + honeypot live
  * server-side). Listing is free and does not require the badge; on success it
  * shows the permanent link and offers the badge embed, then lets the owner
- * prove ownership (POST /api/list/verify) to earn a dofollow verified
- * checkmark — short of connecting Search Console for a full ranked spot.
+ * prove ownership (POST /api/list/verify) to earn a verified checkmark and an
+ * indexed listing. A dofollow link is a separate, higher rung: connect Search
+ * Console for a full ranked spot and a followed link on the /site profile.
  */
 export function SubmitForm() {
   const [phase, setPhase] = useState<Phase>("form");
@@ -217,7 +218,8 @@ function ListedSuccess({ host }: { host: string }) {
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
           Optional: add this badge to your site, then verify. We&apos;ll confirm it&apos;s really
-          yours and mark your listing verified (a followed link).
+          yours and mark your listing verified, so it gets indexed by Google. For a dofollow
+          link, connect Search Console below.
         </p>
         <CopyField value={badge} />
 
