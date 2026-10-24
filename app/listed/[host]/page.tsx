@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BadgeCheck, ArrowUpRight, ShieldCheck, MousePointerClick } from "lucide-react";
+import { BadgeCheck, ArrowUpRight, ShieldCheck } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { SiteFavicon } from "@/components/site-favicon";
 import { VisitLink } from "@/components/visit-link";
+import { VisitsChain } from "@/components/visits-chain";
 import { VerifyListing } from "@/components/verify-listing";
 import { getListingByHost, normalizeHost } from "@/lib/listed";
 import { getOutboundClicks } from "@/lib/data";
@@ -76,6 +77,14 @@ export default async function ListingProfilePage({ params }: { params: Params })
         <p className="mt-3 text-muted-foreground">{listing.description}</p>
       )}
 
+      {/* The traffic this listing has delivered, as an attribution chain:
+          directory → listing → visits sent. Only above VISITS_FLOOR. */}
+      {visits >= VISITS_FLOOR && (
+        <div className="mt-6">
+          <VisitsChain siteUrl={listing.siteUrl} host={listing.host} visits={visits} />
+        </div>
+      )}
+
       <div className="mt-6 flex flex-wrap items-center gap-3">
         <VisitLink
           href={listing.siteUrl}
@@ -92,13 +101,6 @@ export default async function ListingProfilePage({ params }: { params: Params })
           >
             {categoryLabel(listing.category)}
           </Link>
-        )}
-        {visits >= VISITS_FLOOR && (
-          <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-            <MousePointerClick className="size-3.5" />
-            <strong className="font-semibold tabular-nums text-foreground">{visits}</strong> visits
-            sent from {siteConfig.name}
-          </span>
         )}
       </div>
 

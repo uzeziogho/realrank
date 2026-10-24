@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Activity, Layers, Sparkles, Filter, CalendarRange, Bot } from "lucide-react";
 import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
 import { StatTile } from "@/components/dash/stat-tile";
+import { EventsAreaChart } from "@/components/dash/events-area-chart";
 import {
   getEventStats,
   getConnectFunnel,
@@ -13,7 +14,6 @@ import {
   REPORT_PERIODS,
 } from "@/lib/data";
 import type {
-  EventDay,
   EventStat,
   ConnectFunnel,
   FeatureUsageReport,
@@ -54,6 +54,14 @@ function labelFor(event: string): string {
   return EVENT_LABELS[event] ?? event.replace(/_/g, " ");
 }
 
+/** A week-over-week style delta pill from a current and prior window total. */
+function kpiDelta(cur: number, prev: number): { label: string; direction: "up" | "down" | "flat" } | undefined {
+  if (prev <= 0) return undefined;
+  const r = (cur - prev) / prev;
+  const dir = r > 0.005 ? "up" : r < -0.005 ? "down" : "flat";
+  return { label: `${r > 0 ? "+" : ""}${Math.round(r * 100)}%`, direction: dir };
+}
+
 export default async function AnalyticsPage({
   searchParams,
 }: {
@@ -70,13 +78,21 @@ export default async function AnalyticsPage({
   const { period: rawPeriod } = await searchParams;
   const period: ReportPeriod = isReportPeriod(rawPeriod) ? rawPeriod : "wow";
 
-  const [stats, funnel, report, bots] = await Promise.all([
+  const [stats, funnel, report, bots, stats60] = await Promise.all([
     getEventStats(30),
     getConnectFunnel(30),
     getFeatureUsageReport(period),
     getBotTraffic(30),
+    getEventStats(60),
   ]);
   const topFeature = stats.events[0] ? labelFor(stats.events[0].event) : "—";
+
+  // Events in the prior 30 days, for the headline delta (last 30 vs the 30 before).
+  const eventsPrev = stats60.daily
+    .slice(0, Math.max(0, stats60.daily.length - 30))
+    .slice(-30)
+    .reduce((s, d) => s + d.hits, 0);
+  const eventsDelta = kpiDelta(stats.total, eventsPrev);
 
   return (
     <div className="container max-w-5xl py-10">
@@ -96,7 +112,8 @@ export default async function AnalyticsPage({
           color="green"
           label="Events (30d)"
           value={formatCompact(stats.total)}
-          sub="feature interactions"
+          sub="vs prior 30 days"
+          delta={eventsDelta}
           icon={<Activity className="size-4" />}
           spark={stats.daily.map((d) => d.hits)}
         />
@@ -176,7 +193,7 @@ export default async function AnalyticsPage({
           <section className="mt-10">
             <h2 className="mb-4 text-lg font-semibold">Daily events</h2>
             <div className="rounded-xl border border-border bg-card p-6">
-              <EventsChart days={stats.daily} />
+              <EventsAreaChart days={stats.daily} />
             </div>
           </section>
 
@@ -291,74 +308,6 @@ function ConnectFunnelView({ funnel }: { funnel: ConnectFunnel }) {
         </div>
       )}
     </div>
-  );
-}
-
-/** Server-rendered inline SVG area chart of total events per day. */
-function EventsChart({ days }: { days: EventDay[] }) {
-  const hasSeries = days.some((d) => d.hits > 0);
-  if (!hasSeries) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        Daily events will chart here as usage comes in.
-      </p>
-    );
-  }
-
-  const series = days.length >= 2 ? days : [...days, ...days].slice(0, 2);
-  const W = 720;
-  const H = 160;
-  const padT = 12;
-  const padB = 22;
-  const padX = 6;
-  const n = series.length;
-  const max = Math.max(1, ...series.map((d) => d.hits));
-
-  const x = (i: number) => padX + (i / (n - 1)) * (W - padX * 2);
-  const y = (v: number) => padT + (1 - v / max) * (H - padT - padB);
-
-  const pts = series.map((d, i) => `${x(i).toFixed(1)},${y(d.hits).toFixed(1)}`);
-  const line = `M ${pts.join(" L ")}`;
-  const area = `${line} L ${x(n - 1).toFixed(1)},${(H - padB).toFixed(1)} L ${x(0).toFixed(1)},${(H - padB).toFixed(1)} Z`;
-
-  const first = series[0];
-  const last = series[n - 1];
-  const peak = Math.round(max);
-
-  return (
-    <>
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        className="h-40 w-full"
-        role="img"
-        preserveAspectRatio="none"
-        aria-label={`Daily events over the last ${n} days, peaking at ${peak}.`}
-      >
-        <defs>
-          <linearGradient id="events-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.28" />
-            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        <line x1={padX} y1={H - padB} x2={W - padX} y2={H - padB} stroke="hsl(var(--border))" strokeWidth={1} />
-        <path d={area} fill="url(#events-fill)" />
-        <path
-          d={line}
-          fill="none"
-          stroke="hsl(var(--primary))"
-          strokeWidth={2}
-          strokeLinejoin="round"
-          strokeLinecap="round"
-          vectorEffect="non-scaling-stroke"
-        />
-        <circle cx={x(n - 1)} cy={y(last.hits)} r={4} fill="hsl(var(--primary))" stroke="hsl(var(--card))" strokeWidth={2} />
-      </svg>
-      <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
-        <span>{fmtShort(first.day)}</span>
-        <span>peak {formatCompact(peak)}/day</span>
-        <span>{fmtShort(last.day)}</span>
-      </div>
-    </>
   );
 }
 
