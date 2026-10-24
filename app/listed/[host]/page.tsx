@@ -40,7 +40,7 @@ export default async function ListingProfilePage({ params }: { params: Params })
   // What this listing has actually done for the site: outbound clicks RealRank
   // sent it over the last 28 days. Shown next to the Visit button so the proof
   // sits beside the action, and only above VISITS_FLOOR — see lib/config.
-  const visits = (await getOutboundClicks(28)).get(listing.host) ?? 0;
+  const visits = (await getOutboundClicks()).get(listing.host) ?? 0;
 
   return (
     <div className="container max-w-2xl py-12">
@@ -97,7 +97,7 @@ export default async function ListingProfilePage({ params }: { params: Params })
           <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
             <MousePointerClick className="size-3.5" />
             <strong className="font-semibold tabular-nums text-foreground">{visits}</strong> visits
-            sent from {siteConfig.name} in the last 28 days
+            sent from {siteConfig.name}
           </span>
         )}
       </div>

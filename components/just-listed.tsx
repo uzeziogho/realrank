@@ -21,7 +21,7 @@ export function JustListed({
 }: {
   listings: Listing[];
   total: number;
-  /** Outbound clicks per host (28d), from getOutboundClicks. */
+  /** Outbound clicks per host (all-time), from getOutboundClicks. */
   visits?: Map<string, number>;
 }) {
   if (listings.length === 0) return null;

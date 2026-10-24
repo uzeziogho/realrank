@@ -61,7 +61,7 @@ export function ListingCard({ listing, visits }: { listing: Listing; visits?: nu
           )}
           {showVisits && (
             <span
-              title={`${visits} visits sent to ${listing.host} from RealRank in the last 28 days`}
+              title={`${visits} visits sent to ${listing.host} from RealRank`}
               className="inline-flex shrink-0 items-center gap-1 tabular-nums"
             >
               <MousePointerClick className="size-3" /> {formatCompact(visits)} visits

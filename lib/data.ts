@@ -501,7 +501,8 @@ export async function getConnectFunnel(days = 30): Promise<ConnectFunnel> {
 }
 
 /**
- * Outbound click-throughs per site host over the last `days`, from the
+ * Outbound click-throughs per site host, all-time by default (pass `days` to
+ * narrow to a rolling window), from the
  * first-party site_outbound_clicks counter (written by the /api/visit beacon,
  * and by the legacy /visit redirect for links already out in the world).
  * Keyed by lowercase host. Aggregate only. Returns an empty map on any failure
@@ -510,17 +511,19 @@ export async function getConnectFunnel(days = 30): Promise<ConnectFunnel> {
  * listing can be shown as proof its listing did something, so see
  * VISITS_FLOOR (lib/config.ts) before putting a number on a page.
  */
-export async function getOutboundClicks(days = 28): Promise<Map<string, number>> {
+export async function getOutboundClicks(days?: number): Promise<Map<string, number>> {
   const out = new Map<string, number>();
   if (!isSupabaseConfigured()) return out;
   try {
-    const since = new Date();
-    since.setUTCDate(since.getUTCDate() - days);
     const supabase = createServiceClient();
-    const { data, error } = await supabase
-      .from("site_outbound_clicks")
-      .select("host, hits")
-      .gte("day", since.toISOString().slice(0, 10));
+    let query = supabase.from("site_outbound_clicks").select("host, hits");
+    // `days` omitted = all-time cumulative; a number narrows to a rolling window.
+    if (typeof days === "number") {
+      const since = new Date();
+      since.setUTCDate(since.getUTCDate() - days);
+      query = query.gte("day", since.toISOString().slice(0, 10));
+    }
+    const { data, error } = await query;
     if (error) throw error;
     for (const r of data ?? []) {
       out.set(r.host, (out.get(r.host) ?? 0) + Number(r.hits));

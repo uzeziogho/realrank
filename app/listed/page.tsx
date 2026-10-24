@@ -31,7 +31,7 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
   const { category: activeRaw } = await searchParams;
   // Visit counts are the one thing a free listing can show for itself, so they
   // ride along with the directory read (one query for every host).
-  const [all, visits] = await Promise.all([getListedSites(), getOutboundClicks(28)]);
+  const [all, visits] = await Promise.all([getListedSites(), getOutboundClicks()]);
 
   // Count per category (only categories that actually have listings show as chips).
   const counts = new Map<string, number>();

@@ -34,7 +34,7 @@ export default async function HomePage() {
     getSiteTraffic(),
     getListedSites(),
     // Visits each listing has sent its site (28d) — social proof on the cards.
-    getOutboundClicks(28),
+    getOutboundClicks(),
   ]);
 
   return (
