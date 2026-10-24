@@ -515,7 +515,7 @@ export const articles: Article[] = [
         </p>
         <p>
           <strong>
-            <Link href="/organic-growth-grade">Growth grader</Link>
+            <Link href="/momentum-score">Momentum calculator</Link>
           </strong>{" "}
           takes the same two inputs and turns them into a single shareable letter grade,
           from A+ down to F, based on your week-over-prior growth. It is built to be

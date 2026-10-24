@@ -5,6 +5,7 @@ import { SiteFavicon } from "@/components/site-favicon";
 import { Button } from "@/components/ui/button";
 import { ConnectNote } from "@/components/connect-note";
 import { WeeklyPostBox } from "@/components/weekly-post";
+import { BoardViews } from "@/components/board-views";
 import { getMovers } from "@/lib/data";
 import { buildMoversDigest } from "@/lib/digest";
 import { siteConfig } from "@/lib/config";
@@ -53,6 +54,7 @@ export default async function MoversPage() {
             This week&apos;s biggest climbers on the organic-momentum board — verified
             by Google Search Console, ranked by real growth. No bidding, no estimates.
           </p>
+          <BoardViews className="mt-6 justify-center" />
           {top && top.rankDelta && (
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <a

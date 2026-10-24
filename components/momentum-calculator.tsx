@@ -18,6 +18,16 @@ function grade(growth: number): { label: string; tone: "up" | "flat" | "down" } 
   return { label: "Cooling off", tone: "down" };
 }
 
+/** A–F letter grade from week-over-week growth (absorbs the old growth grader). */
+function letterGrade(growth: number): string {
+  if (growth >= 1) return "A+";
+  if (growth >= 0.5) return "A";
+  if (growth >= 0.2) return "B";
+  if (growth >= 0.05) return "C";
+  if (growth > -0.05) return "D";
+  return "F";
+}
+
 function parseNum(v: string): number {
   const n = Number.parseInt(v.replace(/[^0-9]/g, ""), 10);
   return Number.isFinite(n) && n >= 0 ? n : 0;
@@ -43,9 +53,10 @@ export function MomentumCalculator() {
     [clicks_7d, clicks_28d],
   );
   const g = grade(result.growthRate);
+  const letter = letterGrade(result.growthRate);
   const GradeIcon = g.tone === "up" ? TrendingUp : g.tone === "down" ? TrendingDown : Minus;
 
-  const shareText = `My organic momentum score is ${result.momentumScore} (${formatGrowth(result.growthRate)} week-over-week) 📈 What's yours?`;
+  const shareText = `My organic growth grade is ${letter} — momentum score ${result.momentumScore} (${formatGrowth(result.growthRate)} week-over-week) 📈 What's yours?`;
   const shareUrl = `${siteConfig.url}/momentum-score`;
   const xIntent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
 
@@ -90,26 +101,36 @@ export function MomentumCalculator() {
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Your momentum score
+                Your growth grade
               </p>
-              <div className="mt-1 flex items-baseline gap-3">
-                <span className="text-5xl font-bold tabular-nums">{result.momentumScore}</span>
+              <div className="mt-1 flex items-center gap-3">
                 <span
-                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-sm font-medium ${
-                    g.tone === "up"
-                      ? "bg-success/10 text-success"
-                      : g.tone === "down"
-                        ? "bg-danger/10 text-danger"
-                        : "bg-muted text-muted-foreground"
+                  className={`text-5xl font-black leading-none ${
+                    g.tone === "up" ? "text-success" : g.tone === "down" ? "text-danger" : "text-muted-foreground"
                   }`}
                 >
-                  <GradeIcon className="size-4" /> {g.label}
+                  {letter}
                 </span>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-bold tabular-nums">{result.momentumScore}</span>
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                        g.tone === "up"
+                          ? "bg-success/10 text-success"
+                          : g.tone === "down"
+                            ? "bg-danger/10 text-danger"
+                            : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      <GradeIcon className="size-3.5" /> {g.label}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    momentum score · {formatGrowth(result.growthRate)} week-over-week
+                  </p>
+                </div>
               </div>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {formatGrowth(result.growthRate)} week-over-week ·{" "}
-                {result.dailyRecent}/day now vs {result.dailyPrev}/day before
-              </p>
             </div>
             <div className="flex flex-col gap-2">
               <Button asChild>

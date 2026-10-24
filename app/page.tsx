@@ -65,7 +65,7 @@ export default async function HomePage() {
           </div>
 
           <h1 className="max-w-3xl text-balance text-3xl font-bold tracking-tight sm:text-5xl">
-            The organic-growth leaderboard.
+            The leaderboard for sites that actually get traffic.
           </h1>
           <p className="mt-4 max-w-xl text-balance text-base text-muted-foreground sm:text-lg">
             <ShieldCheck
@@ -75,19 +75,22 @@ export default async function HomePage() {
             Ranked by opted-in Google Search Console clicks — momentum, not votes or estimates.
           </p>
 
-          {/* $0 entry point: list free today, upgrade to a verified rank later. */}
-          <div className="mt-6 flex flex-col items-center gap-2">
-            <Button asChild size="lg">
-              <Link href="/submit">
-                <Plus className="size-4" /> List your project — free
-              </Link>
-            </Button>
+          {/* Two paths, equal weight: list free today, or earn a verified rank. */}
+          <div className="mt-6 flex w-full flex-col items-center gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button asChild size="lg">
+                <Link href="/submit">
+                  <Plus className="size-4" /> List your project — free
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <Link href="/login">
+                  <ShieldCheck className="size-4" /> Get a verified rank
+                </Link>
+              </Button>
+            </div>
             <p className="text-xs text-muted-foreground">
-              Free, permanent link ·{" "}
-              <Link href="/login" className="underline underline-offset-2 hover:text-foreground">
-                connect Search Console
-              </Link>{" "}
-              to get a verified rank
+              Listing is free and permanent · a verified rank is free too — connect Search Console (read-only)
             </p>
           </div>
         </div>

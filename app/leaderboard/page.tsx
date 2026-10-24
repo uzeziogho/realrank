@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { LeaderboardSection } from "@/components/leaderboard-section";
+import { BoardViews } from "@/components/board-views";
 import { RankChecker } from "@/components/rank-checker";
 import { getLeaderboardData } from "@/lib/data";
 import { siteConfig, type RankingView } from "@/lib/config";
@@ -75,6 +76,8 @@ export default async function LeaderboardPage({
             Switch between momentum and volume, search for a site, or page through
             the full board.
           </p>
+
+          <BoardViews className="mt-5" />
 
           {/* Rank checker — make the visitor the subject before asking for OAuth. */}
           <div className="mt-6 flex w-full max-w-xl flex-col">

@@ -254,6 +254,20 @@ export default async function DashboardPage() {
           <SiteManager sites={mySites} />
         </section>
       )}
+
+      {/* Advanced tools — kept out of the main tabs so the dashboard stays focused
+          on getting ranked; reachable here when they're relevant. */}
+      <section className="mt-12 border-t border-border/60 pt-6">
+        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          Advanced
+        </h2>
+        <Link
+          href="/dashboard/channels"
+          className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+        >
+          Channels — track which marketing drives paying customers →
+        </Link>
+      </section>
     </div>
   );
 }

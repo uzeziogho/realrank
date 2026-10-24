@@ -126,21 +126,6 @@ export const boardLinks: NavLink[] = [
     description: "Browse every listed project.",
   },
   {
-    href: "/launches",
-    label: "Launches",
-    description: "New and fast-climbing verified sites.",
-  },
-  {
-    href: "/movers",
-    label: "Movers & Shakers",
-    description: "Who climbed and who slipped this week.",
-  },
-  {
-    href: "/underdogs",
-    label: "Underdogs",
-    description: "Low authority, outsized verified momentum.",
-  },
-  {
     href: "/founding",
     label: "Founding sites",
     description: "The first 50 sites, with a permanent badge.",
@@ -153,24 +138,19 @@ export const boardLinks: NavLink[] = [
  */
 export const toolLinks: NavLink[] = [
   {
-    href: "/momentum-score",
-    label: "Momentum calculator",
-    description: "Estimate your momentum score from your 7- and 28-day clicks.",
+    href: "/report-card",
+    label: "Traffic report card",
+    description: "Grade any domain's verified organic traffic. Instant and shareable.",
   },
   {
-    href: "/organic-growth-grade",
-    label: "Growth grader",
-    description: "Get a letter grade for how fast your organic traffic is growing.",
+    href: "/momentum-score",
+    label: "Momentum calculator",
+    description: "Score and grade your growth from your 7- and 28-day clicks.",
   },
   {
     href: "/is-my-traffic-real",
     label: "Is my traffic real?",
     description: "Check whether your traffic is genuine organic search demand.",
-  },
-  {
-    href: "/report-card",
-    label: "Traffic report card",
-    description: "Grade any domain's verified organic traffic. Instant and shareable.",
   },
 ];
 
