@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Activity, Layers, Sparkles, Filter, CalendarRange, Bot } from "lucide-react";
+import { Activity, Layers, Sparkles, Filter, CalendarRange, Bot, Compass } from "lucide-react";
 import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
 import { StatTile } from "@/components/dash/stat-tile";
 import { EventsAreaChart } from "@/components/dash/events-area-chart";
+import { TrafficBreakdown } from "@/components/traffic-breakdown";
 import {
   getEventStats,
   getConnectFunnel,
   getFeatureUsageReport,
   getBotTraffic,
+  getTrafficBreakdown,
   isReportPeriod,
   REPORT_PERIODS,
 } from "@/lib/data";
@@ -78,12 +80,13 @@ export default async function AnalyticsPage({
   const { period: rawPeriod } = await searchParams;
   const period: ReportPeriod = isReportPeriod(rawPeriod) ? rawPeriod : "wow";
 
-  const [stats, funnel, report, bots, stats60] = await Promise.all([
+  const [stats, funnel, report, bots, stats60, breakdown] = await Promise.all([
     getEventStats(30),
     getConnectFunnel(30),
     getFeatureUsageReport(period),
     getBotTraffic(30),
     getEventStats(60),
+    getTrafficBreakdown(30),
   ]);
   const topFeature = stats.events[0] ? labelFor(stats.events[0].event) : "—";
 
@@ -176,6 +179,22 @@ export default async function AnalyticsPage({
         <div className="rounded-xl border border-border bg-card p-6">
           <ConnectFunnelView funnel={funnel} />
         </div>
+      </section>
+
+      {/* Where traffic comes from — owner-only acquisition detail (referrers,
+          landing pages, countries, devices, and the split-Direct rows). Moved
+          off the public /stats page, which keeps only the citable Index and the
+          visitor trend. */}
+      <section className="mt-10">
+        <div className="mb-1 flex items-center gap-2">
+          <Compass className="size-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold">Where traffic comes from</h2>
+        </div>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Top referrers, landing pages, countries and devices — first-party,
+          cookieless, aggregate. Last 30 days.
+        </p>
+        <TrafficBreakdown data={breakdown} />
       </section>
 
       {stats.total === 0 ? (

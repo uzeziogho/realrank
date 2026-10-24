@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { TrendingUp, TrendingDown, Minus, ShieldCheck, ArrowUpRight, Users, MousePointerClick, Eye, Gauge } from "lucide-react";
 import { getStatsData } from "@/lib/stats";
-import { getSiteTraffic, getSiteTrafficSeries, getTrafficBreakdown } from "@/lib/data";
+import { getSiteTraffic, getSiteTrafficSeries } from "@/lib/data";
 import { TrafficChart } from "@/components/traffic-chart";
-import { TrafficBreakdown } from "@/components/traffic-breakdown";
 import { StatTile } from "@/components/dash/stat-tile";
 import { CiteIndex } from "@/components/cite-index";
 import { siteConfig } from "@/lib/config";
@@ -29,7 +28,6 @@ export default async function StatsPage() {
   const stats = await getStatsData();
   const traffic = await getSiteTraffic();
   const trafficSeries = await getSiteTrafficSeries(60);
-  const breakdown = await getTrafficBreakdown(30);
 
   // Last 30 days vs the prior 30, for the headline KPI deltas. The all-time
   // cumulative totals stay available below the chart.
@@ -188,21 +186,6 @@ export default async function StatsPage() {
             All-time since launch: {formatCompact(traffic.visitors)} visitors ·{" "}
             {formatCompact(traffic.sessions)} sessions · {formatCompact(traffic.pageviews)} pageviews.
           </p>
-        </section>
-
-        {/* Where traffic comes from */}
-        <section>
-          <SectionLabel>First-party analytics</SectionLabel>
-          <h2 className="mt-1 text-2xl font-semibold tracking-tight">
-            Where your traffic comes from
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Top sources, landing pages, countries, and devices — counted
-            first-party, cookieless, and aggregate only. Last 30 days.
-          </p>
-          <div className="mt-4">
-            <TrafficBreakdown data={breakdown} />
-          </div>
         </section>
 
         {/* Market pulse */}
