@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BadgeCheck, ShieldCheck } from "lucide-react";
+import { BadgeCheck, ArrowUpRight, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ListingVisitButton } from "@/components/listing-visit-button";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { SiteFavicon } from "@/components/site-favicon";
 import { getListingByHost, normalizeHost } from "@/lib/listed";
-import { getListingClickCounts } from "@/lib/data";
 import { categoryLabel, siteConfig } from "@/lib/config";
-import { formatCompact } from "@/lib/utils";
 
 export const revalidate = 300;
 
@@ -36,7 +33,6 @@ export default async function ListingProfilePage({ params }: { params: Params })
   const host = normalizeHost(raw) ?? raw.toLowerCase();
   const listing = await getListingByHost(host);
   if (!listing) notFound();
-  const clicks = (await getListingClickCounts()).get(listing.host) ?? 0;
 
   return (
     <div className="container max-w-2xl py-12">
@@ -63,16 +59,7 @@ export default async function ListingProfilePage({ params }: { params: Params })
               </span>
             )}
           </div>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            {listing.host}
-            {clicks > 0 && (
-              <>
-                {" · "}
-                <span className="text-foreground">{formatCompact(clicks)}</span> clicks from{" "}
-                {siteConfig.name}
-              </>
-            )}
-          </p>
+          <p className="mt-0.5 text-sm text-muted-foreground">{listing.host}</p>
         </div>
       </div>
 
@@ -82,11 +69,15 @@ export default async function ListingProfilePage({ params }: { params: Params })
       )}
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        <ListingVisitButton
-          url={listing.siteUrl}
-          host={listing.host}
-          verified={listing.ownerVerified}
-        />
+        <Button asChild>
+          <a
+            href={listing.siteUrl}
+            target="_blank"
+            rel={listing.ownerVerified ? "noopener" : "noopener nofollow"}
+          >
+            Visit {listing.host} <ArrowUpRight className="size-4" />
+          </a>
+        </Button>
         {listing.category && (
           <Link
             href="/listed"

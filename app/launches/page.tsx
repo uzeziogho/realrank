@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SiteFavicon } from "@/components/site-favicon";
 import { Sparkline } from "@/components/sparkline";
-import { getLeaderboardData, attachSparklines, getMovers, getListingClickCounts } from "@/lib/data";
+import { getLeaderboardData, attachSparklines, getMovers } from "@/lib/data";
 import { getListedSites } from "@/lib/listed";
 import { ListingCard } from "@/components/listing-card";
 import { BoardViews } from "@/components/board-views";
@@ -43,7 +43,6 @@ export default async function LaunchesPage() {
     getMovers(8),
     getListedSites().catch(() => []),
   ]);
-  const listingClicks = await getListingClickCounts();
 
   // Free directory listings (not ranked) — newest first, so listing (not just
   // connecting Search Console) also earns a visible launch moment here.
@@ -219,7 +218,7 @@ export default async function LaunchesPage() {
                 </p>
                 <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {freshListings.map((l) => (
-                    <ListingCard key={l.host} listing={l} clicks={listingClicks.get(l.host)} />
+                    <ListingCard key={l.host} listing={l} />
                   ))}
                 </ul>
                 <div className="mt-5">
