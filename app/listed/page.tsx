@@ -4,12 +4,13 @@ import { BadgeCheck, Plus, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ListingCard } from "@/components/listing-card";
 import { BoardViews } from "@/components/board-views";
+import { DirectoryToolbar } from "@/components/directory-toolbar";
 import { getListedSites } from "@/lib/listed";
 import { getOutboundClicks } from "@/lib/data";
 import { categories, categoryLabel, siteConfig } from "@/lib/config";
 import { cn } from "@/lib/utils";
 
-type SearchParams = Promise<{ category?: string }>;
+type SearchParams = Promise<{ category?: string; sort?: string; q?: string }>;
 
 export async function generateMetadata({
   searchParams,
@@ -29,9 +30,10 @@ export async function generateMetadata({
 }
 
 export default async function ListedPage({ searchParams }: { searchParams: SearchParams }) {
-  const { category: activeRaw } = await searchParams;
+  const { category: activeRaw, sort: sortRaw, q: qRaw } = await searchParams;
   // Visit counts are the one thing a free listing can show for itself, so they
-  // ride along with the directory read (one query for every host).
+  // ride along with the directory read (one query for every host) — and they
+  // also drive the "Most visited" sort.
   const [all, visits] = await Promise.all([getListedSites(), getOutboundClicks()]);
 
   // Count per category (only categories that actually have listings show as chips).
@@ -40,8 +42,26 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
   const chips = categories.filter((c) => counts.has(c.slug));
 
   const active = activeRaw && counts.has(activeRaw) ? activeRaw : null;
-  const listings = active ? all.filter((l) => l.category === active) : all;
+  const sort = sortRaw === "visited" || sortRaw === "az" ? sortRaw : "new";
+  const q = (qRaw ?? "").trim().toLowerCase();
   const verifiedCount = all.filter((l) => l.ownerVerified).length;
+
+  // Search → category → sort. getListedSites() is already verified-first then
+  // newest (the "Newest" order); the other sorts re-order a copy.
+  let listings = all;
+  if (q) {
+    listings = listings.filter((l) =>
+      `${l.displayName} ${l.host} ${l.tagline ?? ""} ${l.alternativeTo ?? ""}`
+        .toLowerCase()
+        .includes(q),
+    );
+  }
+  if (active) listings = listings.filter((l) => l.category === active);
+  if (sort === "visited") {
+    listings = [...listings].sort((a, b) => (visits.get(b.host) ?? 0) - (visits.get(a.host) ?? 0));
+  } else if (sort === "az") {
+    listings = [...listings].sort((a, b) => a.displayName.localeCompare(b.displayName));
+  }
 
   return (
     <>
@@ -83,6 +103,7 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
 
       <section className="container py-10">
         <BoardViews className="mb-6" />
+        <DirectoryToolbar sort={sort} q={qRaw ?? ""} />
         {/* Category filter */}
         {chips.length > 0 && (
           <div className="mb-6 flex flex-wrap gap-2">
@@ -111,14 +132,18 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
           </div>
         ) : listings.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border bg-card/50 p-10 text-center">
-            <p className="font-medium">No projects in {active ? categoryLabel(active) : "this category"} yet</p>
+            <p className="font-medium">
+              {q
+                ? `No projects match “${qRaw}”`
+                : `No projects in ${active ? categoryLabel(active) : "this category"} yet`}
+            </p>
             <p className="mt-1 text-sm text-muted-foreground">
               <Link href="/listed" className="text-primary hover:underline">See all projects</Link>{" "}
               or <Link href="/submit" className="text-primary hover:underline">list yours free</Link>.
             </p>
           </div>
         ) : (
-          <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {listings.map((l) => (
               <ListingCard key={l.host} listing={l} visits={visits.get(l.host) ?? 0} />
             ))}

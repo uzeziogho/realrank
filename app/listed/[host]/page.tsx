@@ -8,7 +8,8 @@ import { SiteFavicon } from "@/components/site-favicon";
 import { VisitLink } from "@/components/visit-link";
 import { VisitsChain } from "@/components/visits-chain";
 import { VerifyListing } from "@/components/verify-listing";
-import { getListingByHost, normalizeHost } from "@/lib/listed";
+import { ListingCard } from "@/components/listing-card";
+import { getListingByHost, getListedSites, normalizeHost } from "@/lib/listed";
 import { getOutboundClicks } from "@/lib/data";
 import { categoryLabel, siteConfig, VISITS_FLOOR } from "@/lib/config";
 
@@ -38,10 +39,19 @@ export default async function ListingProfilePage({ params }: { params: Params })
   const listing = await getListingByHost(host);
   if (!listing) notFound();
 
-  // What this listing has actually done for the site: outbound clicks RealRank
-  // sent it over the last 28 days. Shown next to the Visit button so the proof
-  // sits beside the action, and only above VISITS_FLOOR — see lib/config.
-  const visits = (await getOutboundClicks()).get(listing.host) ?? 0;
+  // What this listing has actually done for the site: all-time outbound clicks
+  // RealRank sent it, shown as the attribution chain (only above VISITS_FLOOR).
+  // The same read + the directory feed the "more to explore" rail, so a visitor
+  // who lands on one profile has somewhere to go next instead of a dead end.
+  const [visitsMap, allListings] = await Promise.all([getOutboundClicks(), getListedSites()]);
+  const visits = visitsMap.get(listing.host) ?? 0;
+  const sameCategory = listing.category
+    ? allListings.filter((l) => l.host !== listing.host && l.category === listing.category)
+    : [];
+  const related = (sameCategory.length > 0
+    ? sameCategory
+    : allListings.filter((l) => l.host !== listing.host)
+  ).slice(0, 6);
 
   return (
     <div className="container max-w-2xl py-12">
@@ -131,6 +141,29 @@ export default async function ListingProfilePage({ params }: { params: Params })
           </Button>
         </div>
       </div>
+
+      {/* Keep the visitor browsing: a rail of related listings (same category
+          first, then the rest of the directory) so a profile isn't a dead end. */}
+      {related.length > 0 && (
+        <section className="mt-12">
+          <div className="mb-4 flex items-end justify-between gap-3">
+            <h2 className="text-lg font-semibold tracking-tight">
+              More {listing.category ? `in ${categoryLabel(listing.category)}` : "to explore"}
+            </h2>
+            <Link
+              href={listing.category ? `/listed?category=${listing.category}` : "/listed"}
+              className="shrink-0 text-sm font-medium text-primary hover:underline"
+            >
+              Browse all →
+            </Link>
+          </div>
+          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {related.map((l) => (
+              <ListingCard key={l.host} listing={l} visits={visitsMap.get(l.host) ?? 0} />
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }
