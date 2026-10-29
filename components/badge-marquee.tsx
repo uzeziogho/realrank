@@ -223,6 +223,13 @@ const BADGES: Badge[] = [
     width: 188,
     height: 56,
   },
+  {
+    href: "https://smollaunch.com",
+    src: "https://smollaunch.com/badges/featured.svg",
+    alt: "RealRank — Featured on Smol Launch",
+    width: 250,
+    height: 60,
+  },
 ];
 
 function BadgeGroup({ ariaHidden = false }: { ariaHidden?: boolean }) {
