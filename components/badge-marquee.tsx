@@ -230,6 +230,13 @@ const BADGES: Badge[] = [
     width: 250,
     height: 60,
   },
+  {
+    href: "https://verifieddr.com/website/realrank-lol",
+    src: "https://verifieddr.com/badge/realrank-lol.svg?metric=dr",
+    alt: "Verified DR - Verified Domain Rating for realrank.lol",
+    width: 220,
+    height: 68,
+  },
 ];
 
 function BadgeGroup({ ariaHidden = false }: { ariaHidden?: boolean }) {
