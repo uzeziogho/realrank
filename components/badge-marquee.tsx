@@ -237,6 +237,13 @@ const BADGES: Badge[] = [
     width: 220,
     height: 68,
   },
+  {
+    href: "https://daniellaunches.com",
+    src: "https://daniellaunches.com/badge-light.svg",
+    alt: "Featured on DanielLaunches",
+    width: 220,
+    height: 48,
+  },
 ];
 
 function BadgeGroup({ ariaHidden = false }: { ariaHidden?: boolean }) {
