@@ -1,8 +1,17 @@
+"use client";
+
+import { useState } from "react";
+
 /**
  * "Featured on" badge bar — a continuous left-to-right marquee of third-party
  * feature badges. External badge images are rendered with a plain <img> (same
  * as the footer badges) since they're hosted on the partners' domains. Pauses
  * on hover and respects prefers-reduced-motion.
+ *
+ * A badge whose image fails to load is hidden, so a partner's broken/removed
+ * SVG can't leave an empty anchor in the strip — which read as a dead click in
+ * Clarity. The anchors are still in the server-rendered HTML (this renders on
+ * the server before hydration), so badge-verification checkers still see them.
  */
 
 interface Badge {
@@ -246,13 +255,21 @@ const BADGES: Badge[] = [
   },
 ];
 
-function BadgeGroup({ ariaHidden = false }: { ariaHidden?: boolean }) {
+function BadgeGroup({
+  ariaHidden = false,
+  failed,
+  onError,
+}: {
+  ariaHidden?: boolean;
+  failed: Set<string>;
+  onError: (href: string) => void;
+}) {
   return (
     <ul
       className="badge-marquee__group flex shrink-0 items-center gap-8 pr-8"
       aria-hidden={ariaHidden || undefined}
     >
-      {BADGES.map((b) => (
+      {BADGES.filter((b) => !failed.has(b.href)).map((b) => (
         <li key={b.href} className="shrink-0">
           <a
             href={b.href}
@@ -269,6 +286,7 @@ function BadgeGroup({ ariaHidden = false }: { ariaHidden?: boolean }) {
               height={b.height}
               className="h-14 w-auto max-w-none opacity-80 transition-opacity hover:opacity-100"
               loading="lazy"
+              onError={() => onError(b.href)}
             />
           </a>
         </li>
@@ -278,6 +296,10 @@ function BadgeGroup({ ariaHidden = false }: { ariaHidden?: boolean }) {
 }
 
 export function BadgeMarquee() {
+  const [failed, setFailed] = useState<Set<string>>(new Set());
+  const onError = (href: string) =>
+    setFailed((prev) => (prev.has(href) ? prev : new Set(prev).add(href)));
+
   return (
     <section className="border-t border-border/60 py-10">
       <p className="mb-6 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -289,8 +311,8 @@ export function BadgeMarquee() {
         <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-background to-transparent" />
 
         <div className="badge-marquee__track flex">
-          <BadgeGroup />
-          <BadgeGroup ariaHidden />
+          <BadgeGroup failed={failed} onError={onError} />
+          <BadgeGroup ariaHidden failed={failed} onError={onError} />
         </div>
       </div>
 

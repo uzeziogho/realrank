@@ -31,7 +31,7 @@ export interface TrafficVerdict {
  * automation stacks. Matching is on the raw user-agent, case-insensitive.
  */
 export const BOT_UA_RE =
-  /bot|crawl|spider|slurp|bing|google|facebook|embedly|preview|monitor|curl|wget|headless|lighthouse|pingdom|uptime|screenshot|whatsapp|telegram|discord|slack|playwright|puppeteer|selenium|webdriver|phantomjs|python-requests|axios|node-fetch|http-client/i;
+  /bot|crawl|spider|slurp|bing|google|facebook|embedly|preview|monitor|curl|wget|headless|lighthouse|pingdom|uptime|screenshot|whatsapp|telegram|discord|slack|playwright|puppeteer|selenium|webdriver|phantomjs|python-requests|axios|node-fetch|http-client|yandex|baidu|sogou|scrapy|go-http-client|okhttp|java\/|libwww|apache-httpclient|postman|insomnia|guzzle|httpx|aiohttp|winhttp|semrush|ahrefs|mj12|dataprovider|dotbot|petal|bytespider|gptbot|claudebot|ccbot|anthropic|perplexity|amazonbot|applebot|facebookexternalhit/i;
 
 /**
  * Classify one hit. `webdriver` is the client's own `navigator.webdriver`,
