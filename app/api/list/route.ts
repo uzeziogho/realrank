@@ -4,8 +4,9 @@ import { createListing } from "@/lib/listed";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-// Badge check may fetch the site twice (bare + www), 10s each — give it room.
-export const maxDuration = 30;
+// Submission runs a liveness fetch (bare + www, 10s each) and an AI screen
+// (~15s). Give the whole gate room so a slow host can't trip the timeout.
+export const maxDuration = 45;
 
 /** First hop of X-Forwarded-For, for a coarse per-IP rate limit. */
 function clientIp(xff: string | null, real: string | null): string | null {

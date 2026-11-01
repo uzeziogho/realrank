@@ -56,6 +56,16 @@ export interface ListingEnrichment {
   category?: string;
   /** A well-known tool name, only when confidently inferred. */
   alternativeTo?: string;
+  /**
+   * Whether this reads as a real, substantive project worth listing. `undefined`
+   * when we couldn't judge (no key / error) — callers must fail OPEN on that, so
+   * a model hiccup never blocks a legitimate submission.
+   */
+  legit?: boolean;
+  /** How sure the legit verdict is, 0..1. */
+  legitConfidence?: number;
+  /** When legit is false, a short reason the submitter can act on. */
+  legitReason?: string;
 }
 
 const VALID_CATEGORY_SLUGS = new Set<string>(categories.map((c) => c.slug));
@@ -66,12 +76,16 @@ interface Judgment {
   categoryConfidence: number;
   alternativeTo: string | null;
   altConfidence: number;
+  legit: boolean | null;
+  legitConfidence: number;
+  legitReason: string | null;
 }
 
 /**
- * Infer the fields asked for (needCategory / needAlternativeTo) in one Claude
- * request. Returns only the fields that cleared their confidence bar; everything
- * else is omitted. Never throws.
+ * One Claude request over a submitted listing: always a legitimacy verdict, plus
+ * category / alternativeTo when those fields were left blank. Returns only the
+ * fields that cleared their bar; the legit verdict is omitted (undefined) with no
+ * key or on any error, so callers fail OPEN. Never throws.
  */
 export async function enrichListing(
   input: ListingEnrichInput,
@@ -79,19 +93,22 @@ export async function enrichListing(
 ): Promise<ListingEnrichment> {
   const key = process.env.ANTHROPIC_API_KEY?.trim();
   if (!key) return {};
-  if (!opts.needCategory && !opts.needAlternativeTo) return {};
 
   const categoryOptions = categories.map((c) => `- ${c.slug}: ${c.label}`).join("\n");
   const altOptions = ALT_TARGETS.map((t) => `- ${t}`).join("\n");
 
   const system = [
-    "You classify a software project for a public directory.",
+    "You screen and classify a software project submitted to a public directory.",
     "You are given the project's name, one-line tagline, and description.",
     "Return ONLY a single minified JSON object, no prose, with these fields:",
-    '{"category": <slug or null>, "categoryConfidence": <0..1>,',
+    '{"legit": <true|false>, "legitConfidence": <0..1>, "legitReason": <short string or null>,',
+    ' "category": <slug or null>, "categoryConfidence": <0..1>,',
     ' "alternativeTo": <tool name or null>, "altConfidence": <0..1>}',
     "",
     "Rules:",
+    "- legit: true if this is a real, substantive software product, app, tool, or indie/startup project suitable for a public directory. false if it reads as spam, an affiliate or thin-content page, adult or gambling content, a scam, a parked/placeholder domain, keyword stuffing, or clearly not a real project.",
+    "- legitConfidence: how sure you are of the legit verdict (0..1). Give legit=false HIGH confidence only when you are quite sure; a plain, sparse, or early-stage but real project is still legit.",
+    "- legitReason: when legit is false, a short friendly reason the submitter could act on (e.g. 'Reads as an affiliate page rather than a product'). Otherwise null.",
     "- category MUST be exactly one of the slugs below, or null if none clearly fits.",
     opts.needCategory ? `Allowed categories (slug: meaning):\n${categoryOptions}` : "- Ignore category; return null for it.",
     "- alternativeTo MUST be exactly one of the tool names below, or null. Choose a tool ONLY if the project clearly positions itself as a free/open/indie alternative to that specific tool.",
@@ -124,6 +141,14 @@ export async function enrichListing(
     const parsed = JSON.parse(match[0]) as Partial<Judgment>;
 
     const out: ListingEnrichment = {};
+
+    if (typeof parsed.legit === "boolean") {
+      out.legit = parsed.legit;
+      out.legitConfidence = typeof parsed.legitConfidence === "number" ? parsed.legitConfidence : 0;
+      if (parsed.legit === false && typeof parsed.legitReason === "string" && parsed.legitReason.trim()) {
+        out.legitReason = parsed.legitReason.trim().slice(0, 200);
+      }
+    }
 
     if (opts.needCategory) {
       const cat = typeof parsed.category === "string" ? parsed.category : null;

@@ -8,8 +8,12 @@ import { CopyField } from "@/components/copy-field";
 import { VerifyListing } from "@/components/verify-listing";
 import { categories, siteConfig } from "@/lib/config";
 import { track } from "@/lib/track";
+import { cn } from "@/lib/utils";
 
 type Phase = "form" | "done";
+
+/** Keep in step with DESC_MIN in lib/listed.ts — the server enforces it too. */
+const DESC_MIN = 100;
 
 /**
  * The open "$0 listing" form. Posts to /api/list (spam guards + honeypot live
@@ -27,6 +31,8 @@ export function SubmitForm() {
   // Only URL + name + pitch show up front; the rest (all optional) stay tucked
   // behind a toggle so the form reads as a 30-second task, not a 7-field wall.
   const [showMore, setShowMore] = useState(false);
+  // Controlled only for the live character counter; the value still submits.
+  const [desc, setDesc] = useState("");
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -105,6 +111,28 @@ export function SubmitForm() {
         />
       </Field>
 
+      <Field label="Description" hint="What it does, who it's for, and one thing that makes it different.">
+        <textarea
+          name="description"
+          required
+          minLength={DESC_MIN}
+          maxLength={400}
+          rows={4}
+          value={desc}
+          onChange={(e) => setDesc(e.target.value)}
+          placeholder="RealRank ranks websites by verified organic-search growth from real Google Search Console clicks — not estimates or votes. Built for indie founders who want proof their SEO is actually working."
+          className={textareaClass}
+        />
+        <span
+          className={cn(
+            "self-end text-xs tabular-nums",
+            desc.trim().length >= DESC_MIN ? "text-success" : "text-muted-foreground",
+          )}
+        >
+          {desc.trim().length}/{DESC_MIN} min
+        </span>
+      </Field>
+
       {/* Everything below is optional. Hidden by default so the form stays
           short; inputs stay mounted (hidden) so their values still submit. */}
       <div className={showMore ? "flex flex-col gap-4" : "hidden"}>
@@ -129,10 +157,6 @@ export function SubmitForm() {
           />
         </Field>
 
-        <Field label="Description" hint="A sentence or two.">
-          <textarea name="description" maxLength={300} rows={3} className={inputClass} />
-        </Field>
-
         <Field label="Email" hint="We'll only use it to reach you about this listing.">
           <input name="email" type="email" placeholder="you@company.com" className={inputClass} />
         </Field>
@@ -145,7 +169,7 @@ export function SubmitForm() {
           className="inline-flex items-center gap-1.5 self-start text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
           <ChevronDown className="size-4" />
-          Add category, description &amp; more{" "}
+          Add category, alternative-to &amp; email{" "}
           <span className="font-normal text-muted-foreground/70">(optional)</span>
         </button>
       )}
@@ -209,6 +233,9 @@ function ListedSuccess({ host }: { host: string }) {
 
 const inputClass =
   "h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none ring-ring focus-visible:ring-2";
+
+const textareaClass =
+  "w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus-visible:ring-2";
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (

@@ -49,7 +49,11 @@ function toListing(row: ListedSite): Listing {
   };
 }
 
-const MAX = { name: 80, tagline: 120, description: 300, alternativeTo: 60 } as const;
+const MAX = { name: 80, tagline: 120, description: 400, alternativeTo: 60 } as const;
+/** A listing must describe itself — what it does, who it's for, a differentiator. */
+const DESC_MIN = 100;
+/** Reject a submission only when the AI is at least this sure it isn't legit. */
+const LEGIT_REJECT_CONFIDENCE = 0.8;
 const VALID_CATEGORIES = new Set<string>(categories.map((c) => c.slug));
 
 /**
@@ -150,6 +154,48 @@ async function siteCarriesMarker(
   return { ok: false, error: `Couldn't reach ${host} to check for the badge.` };
 }
 
+/** High-precision markers of a parked / for-sale domain (not a real project). */
+const PARKED_RE =
+  /domain (is )?for sale|buy this domain|this domain is parked|hugedomains|sedoparking|parkingcrew|bodis\.com|dan\.com\/|undeveloped\.com|afternic/i;
+
+/**
+ * Liveness gate: does the host actually resolve and answer? Rules out dead,
+ * unregistered and typo domains — the most common junk — without false-rejecting
+ * a real site that bot-blocks us (any HTTP response counts as live). If the first
+ * responding page is an obvious parked/for-sale template, reject that too.
+ * Content quality beyond this is left to the AI verdict. Bounded (timeout + size
+ * cap); tries the bare host, then the www variant.
+ */
+async function checkSiteLive(
+  host: string,
+): Promise<{ ok: true } | { ok: false; code: "unreachable" | "invalid"; error: string }> {
+  for (const url of badgeCandidates(host)) {
+    try {
+      const res = await fetch(url, {
+        redirect: "follow",
+        signal: AbortSignal.timeout(BADGE_FETCH_TIMEOUT_MS),
+        headers: { "user-agent": `${siteConfig.name}Bot/1.0 (+${siteConfig.url})` },
+      });
+      if (res.ok) {
+        const buf = await res.arrayBuffer();
+        const html = new TextDecoder().decode(buf.slice(0, BADGE_MAX_BYTES)).toLowerCase();
+        if (PARKED_RE.test(html)) {
+          return { ok: false, code: "invalid", error: "That domain looks parked or for sale, not a live project." };
+        }
+      }
+      // Any response — even a 403/429 from a bot-blocking host — means it's live.
+      return { ok: true };
+    } catch {
+      // DNS / connection / timeout on this candidate — try the next.
+    }
+  }
+  return {
+    ok: false,
+    code: "unreachable",
+    error: `We couldn't reach ${host}. Make sure the site is live, then try again.`,
+  };
+}
+
 /**
  * Create a listing. Listing is free and does NOT require the badge: the site is
  * listed immediately as unverified (noindex/nofollow) and the owner can prove
@@ -171,6 +217,13 @@ export async function createListing(
 
   const tagline = input.tagline?.trim().slice(0, MAX.tagline) || null;
   const description = input.description?.trim().slice(0, MAX.description) || null;
+  if (!description || description.length < DESC_MIN) {
+    return {
+      ok: false,
+      error: `Add a description of at least ${DESC_MIN} characters — what it does, who it's for, and what makes it different.`,
+      code: "invalid",
+    };
+  }
   const category = input.category && VALID_CATEGORIES.has(input.category) ? input.category : null;
   const alternativeTo = input.alternativeTo?.trim().slice(0, MAX.alternativeTo) || null;
   const email = input.email?.trim().slice(0, 200) || null;
@@ -218,23 +271,36 @@ export async function createListing(
       }
     }
 
-    // AI enrichment (TypeSafe/Jev): fill category and/or "alternative to" ONLY
-    // when the submitter left them blank, and only when the judgment is
-    // confident (see lib/listing-enrich.ts). Best-effort: a no key / error /
-    // timeout leaves the fields as-is, so listing never fails on this.
+    // The site must actually resolve and respond — rules out dead, unregistered
+    // and typo domains before we spend an AI call or create a row.
+    const live = await checkSiteLive(host);
+    if (!live.ok) return { ok: false, error: live.error, code: live.code };
+
+    // AI screen + enrichment in one Claude call: always a legitimacy verdict,
+    // plus category / "alternative to" when the submitter left them blank (only
+    // when confident — see lib/listing-enrich.ts). A confident "not legit"
+    // verdict is rejected with its reason; everything else is best-effort, so a
+    // no key / error / timeout fails OPEN and never blocks a real submission.
     let category2 = category;
     let alternativeTo2 = alternativeTo;
-    if (!category || !alternativeTo) {
-      try {
-        const enriched = await enrichListing(
-          { displayName, tagline, description },
-          { needCategory: !category, needAlternativeTo: !alternativeTo },
-        );
-        if (!category2 && enriched.category) category2 = enriched.category;
-        if (!alternativeTo2 && enriched.alternativeTo) alternativeTo2 = enriched.alternativeTo;
-      } catch {
-        /* best-effort enrichment — ignore and insert what we have */
+    try {
+      const enriched = await enrichListing(
+        { displayName, tagline, description },
+        { needCategory: !category, needAlternativeTo: !alternativeTo },
+      );
+      if (enriched.legit === false && (enriched.legitConfidence ?? 0) >= LEGIT_REJECT_CONFIDENCE) {
+        return {
+          ok: false,
+          error:
+            enriched.legitReason ||
+            "This doesn't look like a live product we can list yet. Add more about what it does and who it's for, then resubmit.",
+          code: "invalid",
+        };
       }
+      if (!category2 && enriched.category) category2 = enriched.category;
+      if (!alternativeTo2 && enriched.alternativeTo) alternativeTo2 = enriched.alternativeTo;
+    } catch {
+      /* best-effort — never block a submission on an enrichment error */
     }
 
     // Badge requirement is OFF for now: list immediately as unverified. The
