@@ -452,6 +452,13 @@ export interface Database {
           description: string | null;
           category: string | null;
           alternative_to: string | null;
+          pricing: string | null;
+          platforms: string[];
+          details: string | null;
+          claimed_by: string | null;
+          claim_code: string | null;
+          claim_requested_by: string | null;
+          claim_requested_at: string | null;
           submitter_email: string | null;
           /** 'listed' (unverified) | 'owner_verified' (badge/link proven). */
           status: string;
@@ -471,6 +478,13 @@ export interface Database {
           description?: string | null;
           category?: string | null;
           alternative_to?: string | null;
+          pricing?: string | null;
+          platforms?: string[];
+          details?: string | null;
+          claimed_by?: string | null;
+          claim_code?: string | null;
+          claim_requested_by?: string | null;
+          claim_requested_at?: string | null;
           submitter_email?: string | null;
           status?: string;
           owner_verified?: boolean;
@@ -489,6 +503,13 @@ export interface Database {
           description?: string | null;
           category?: string | null;
           alternative_to?: string | null;
+          pricing?: string | null;
+          platforms?: string[];
+          details?: string | null;
+          claimed_by?: string | null;
+          claim_code?: string | null;
+          claim_requested_by?: string | null;
+          claim_requested_at?: string | null;
           submitter_email?: string | null;
           status?: string;
           owner_verified?: boolean;

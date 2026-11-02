@@ -27,6 +27,9 @@ export async function POST(req: Request) {
     description?: string;
     category?: string;
     alternativeTo?: string;
+    pricing?: string;
+    platforms?: string[];
+    details?: string;
     email?: string;
     company?: string; // honeypot — must stay empty
   } = {};
@@ -56,6 +59,9 @@ export async function POST(req: Request) {
       description: body.description,
       category: body.category,
       alternativeTo: body.alternativeTo,
+      pricing: body.pricing,
+      platforms: body.platforms,
+      details: body.details,
       email: body.email,
     },
     ip,

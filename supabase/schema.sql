@@ -564,6 +564,13 @@ create table if not exists public.listed_sites (
   description text,
   category text,
   alternative_to text,                   -- e.g. "Notion" — the tool this is a free alternative to
+  pricing text,                          -- free | freemium | paid | open_source
+  platforms text[] not null default '{}',-- web | ios | android | mac | windows | api | cli
+  details text,                          -- free-form features / integrations
+  claimed_by uuid references auth.users(id) on delete set null,
+  claim_code text,                       -- pending one-time claim secret, cleared once claimed
+  claim_requested_by uuid references auth.users(id) on delete set null,
+  claim_requested_at timestamptz,
   submitter_email text,                  -- optional, for "claim/verify" follow-up
   -- Ownership proof. 'listed' = unverified (noindex/nofollow); 'owner_verified'
   -- = RealRank badge/link detected on the site (dofollow); a site that connects

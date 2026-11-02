@@ -6,7 +6,14 @@ import { Loader2, Check, ArrowRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CopyField } from "@/components/copy-field";
 import { VerifyListing } from "@/components/verify-listing";
-import { categories, siteConfig } from "@/lib/config";
+import {
+  categories,
+  siteConfig,
+  PRICING_OPTIONS,
+  PLATFORM_OPTIONS,
+  PRICING_LABELS,
+  PLATFORM_LABELS,
+} from "@/lib/config";
 import { track } from "@/lib/track";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +40,7 @@ export function SubmitForm() {
   const [showMore, setShowMore] = useState(false);
   // Controlled only for the live character counter; the value still submits.
   const [desc, setDesc] = useState("");
+  const [platforms, setPlatforms] = useState<string[]>([]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -46,6 +54,9 @@ export function SubmitForm() {
       description: String(fd.get("description") ?? ""),
       category: String(fd.get("category") ?? ""),
       alternativeTo: String(fd.get("alternativeTo") ?? ""),
+      pricing: String(fd.get("pricing") ?? ""),
+      platforms,
+      details: String(fd.get("details") ?? ""),
       email: String(fd.get("email") ?? ""),
       company: String(fd.get("company") ?? ""), // honeypot
     };
@@ -157,6 +168,45 @@ export function SubmitForm() {
           />
         </Field>
 
+        <Field label="Pricing">
+          <select name="pricing" defaultValue="" className={inputClass}>
+            <option value="">Not specified</option>
+            {PRICING_OPTIONS.map((p) => (
+              <option key={p} value={p}>{PRICING_LABELS[p]}</option>
+            ))}
+          </select>
+        </Field>
+
+        <Field label="Platforms" hint="Where it runs.">
+          <div className="flex flex-wrap gap-2">
+            {PLATFORM_OPTIONS.map((p) => {
+              const on = platforms.includes(p);
+              return (
+                <button
+                  key={p}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() =>
+                    setPlatforms((prev) => (prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]))
+                  }
+                  className={cn(
+                    "rounded-full border px-3 py-1 text-sm transition-colors",
+                    on
+                      ? "border-primary bg-primary/10 font-medium text-primary"
+                      : "border-border text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {PLATFORM_LABELS[p]}
+                </button>
+              );
+            })}
+          </div>
+        </Field>
+
+        <Field label="Details" hint="Key features, integrations, anything else buyers should know.">
+          <textarea name="details" maxLength={1000} rows={4} className={textareaClass} />
+        </Field>
+
         <Field label="Email" hint="We'll only use it to reach you about this listing.">
           <input name="email" type="email" placeholder="you@company.com" className={inputClass} />
         </Field>
@@ -169,7 +219,7 @@ export function SubmitForm() {
           className="inline-flex items-center gap-1.5 self-start text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
           <ChevronDown className="size-4" />
-          Add category, alternative-to &amp; email{" "}
+          Add category, pricing, platforms &amp; more{" "}
           <span className="font-normal text-muted-foreground/70">(optional)</span>
         </button>
       )}

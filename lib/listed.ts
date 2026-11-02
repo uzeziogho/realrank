@@ -1,10 +1,11 @@
 import "server-only";
 
+import { randomUUID } from "node:crypto";
 import { unstable_cache, revalidateTag } from "next/cache";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createServiceClient } from "@/lib/supabase/server";
 import { hostname } from "@/lib/utils";
-import { categories, siteConfig } from "@/lib/config";
+import { categories, siteConfig, PRICING_OPTIONS, PLATFORM_OPTIONS } from "@/lib/config";
 import { enrichListing } from "@/lib/listing-enrich";
 import type { ListedSite } from "@/lib/supabase/types";
 
@@ -31,6 +32,10 @@ export interface Listing {
   category: string | null;
   /** The established tool this project is a free/indie alternative to, if declared. */
   alternativeTo: string | null;
+  /** Structured profile fields (see PRICING_OPTIONS / PLATFORM_OPTIONS). */
+  pricing: string | null;
+  platforms: string[];
+  details: string | null;
   ownerVerified: boolean;
   createdAt: string;
 }
@@ -44,17 +49,27 @@ function toListing(row: ListedSite): Listing {
     description: row.description,
     category: row.category,
     alternativeTo: row.alternative_to,
+    // Fields added by a later migration — tolerate their absence (?? ) so the
+    // directory keeps working on a DB where the migration hasn't run yet.
+    pricing: row.pricing ?? null,
+    platforms: row.platforms ?? [],
+    details: row.details ?? null,
     ownerVerified: row.owner_verified,
     createdAt: row.created_at,
   };
 }
 
-const MAX = { name: 80, tagline: 120, description: 400, alternativeTo: 60 } as const;
+const MAX = { name: 80, tagline: 120, description: 400, alternativeTo: 60, details: 1000 } as const;
 /** A listing must describe itself — what it does, who it's for, a differentiator. */
 const DESC_MIN = 100;
 /** Reject a submission only when the AI is at least this sure it isn't legit. */
 const LEGIT_REJECT_CONFIDENCE = 0.8;
 const VALID_CATEGORIES = new Set<string>(categories.map((c) => c.slug));
+
+// Structured-field vocabularies live in lib/config (client-safe); here we only
+// need the validation sets.
+const VALID_PRICING = new Set<string>(PRICING_OPTIONS);
+const VALID_PLATFORMS = new Set<string>(PLATFORM_OPTIONS);
 
 /**
  * Normalize arbitrary user input (a URL or a bare domain) to a registrable
@@ -93,6 +108,9 @@ export interface CreateListingInput {
   description?: string;
   category?: string;
   alternativeTo?: string;
+  pricing?: string;
+  platforms?: string[];
+  details?: string;
   email?: string;
 }
 
@@ -226,6 +244,11 @@ export async function createListing(
   }
   const category = input.category && VALID_CATEGORIES.has(input.category) ? input.category : null;
   const alternativeTo = input.alternativeTo?.trim().slice(0, MAX.alternativeTo) || null;
+  const pricing = input.pricing && VALID_PRICING.has(input.pricing) ? input.pricing : null;
+  const platforms = Array.isArray(input.platforms)
+    ? input.platforms.filter((p) => VALID_PLATFORMS.has(p)).slice(0, 8)
+    : [];
+  const details = input.details?.trim().slice(0, MAX.details) || null;
   const email = input.email?.trim().slice(0, 200) || null;
 
   if (!isSupabaseConfigured()) {
@@ -313,6 +336,9 @@ export async function createListing(
       description,
       category: category2,
       alternative_to: alternativeTo2,
+      pricing,
+      platforms,
+      details,
       submitter_email: email,
       submitted_ip: ip,
       status: "listed",
@@ -472,5 +498,224 @@ export async function verifyOwnership(host: string): Promise<VerifyResult> {
   } catch (err) {
     console.error("[listed] verify update failed:", err);
     return { ok: false, verified: false, error: "Found the badge, but couldn't save it. Please try again." };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Owner claim + edit
+//
+// A logged-in user proves they control the domain by placing a one-time secret
+// code (from requestListingClaim) on the site, then verifyListingClaim fetches
+// the site and confirms it. On success the listing's claimed_by is set and that
+// user — and only that user — can updateListing(). The public badge is NOT used
+// here: it proves the site links to us, not that *this* user controls the site.
+// ---------------------------------------------------------------------------
+
+/** Bounded fetch of a host's homepage; true if the raw HTML contains `token`. */
+async function siteContainsToken(
+  host: string,
+  token: string,
+): Promise<{ ok: true; found: boolean } | { ok: false }> {
+  const needle = token.toLowerCase();
+  let reached = false;
+  for (const url of badgeCandidates(host)) {
+    try {
+      const res = await fetch(url, {
+        redirect: "follow",
+        signal: AbortSignal.timeout(BADGE_FETCH_TIMEOUT_MS),
+        headers: { "user-agent": `${siteConfig.name}Bot/1.0 (+${siteConfig.url})` },
+      });
+      if (!res.ok) continue;
+      reached = true;
+      const buf = await res.arrayBuffer();
+      const html = new TextDecoder().decode(buf.slice(0, BADGE_MAX_BYTES)).toLowerCase();
+      if (html.includes(needle)) return { ok: true, found: true };
+    } catch {
+      /* timeout / network — try the next candidate */
+    }
+  }
+  return reached ? { ok: true, found: false } : { ok: false };
+}
+
+export interface ListingClaimInfo {
+  /** The user who owns this listing, or null if unclaimed. */
+  claimedBy: string | null;
+  /** The user with a pending claim code out, if any. */
+  pendingBy: string | null;
+  /** The pending secret code (only meaningful alongside pendingBy). */
+  code: string | null;
+}
+
+/** Ownership + pending-claim state for a host, for gating the edit page. */
+export async function getListingClaimInfo(host: string): Promise<ListingClaimInfo | null> {
+  if (!isSupabaseConfigured()) return null;
+  try {
+    const supabase = createServiceClient();
+    const { data, error } = await supabase
+      .from("listed_sites")
+      .select("claimed_by, claim_requested_by, claim_code")
+      .eq("host", host)
+      .eq("is_active", true)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) return null;
+    return {
+      claimedBy: data.claimed_by ?? null,
+      pendingBy: data.claim_requested_by ?? null,
+      code: data.claim_code ?? null,
+    };
+  } catch (err) {
+    console.error("[listed] claim info failed:", err);
+    return null;
+  }
+}
+
+export type ClaimRequestResult =
+  | { ok: true; code: string; alreadyOwner?: boolean }
+  | { ok: false; error: string };
+
+/** Mint (or re-return) a one-time claim code for `userId` to place on the site. */
+export async function requestListingClaim(host: string, userId: string): Promise<ClaimRequestResult> {
+  if (!isSupabaseConfigured()) return { ok: false, error: "Claiming isn't available in this environment yet." };
+  try {
+    const supabase = createServiceClient();
+    const { data: row, error } = await supabase
+      .from("listed_sites")
+      .select("claimed_by, claim_code, claim_requested_by")
+      .eq("host", host)
+      .eq("is_active", true)
+      .maybeSingle();
+    if (error) throw error;
+    if (!row) return { ok: false, error: "That listing doesn't exist." };
+    if (row.claimed_by === userId) return { ok: true, code: "", alreadyOwner: true };
+    if (row.claimed_by) return { ok: false, error: "This listing has already been claimed by its owner." };
+
+    // Reuse a code already issued to this same user; otherwise mint a new one.
+    const code =
+      row.claim_requested_by === userId && row.claim_code
+        ? row.claim_code
+        : `realrank-verify-${randomUUID().replace(/-/g, "").slice(0, 20)}`;
+
+    const { error: upErr } = await supabase
+      .from("listed_sites")
+      .update({ claim_code: code, claim_requested_by: userId, claim_requested_at: new Date().toISOString() })
+      .eq("host", host);
+    if (upErr) throw upErr;
+    return { ok: true, code };
+  } catch (err) {
+    console.error("[listed] claim request failed:", err);
+    return { ok: false, error: "Couldn't start the claim. Please try again." };
+  }
+}
+
+/** Confirm the user placed their claim code on the site, then set claimed_by. */
+export async function verifyListingClaim(
+  host: string,
+  userId: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (!isSupabaseConfigured()) return { ok: false, error: "Claiming isn't available in this environment yet." };
+  try {
+    const supabase = createServiceClient();
+    const { data: row, error } = await supabase
+      .from("listed_sites")
+      .select("claimed_by, claim_code, claim_requested_by")
+      .eq("host", host)
+      .eq("is_active", true)
+      .maybeSingle();
+    if (error) throw error;
+    if (!row) return { ok: false, error: "That listing doesn't exist." };
+    if (row.claimed_by === userId) return { ok: true };
+    if (row.claimed_by) return { ok: false, error: "This listing has already been claimed." };
+    if (!row.claim_code || row.claim_requested_by !== userId) {
+      return { ok: false, error: "Start the claim first to get your verification code." };
+    }
+
+    const check = await siteContainsToken(host, row.claim_code);
+    if (!check.ok) return { ok: false, error: `We couldn't reach ${host} to check. Try again in a moment.` };
+    if (!check.found) {
+      return { ok: false, error: `We couldn't find your verification code on ${host}. Add it to your homepage, then try again.` };
+    }
+
+    const { error: upErr } = await supabase
+      .from("listed_sites")
+      .update({ claimed_by: userId, claim_code: null, claim_requested_by: null, claim_requested_at: null, updated_at: new Date().toISOString() })
+      .eq("host", host);
+    if (upErr) throw upErr;
+    revalidateTag(LISTED_TAG);
+    return { ok: true };
+  } catch (err) {
+    console.error("[listed] claim verify failed:", err);
+    return { ok: false, error: "Couldn't verify the claim. Please try again." };
+  }
+}
+
+export interface UpdateListingInput {
+  displayName?: string;
+  tagline?: string;
+  description?: string;
+  category?: string;
+  alternativeTo?: string;
+  pricing?: string;
+  platforms?: string[];
+  details?: string;
+}
+
+/** Edit a listing — only the user who has claimed it may. Validates every field. */
+export async function updateListing(
+  host: string,
+  userId: string,
+  input: UpdateListingInput,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (!isSupabaseConfigured()) return { ok: false, error: "Editing isn't available in this environment yet." };
+  try {
+    const supabase = createServiceClient();
+    const { data: row, error } = await supabase
+      .from("listed_sites")
+      .select("claimed_by")
+      .eq("host", host)
+      .eq("is_active", true)
+      .maybeSingle();
+    if (error) throw error;
+    if (!row) return { ok: false, error: "That listing doesn't exist." };
+    if (!row.claimed_by || row.claimed_by !== userId) {
+      return { ok: false, error: "You can only edit a listing you've claimed." };
+    }
+
+    const patch: Partial<ListedSite> = { updated_at: new Date().toISOString() };
+
+    if (input.displayName !== undefined) {
+      const name = input.displayName.trim().slice(0, MAX.name);
+      if (name.length < 2) return { ok: false, error: "Add a project name." };
+      patch.display_name = name;
+    }
+    if (input.description !== undefined) {
+      const desc = input.description.trim().slice(0, MAX.description);
+      if (desc.length < DESC_MIN) {
+        return { ok: false, error: `Description must be at least ${DESC_MIN} characters.` };
+      }
+      patch.description = desc;
+    }
+    if (input.tagline !== undefined) patch.tagline = input.tagline.trim().slice(0, MAX.tagline) || null;
+    if (input.category !== undefined) {
+      patch.category = input.category && VALID_CATEGORIES.has(input.category) ? input.category : null;
+    }
+    if (input.alternativeTo !== undefined) {
+      patch.alternative_to = input.alternativeTo.trim().slice(0, MAX.alternativeTo) || null;
+    }
+    if (input.pricing !== undefined) {
+      patch.pricing = input.pricing && VALID_PRICING.has(input.pricing) ? input.pricing : null;
+    }
+    if (input.platforms !== undefined) {
+      patch.platforms = (Array.isArray(input.platforms) ? input.platforms : []).filter((p) => VALID_PLATFORMS.has(p)).slice(0, 8);
+    }
+    if (input.details !== undefined) patch.details = input.details.trim().slice(0, MAX.details) || null;
+
+    const { error: upErr } = await supabase.from("listed_sites").update(patch).eq("host", host);
+    if (upErr) throw upErr;
+    revalidateTag(LISTED_TAG);
+    return { ok: true };
+  } catch (err) {
+    console.error("[listed] update failed:", err);
+    return { ok: false, error: "Couldn't save your changes. Please try again." };
   }
 }

@@ -88,6 +88,28 @@ export const categories = [
   { slug: "marketplace", label: "Marketplace" },
 ] as const;
 
+/**
+ * Structured listing fields — small, filterable vocabularies. Defined here (not
+ * in the server-only lib/listed) so the submit + edit forms can import them.
+ */
+export const PRICING_OPTIONS = ["free", "freemium", "paid", "open_source"] as const;
+export const PLATFORM_OPTIONS = ["web", "ios", "android", "mac", "windows", "api", "cli"] as const;
+export const PRICING_LABELS: Record<string, string> = {
+  free: "Free",
+  freemium: "Freemium",
+  paid: "Paid",
+  open_source: "Open source",
+};
+export const PLATFORM_LABELS: Record<string, string> = {
+  web: "Web",
+  ios: "iOS",
+  android: "Android",
+  mac: "Mac",
+  windows: "Windows",
+  api: "API",
+  cli: "CLI",
+};
+
 export type CategorySlug = (typeof categories)[number]["slug"];
 
 export function categoryLabel(slug: string): string {

@@ -11,7 +11,7 @@ import { VerifyListing } from "@/components/verify-listing";
 import { ListingCard } from "@/components/listing-card";
 import { getListingByHost, getListedSites, normalizeHost } from "@/lib/listed";
 import { getOutboundClicks } from "@/lib/data";
-import { categoryLabel, siteConfig, VISITS_FLOOR } from "@/lib/config";
+import { categoryLabel, siteConfig, VISITS_FLOOR, PRICING_LABELS, PLATFORM_LABELS } from "@/lib/config";
 
 export const revalidate = 300;
 
@@ -87,6 +87,25 @@ export default async function ListingProfilePage({ params }: { params: Params })
         <p className="mt-3 text-muted-foreground">{listing.description}</p>
       )}
 
+      {/* Structured fields — pricing + platforms as pills, then free-form details. */}
+      {(listing.pricing || listing.platforms.length > 0) && (
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          {listing.pricing && (
+            <span className="rounded-full border border-border bg-card px-2.5 py-1 text-xs font-medium">
+              {PRICING_LABELS[listing.pricing] ?? listing.pricing}
+            </span>
+          )}
+          {listing.platforms.map((p) => (
+            <span key={p} className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
+              {PLATFORM_LABELS[p] ?? p}
+            </span>
+          ))}
+        </div>
+      )}
+      {listing.details && (
+        <p className="mt-4 whitespace-pre-line text-sm text-muted-foreground">{listing.details}</p>
+      )}
+
       {/* The traffic this listing has delivered, as an attribution chain:
           directory → listing → visits sent. Only above VISITS_FLOOR. */}
       {visits >= VISITS_FLOOR && (
@@ -113,6 +132,13 @@ export default async function ListingProfilePage({ params }: { params: Params })
           </Link>
         )}
       </div>
+
+      <p className="mt-3 text-xs text-muted-foreground">
+        Own {listing.host}?{" "}
+        <Link href={`/listed/${listing.host}/edit`} className="font-medium text-primary hover:underline">
+          Claim &amp; edit this listing →
+        </Link>
+      </p>
 
       {/* Verifying means adding the badge to your own site, which means leaving
           the submit page and shipping a change — so the panel has to be here
