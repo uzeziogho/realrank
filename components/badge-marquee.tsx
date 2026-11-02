@@ -253,6 +253,13 @@ const BADGES: Badge[] = [
     width: 220,
     height: 48,
   },
+  {
+    href: "https://launchbear.co/products/realrank?ref=badge",
+    src: "https://launchbear.co/badge-light.svg",
+    alt: "Featured on LaunchBear",
+    width: 200,
+    height: 54,
+  },
 ];
 
 function BadgeGroup({
