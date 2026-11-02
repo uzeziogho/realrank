@@ -25,11 +25,17 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const group = await getListingsForAlternative(tool);
   if (!group) return { title: "Alternatives", robots: { index: false, follow: true } };
   const title = `Free ${group.name} alternatives — listed on ${siteConfig.name}`;
+  // Thin-page guard: an "alternatives" list needs at least two options to earn
+  // a place in the index. Below that, keep it out (links are still crawled). It
+  // flips to indexable automatically once a second alternative is listed — and
+  // the sitemap only includes targets with 2+, so the two stay in step.
+  const thin = group.listings.length < 2;
   return {
     title,
     description: `Independent, free and open ${group.name} alternatives listed on ${siteConfig.name}. Each one is owner-verified with a badge — a community directory, not a paid ranking.`,
     alternates: { canonical: `/alternatives-to/${tool}` },
     openGraph: { title, url: `${siteConfig.url}/alternatives-to/${tool}` },
+    ...(thin ? { robots: { index: false, follow: true } } : {}),
   };
 }
 

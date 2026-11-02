@@ -42,10 +42,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     verifiedListedHosts = [];
   }
 
-  // "Alternative to <tool>" directory pages — one per declared target.
+  // "Alternative to <tool>" directory pages — one per declared target, but only
+  // those with 2+ listings: a one-option "alternatives" page is thin and is
+  // noindex'd at the page level, so it must stay out of the sitemap too.
   let altSlugs: string[] = [];
   try {
-    altSlugs = (await getAlternativeTargets()).map((t) => t.slug).slice(0, 2000);
+    altSlugs = (await getAlternativeTargets())
+      .filter((t) => t.count >= 2)
+      .map((t) => t.slug)
+      .slice(0, 2000);
   } catch {
     altSlugs = [];
   }

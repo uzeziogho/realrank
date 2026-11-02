@@ -1,5 +1,49 @@
-import { siteConfig } from "@/lib/config";
+import { siteConfig, categoryLabel, PLATFORM_LABELS } from "@/lib/config";
 import type { RankedSite } from "@/lib/types";
+
+/**
+ * schema.org/SoftwareApplication for a listed or ranked product. Makes each
+ * profile eligible for rich results and, just as important for RealRank,
+ * machine-readable for AI answer engines. Pricing maps to an Offer (only when a
+ * free tier exists — we never invent a price), platforms to operatingSystem,
+ * category to applicationCategory.
+ */
+export function SoftwareApplicationJsonLd({
+  name,
+  description,
+  siteUrl,
+  profileUrl,
+  category,
+  pricing,
+  platforms,
+}: {
+  name: string;
+  description?: string | null;
+  siteUrl: string;
+  profileUrl: string;
+  category?: string | null;
+  pricing?: string | null;
+  platforms?: string[];
+}) {
+  const os = (platforms ?? []).map((p) => PLATFORM_LABELS[p] ?? p).join(", ");
+  const freeTier = pricing === "free" || pricing === "open_source" || pricing === "freemium";
+  const json: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name,
+    url: siteUrl,
+    sameAs: [siteUrl],
+    mainEntityOfPage: profileUrl,
+    ...(description ? { description } : {}),
+    ...(category ? { applicationCategory: categoryLabel(category) } : {}),
+    ...(os ? { operatingSystem: os } : {}),
+    ...(freeTier ? { offers: { "@type": "Offer", price: "0", priceCurrency: "USD" } } : {}),
+  };
+
+  return (
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(json) }} />
+  );
+}
 
 /**
  * Schema.org ItemList markup so search engines understand the leaderboard as a

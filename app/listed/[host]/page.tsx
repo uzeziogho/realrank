@@ -5,6 +5,7 @@ import { BadgeCheck, ArrowUpRight, ShieldCheck } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { SiteFavicon } from "@/components/site-favicon";
+import { SoftwareApplicationJsonLd } from "@/components/json-ld";
 import { VisitLink } from "@/components/visit-link";
 import { VisitsChain } from "@/components/visits-chain";
 import { VerifyListing } from "@/components/verify-listing";
@@ -55,6 +56,15 @@ export default async function ListingProfilePage({ params }: { params: Params })
 
   return (
     <div className="container max-w-2xl py-12">
+      <SoftwareApplicationJsonLd
+        name={listing.displayName}
+        description={listing.description}
+        siteUrl={listing.siteUrl}
+        profileUrl={`${siteConfig.url}/listed/${listing.host}`}
+        category={listing.category}
+        pricing={listing.pricing}
+        platforms={listing.platforms}
+      />
       <Breadcrumbs
         items={[
           { name: "Home", href: "/" },

@@ -10,6 +10,7 @@ import { ShareRank } from "@/components/share-rank";
 import { MomentumTimeline } from "@/components/momentum-timeline";
 import { SiteFavicon } from "@/components/site-favicon";
 import { getSiteProfileBySlug, siteSlug } from "@/lib/site";
+import { SoftwareApplicationJsonLd } from "@/components/json-ld";
 import { siteConfig, categoryLabel } from "@/lib/config";
 import { formatCompact, formatGrowth, hostname, siteHref, timeAgo } from "@/lib/utils";
 
@@ -56,6 +57,13 @@ export default async function SiteProfilePage({ params }: { params: Params }) {
 
   return (
     <div className="container max-w-3xl py-12">
+      <SoftwareApplicationJsonLd
+        name={site.displayName}
+        description={site.description}
+        siteUrl={site.siteUrl}
+        profileUrl={`${siteConfig.url}/site/${slugValue}`}
+        category={site.category}
+      />
       <Breadcrumbs
         items={[
           { name: "Home", href: "/" },
