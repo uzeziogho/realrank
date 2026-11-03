@@ -2,15 +2,18 @@ import type { MetadataRoute } from "next";
 import { siteConfig, categories } from "@/lib/config";
 import { getAllSiteSlugs } from "@/lib/site";
 import { getListedSites, getAlternativeTargets } from "@/lib/listed";
+import { getLeaderboardData } from "@/lib/data";
 import { articles } from "@/lib/articles";
 
 const LANDING_PAGES = [
   "lol-directories",
-  "fastest-growing-saas-websites",
   "product-hunt-alternatives",
   "where-to-launch-your-startup",
   "free-dofollow-backlink-directories",
 ];
+
+/** A fastest-growing category page needs this many ranked sites to be indexable. */
+const MIN_RANKED_FOR_SITEMAP = 3;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
@@ -53,6 +56,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .slice(0, 2000);
   } catch {
     altSlugs = [];
+  }
+
+  // Per-category "fastest-growing" pages — only categories with enough ranked
+  // sites to be a real ranking (the page noindexes itself below the same bar).
+  let growingCategories: string[] = [];
+  try {
+    const board = await getLeaderboardData("momentum");
+    const counts = new Map<string, number>();
+    for (const s of board.organic) if (s.category) counts.set(s.category, (counts.get(s.category) ?? 0) + 1);
+    growingCategories = categories
+      .map((c) => c.slug)
+      .filter((slug) => (counts.get(slug) ?? 0) >= MIN_RANKED_FOR_SITEMAP);
+  } catch {
+    growingCategories = [];
   }
 
   return [
@@ -211,6 +228,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${base}/blog/${a.slug}`,
       lastModified: new Date(a.updated ?? a.date),
       changeFrequency: "monthly" as const,
+      priority: 0.6,
+    })),
+    ...growingCategories.map((slug) => ({
+      url: `${base}/best/fastest-growing/${slug}`,
+      lastModified: now,
+      changeFrequency: "daily" as const,
       priority: 0.6,
     })),
     ...LANDING_PAGES.map((slug) => ({

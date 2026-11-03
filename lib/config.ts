@@ -216,7 +216,7 @@ export const learnLinks: NavLink[] = [
 /** Guides and curated rankings, evergreen landing pages. */
 export const guideLinks: NavLink[] = [
   {
-    href: "/best/fastest-growing-saas-websites",
+    href: "/best/fastest-growing/saas",
     label: "Fastest-growing SaaS",
     description: "A live ranking of SaaS sites by verified organic momentum.",
   },

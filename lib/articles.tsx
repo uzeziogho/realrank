@@ -1299,7 +1299,7 @@ export const articles: Article[] = [
           exactly what RealRank scores, straight from your verified Search Console
           data. <Link href="/login">Connect your property</Link> and watch the
           curve, or see who&apos;s growing fastest on the{" "}
-          <Link href="/best/fastest-growing-saas-websites">SaaS momentum board</Link>.
+          <Link href="/best/fastest-growing/saas">SaaS momentum board</Link>.
         </p>
       </>
     ),
