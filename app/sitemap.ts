@@ -15,6 +15,9 @@ const LANDING_PAGES = [
 /** A fastest-growing category page needs this many ranked sites to be indexable. */
 const MIN_RANKED_FOR_SITEMAP = 3;
 
+/** A directory roundup (/best/<category>) needs this many listings to be indexable. */
+const MIN_LISTED_FOR_SITEMAP = 3;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const base = siteConfig.url;
@@ -35,14 +38,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   // Only owner-verified listings are indexable, so only those go in the sitemap.
+  // Also count listings per category here (same fetch) to decide which directory
+  // roundups (/best/<category>) are full enough to index.
   let verifiedListedHosts: string[] = [];
+  let roundupCategories: string[] = [];
   try {
-    verifiedListedHosts = (await getListedSites())
+    const all = await getListedSites();
+    verifiedListedHosts = all
       .filter((l) => l.ownerVerified)
       .map((l) => l.host)
       .slice(0, 5000);
+    const listedCounts = new Map<string, number>();
+    for (const l of all) if (l.category) listedCounts.set(l.category, (listedCounts.get(l.category) ?? 0) + 1);
+    roundupCategories = categories
+      .map((c) => c.slug)
+      .filter((slug) => (listedCounts.get(slug) ?? 0) >= MIN_LISTED_FOR_SITEMAP);
   } catch {
     verifiedListedHosts = [];
+    roundupCategories = [];
   }
 
   // "Alternative to <tool>" directory pages — one per declared target, but only
@@ -232,6 +245,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
     ...growingCategories.map((slug) => ({
       url: `${base}/best/fastest-growing/${slug}`,
+      lastModified: now,
+      changeFrequency: "daily" as const,
+      priority: 0.6,
+    })),
+    // Directory roundups — one per category with enough listings to be a real
+    // page (the page noindexes itself below the same bar).
+    ...roundupCategories.map((slug) => ({
+      url: `${base}/best/${slug}`,
       lastModified: now,
       changeFrequency: "daily" as const,
       priority: 0.6,
