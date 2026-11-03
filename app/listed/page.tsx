@@ -150,6 +150,28 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
           </ul>
         )}
 
+        {chips.length > 0 && (
+          <nav className="mt-12 border-t border-border/60 pt-8" aria-label="Category roundups">
+            <h2 className="text-sm font-semibold text-foreground">Browse the best of each category</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Curated roundups of every listed project, by category.
+            </p>
+            <ul className="mt-4 flex flex-wrap gap-2">
+              {chips.map((c) => (
+                <li key={c.slug}>
+                  <Link
+                    href={`/best/${c.slug}`}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
+                  >
+                    Best {c.label}
+                    <span className="tabular-nums text-muted-foreground/60">{counts.get(c.slug) ?? 0}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
+
         <p className="mt-8 flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
           <ShieldCheck className="size-3.5" />
           Listings are unverified until their owner adds a badge or connects Search Console. Unverified outbound links are nofollow.

@@ -102,6 +102,13 @@ export default async function CategoryPage({
           <Leaderboard rows={rows} view={view} foundingCutoff={data.founding.cutoff} />
         </>
       )}
+
+      <p className="mt-8 text-sm text-muted-foreground">
+        This board is verified-only.{" "}
+        <Link href={`/best/${slug}`} className="text-primary hover:underline">
+          Browse every {label} project in the directory →
+        </Link>
+      </p>
     </div>
   );
 }
