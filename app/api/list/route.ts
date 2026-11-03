@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { createListing } from "@/lib/listed";
+import { sendEmail, listingConfirmationEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -68,6 +69,19 @@ export async function POST(req: Request) {
   );
 
   if (result.ok) {
+    // Transactional confirmation to the submitter's own address — their link +
+    // how to claim the checkmark. Best-effort: awaited so it runs before the
+    // serverless function returns, but it never throws and never blocks the
+    // response from reporting success. Only when an address was given and the
+    // listing actually got a host.
+    const email = body.email?.trim();
+    if (email && email.includes("@") && result.host) {
+      const { subject, text, html } = listingConfirmationEmail({
+        displayName: body.name,
+        host: result.host,
+      });
+      await sendEmail({ to: email, subject, text, html });
+    }
     return NextResponse.json({ ok: true, host: result.host, ownerVerified: result.ownerVerified });
   }
 

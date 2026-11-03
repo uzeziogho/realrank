@@ -4,6 +4,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createServiceClient } from "@/lib/supabase/server";
 import { siteConfig } from "@/lib/config";
+import { sendEmail } from "@/lib/email";
 import type { MoversDigest } from "@/lib/digest";
 
 /**
@@ -173,35 +174,22 @@ export async function sendDigestEmails(digest: MoversDigest): Promise<DigestSend
       failed += 1;
       continue;
     }
-    try {
-      const res = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          authorization: `Bearer ${config.apiKey}`,
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          from: config.from,
-          to,
-          subject: digestSubject(digest),
-          text: digestText(digest, unsub),
-          // One-click unsubscribe, so a reader never has to hunt for it and
-          // mail clients can offer it themselves.
-          headers: {
-            "List-Unsubscribe": `<${unsub}>`,
-            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
-          },
-        }),
-      });
-      if (res.ok) sent += 1;
-      else {
-        failed += 1;
-        console.error("[digest] send failed:", res.status, await res.text().catch(() => ""));
-      }
-    } catch (err) {
-      failed += 1;
-      console.error("[digest] send threw:", err);
-    }
+    // Routed through the shared transport, but with the digest's own verified
+    // sender + API key (it gates on its own DIGEST_* flags) and a per-address
+    // one-click unsubscribe so a reader never has to hunt for it.
+    const result = await sendEmail({
+      apiKey: config.apiKey,
+      from: config.from,
+      to,
+      subject: digestSubject(digest),
+      text: digestText(digest, unsub),
+      headers: {
+        "List-Unsubscribe": `<${unsub}>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      },
+    });
+    if (result.ok) sent += 1;
+    else failed += 1;
   }
 
   return { attempted: recipients.length, sent, failed, skipped: null };
