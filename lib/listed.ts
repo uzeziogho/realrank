@@ -445,6 +445,33 @@ export async function getAlternativeTargets(): Promise<AlternativeTarget[]> {
     .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 }
 
+export interface AlternativeGroup {
+  slug: string;
+  name: string;
+  listings: Listing[];
+}
+
+/**
+ * Every "alternative to" target with its listings, most-listed first. Powers the
+ * /alternatives-to index, which shows the alternatives inline (not just a link
+ * per target). Derived from the cached getListedSites() read — no extra query.
+ */
+export async function getAlternativeGroups(): Promise<AlternativeGroup[]> {
+  const sites = await getListedSites();
+  const map = new Map<string, AlternativeGroup>();
+  for (const s of sites) {
+    if (!s.alternativeTo) continue;
+    const slug = altToSlug(s.alternativeTo);
+    if (!slug) continue;
+    const cur = map.get(slug);
+    if (cur) cur.listings.push(s);
+    else map.set(slug, { slug, name: s.alternativeTo.trim(), listings: [s] });
+  }
+  return Array.from(map.values()).sort(
+    (a, b) => b.listings.length - a.listings.length || a.name.localeCompare(b.name),
+  );
+}
+
 /** Listings that declare themselves an alternative to the given target slug. */
 export async function getListingsForAlternative(
   slug: string,
