@@ -54,8 +54,8 @@ export default async function AlternativesToIndexPage() {
               Indie alternatives to the tools you already pay for.
             </h1>
             <p className="max-w-2xl text-pretty text-lg text-muted-foreground">
-              Built by independent makers, listed for free. Every project earns its spot with our
-              badge — a community directory, not a paid ranking.
+              Built by independent makers, listed for free. Each one added our badge to earn its
+              spot — a community directory, not a paid ranking.
             </p>
           </div>
         </div>
