@@ -16,6 +16,17 @@ function clientIp(xff: string | null, real: string | null): string | null {
 }
 
 /**
+ * Regions whose submissions are silently dropped, by ISO-3166-1 alpha-2 code
+ * from Vercel's `x-vercel-ip-country` header. Greater China: mainland (CN),
+ * Hong Kong (HK), Macau (MO), Taiwan (TW). Edit this set to change coverage.
+ *
+ * Note this is a volume filter, not a wall — a VPN routes around IP geo. The
+ * header is absent off Vercel (local dev, other hosts), so the gate is
+ * fail-open: when we can't tell the country, we allow the submission.
+ */
+const BLOCKED_COUNTRIES = new Set(["CN", "HK", "MO", "TW"]);
+
+/**
  * Create an open "$0" listing. Server-side validation + spam guards live in
  * createListing(); this route adds a honeypot (`company`) that real users never
  * fill. Inserts run with the service role — the table has no open RLS insert.
@@ -45,11 +56,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, host: null, ownerVerified: false });
   }
 
+  const h = await headers();
+
+  // Geo gate: submissions from blocked regions are silently accepted and then
+  // discarded (same response shape as the honeypot), so a blocked source isn't
+  // told it was blocked and has no signal to switch to a VPN. Fail-open — the
+  // header is absent off Vercel, and an unknown country is allowed through.
+  const country = h.get("x-vercel-ip-country")?.toUpperCase();
+  if (country && BLOCKED_COUNTRIES.has(country)) {
+    return NextResponse.json({ ok: true, host: null, ownerVerified: false });
+  }
+
   if (!body.url || !body.name) {
     return NextResponse.json({ ok: false, error: "A URL and a project name are required." }, { status: 400 });
   }
 
-  const h = await headers();
   const ip = clientIp(h.get("x-forwarded-for"), h.get("x-real-ip"));
 
   const result = await createListing(
