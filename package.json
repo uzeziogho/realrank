@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "db:check": "node scripts/check-db.mjs"
+    "db:check": "node scripts/check-db.mjs",
+    "db:prune-geo": "node scripts/remove-geo-listings.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.133.0",
