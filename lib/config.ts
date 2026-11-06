@@ -202,6 +202,11 @@ export const learnLinks: NavLink[] = [
     description: "How momentum ranking and verified traffic work.",
   },
   {
+    href: "/state-of-indie-organic-traffic",
+    label: "State of Indie Traffic",
+    description: "A verified benchmark of indie organic traffic — free to cite.",
+  },
+  {
     href: "/agent-visibility",
     label: "Agent visibility",
     description: "Make your verified rank queryable by AI agents.",

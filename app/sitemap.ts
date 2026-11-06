@@ -159,6 +159,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     },
     {
+      url: `${base}/state-of-indie-organic-traffic`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.8,
+    },
+    {
       url: `${base}/momentum-score`,
       lastModified: now,
       changeFrequency: "monthly",
