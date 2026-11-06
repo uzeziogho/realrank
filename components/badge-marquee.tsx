@@ -260,6 +260,13 @@ const BADGES: Badge[] = [
     width: 200,
     height: 54,
   },
+  {
+    href: "https://domainrating.lol",
+    src: "https://domainrating.lol/badge-light.svg",
+    alt: "Listed on domainrating.lol",
+    width: 160,
+    height: 40,
+  },
 ];
 
 function BadgeGroup({
