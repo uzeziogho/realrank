@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
-import { createListing } from "@/lib/listed";
+import { createListing, normalizeHost } from "@/lib/listed";
 import { sendEmail, listingConfirmationEmail } from "@/lib/email";
+import { offTopicReason } from "@/lib/offtopic";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,16 +16,6 @@ function clientIp(xff: string | null, real: string | null): string | null {
   return first || real || null;
 }
 
-/**
- * Regions whose submissions are silently dropped, by ISO-3166-1 alpha-2 code
- * from Vercel's `x-vercel-ip-country` header. Greater China: mainland (CN),
- * Hong Kong (HK), Macau (MO), Taiwan (TW). Edit this set to change coverage.
- *
- * Note this is a volume filter, not a wall — a VPN routes around IP geo. The
- * header is absent off Vercel (local dev, other hosts), so the gate is
- * fail-open: when we can't tell the country, we allow the submission.
- */
-const BLOCKED_COUNTRIES = new Set(["CN", "HK", "MO", "TW"]);
 
 /**
  * Create an open "$0" listing. Server-side validation + spam guards live in
@@ -56,14 +47,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, host: null, ownerVerified: false });
   }
 
-  const h = await headers();
-
-  // Geo gate: submissions from blocked regions are silently accepted and then
-  // discarded (same response shape as the honeypot), so a blocked source isn't
-  // told it was blocked and has no signal to switch to a VPN. Fail-open — the
-  // header is absent off Vercel, and an unknown country is allowed through.
-  const country = h.get("x-vercel-ip-country")?.toUpperCase();
-  if (country && BLOCKED_COUNTRIES.has(country)) {
+  // Fit gate (content, not nationality): a listing written in Chinese or on a
+  // .cn domain targets the Baidu/mainland market this board can't rank and its
+  // audience can't read. Silently accepted and discarded (same shape as the
+  // honeypot) so it isn't told why. A Chinese founder's English listing for a
+  // global product has no Han content and a .com — it passes untouched.
+  if (offTopicReason({ host: normalizeHost(body.url ?? ""), displayName: body.name, tagline: body.tagline, description: body.description })) {
     return NextResponse.json({ ok: true, host: null, ownerVerified: false });
   }
 
@@ -71,6 +60,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "A URL and a project name are required." }, { status: 400 });
   }
 
+  const h = await headers();
   const ip = clientIp(h.get("x-forwarded-for"), h.get("x-real-ip"));
 
   const result = await createListing(
