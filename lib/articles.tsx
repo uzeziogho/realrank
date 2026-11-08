@@ -22,6 +22,149 @@ const A = (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
 
 export const articles: Article[] = [
   {
+    slug: "ahrefs-dr4-rewards-real-traffic",
+    title: "Ahrefs DR4 now rewards real traffic. We've been measuring it all along.",
+    description:
+      "Ahrefs' new DR4 model, rolling out December 1, 2026, weights backlinks by the real organic traffic of the linking site — and launch directories are getting hammered. Here's what changed, why the badge-swap SEO play is losing its value, and what we found measuring organic traffic across indie sites.",
+    date: "2026-11-08",
+    keywords: [
+      "ahrefs dr4",
+      "domain rating update",
+      "dr4 directories",
+      "directory backlinks dr4",
+      "verified organic traffic",
+      "indie seo 2026",
+      "state of indie organic traffic",
+    ],
+    Body: () => (
+      <>
+        <p>
+          On December 1, 2026, Ahrefs rolls out <strong>DR4</strong> — a new way of calculating
+          Domain Rating — and it quietly rewrites the backlink-building playbook most indie
+          founders have been running. The short version:{" "}
+          <strong>a link now only counts for much if the site linking to you actually gets
+          organic search traffic.</strong> If you&apos;ve been collecting directory badges to pump
+          your DR, that strategy just lost most of its power.
+        </p>
+        <p>
+          We have skin in this game — RealRank&apos;s own &quot;Featured on&quot; strip is a wall
+          of launch-directory badges, and we&apos;ll feel this change like everyone else. So
+          instead of pretending otherwise, here&apos;s an honest read of what changed, and why the
+          thing DR4 now measures is the thing we&apos;ve measured from day one.
+        </p>
+
+        <h2>What actually changed in DR4</h2>
+        <p>
+          Per{" "}
+          <A href="https://ahrefs.com/blog/domain-rating-dr4/">Ahrefs&apos; own announcement</A>,
+          two things matter:
+        </p>
+        <ul>
+          <li>
+            <strong>Links are weighted by the linking site&apos;s organic traffic.</strong> DR4
+            puts more weight on links from sites (and their subdomains) that Ahrefs estimates get
+            real organic search traffic. A link from a site nobody finds on Google now counts for
+            little.
+          </li>
+          <li>
+            <strong>The pool of domains that can move your DR shrank by roughly half.</strong> Only
+            about half as many domains influence DR4 as influenced DR3 — the low-traffic long tail
+            mostly stopped counting.
+          </li>
+        </ul>
+        <p>
+          This isn&apos;t a penalty and it doesn&apos;t touch your Google rankings — DR is a
+          third-party score, not a ranking factor. But if your DR drops on December 1 with no
+          change to your backlinks, this is why.
+        </p>
+
+        <h2>Why launch directories got hit hardest</h2>
+        <p>
+          Here&apos;s the uncomfortable part for the indie launch scene. Most launch and badge
+          directories have very little organic search traffic of their own — they&apos;re
+          link-exchange networks, not destinations people search for. Under DR4, that means the
+          links they hand out are worth a fraction of what they were. One widely-shared analysis
+          found a directory&apos;s own DR fall <strong>from 71 to 24</strong> under the new model.
+        </p>
+        <p>
+          So the classic indie SEO move — list on thirty directories, collect thirty badges,
+          watch your DR climb — stops working for DR. (The badges still earn you{" "}
+          <em>referral traffic and discovery</em>, which is reason enough to keep them; they just
+          won&apos;t move your authority anymore.) We wrote before about how to think about this
+          ecosystem in{" "}
+          <Link href="/best/lol-directories">the .lol directory wave</Link> — DR4 is the moment the
+          pure link-volume play ages out.
+        </p>
+
+        <h2>What we found measuring indie organic traffic</h2>
+        <p>
+          If DR4 now cares about real organic traffic, the obvious question is: how much organic
+          traffic do indie sites actually get? We built a live report to answer exactly that, from
+          verified Google Search Console clicks — not estimates:{" "}
+          <Link href="/state-of-indie-organic-traffic">The State of Indie Organic Traffic</Link>.
+        </p>
+        <p>
+          Two patterns stand out, and both matter for how you think about links:
+        </p>
+        <ul>
+          <li>
+            <strong>Most indie organic traffic is modest, and heavily concentrated.</strong> A
+            small head of break-out sites holds the large majority of all organic clicks, with a
+            long tail beneath. See the live median and the top-decile concentration in the report.
+          </li>
+          <li>
+            <strong>A link from a trafficked site is worth more than ten from traffic-less ones.</strong>{" "}
+            That was always true for referral value; DR4 makes it true for authority too. The
+            sites worth getting a link from are the ones near the head of that distribution.
+          </li>
+        </ul>
+
+        <h2>DR4 is converging on what we already measure</h2>
+        <p>
+          Read DR4 charitably and it&apos;s saying something simple: an endorsement from a site that
+          real people visit is worth more than one from a site they don&apos;t. That&apos;s the
+          same bet RealRank made from the start. We don&apos;t rank sites by votes, by spend, or by{" "}
+          <Link href="/blog/verified-vs-estimated-traffic">third-party estimates</Link> — we rank
+          them by <Link href="/about">verified organic momentum</Link>, measured from the clicks
+          sites opt to share from Search Console. DR4 is third-party authority quietly moving toward
+          the metric we&apos;ve been publishing all along.
+        </p>
+
+        <h2>What to do about your DR4</h2>
+        <ul>
+          <li>
+            <strong>Build one linkable asset, not thirty directory listings.</strong> A piece of
+            original data or research that trafficked blogs <em>want</em> to cite earns the kind of
+            link DR4 rewards. (That&apos;s exactly why we published{" "}
+            <Link href="/state-of-indie-organic-traffic">the traffic report</Link> — and why
+            it&apos;s free to cite.)
+          </li>
+          <li>
+            <strong>Earn links from sites that get organic traffic.</strong> Guest posts, expert
+            quotes, and roundups on sites that themselves rank — quality and topical relevance over
+            raw count.
+          </li>
+          <li>
+            <strong>Keep the directory badges for what they&apos;re good at.</strong> Referral
+            clicks and social proof, not DR. Don&apos;t rip them out; just stop expecting authority
+            from them.
+          </li>
+          <li>
+            <strong>Know your own real number.</strong> DR is a proxy; your verified organic clicks
+            are the thing itself.{" "}
+            <Link href="/login">Connect Search Console</Link> and see where you sit on the{" "}
+            <Link href="/leaderboard">momentum board</Link>.
+          </li>
+        </ul>
+        <p>
+          The era of winning DR by volume is ending on December 1. The era of winning it by being a
+          site people actually visit never does.{" "}
+          <Link href="/state-of-indie-organic-traffic">See the numbers for yourself →</Link>
+        </p>
+      </>
+    ),
+  },
+  {
     slug: "where-to-launch-your-project-launch-directories",
     title: "Where to launch your project in 2026: a working map of the launch directories",
     description:
