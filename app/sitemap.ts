@@ -22,13 +22,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const base = siteConfig.url;
 
-  // Per-site profile pages (crawlable SEO surface). Capped for very large sets.
-  let siteSlugs: string[] = [];
-  try {
-    siteSlugs = (await getAllSiteSlugs()).slice(0, 5000);
-  } catch {
-    siteSlugs = [];
-  }
+  // All four data reads run in parallel and each falls back to empty on failure,
+  // so one slow or failing source never blocks the others — a cold sitemap fetch
+  // takes as long as the slowest read, not their sum, which keeps Googlebot from
+  // timing the request out ("Couldn't fetch").
+  const [siteSlugs, listed, altTargets, board] = await Promise.all([
+    getAllSiteSlugs()
+      .then((s) => s.slice(0, 5000))
+      .catch(() => [] as string[]),
+    getListedSites().catch(() => [] as Awaited<ReturnType<typeof getListedSites>>),
+    getAlternativeTargets().catch(() => [] as Awaited<ReturnType<typeof getAlternativeTargets>>),
+    getLeaderboardData("momentum").catch(() => null),
+  ]);
 
   // Seed a bounded set of head-to-head compare pages (adjacent slugs). The page
   // works for any pair on demand; this just gives crawlers a starting set.
@@ -38,52 +43,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   // Only owner-verified listings are indexable, so only those go in the sitemap.
-  // Also count listings per category here (same fetch) to decide which directory
-  // roundups (/best/<category>) are full enough to index.
-  let verifiedListedHosts: string[] = [];
-  let roundupCategories: string[] = [];
-  try {
-    const all = await getListedSites();
-    verifiedListedHosts = all
-      .filter((l) => l.ownerVerified)
-      .map((l) => l.host)
-      .slice(0, 5000);
-    const listedCounts = new Map<string, number>();
-    for (const l of all) if (l.category) listedCounts.set(l.category, (listedCounts.get(l.category) ?? 0) + 1);
-    roundupCategories = categories
-      .map((c) => c.slug)
-      .filter((slug) => (listedCounts.get(slug) ?? 0) >= MIN_LISTED_FOR_SITEMAP);
-  } catch {
-    verifiedListedHosts = [];
-    roundupCategories = [];
-  }
+  // Count listings per category (same read) to decide which directory roundups
+  // (/best/<category>) are full enough to index.
+  const verifiedListedHosts = listed
+    .filter((l) => l.ownerVerified)
+    .map((l) => l.host)
+    .slice(0, 5000);
+  const listedCounts = new Map<string, number>();
+  for (const l of listed) if (l.category) listedCounts.set(l.category, (listedCounts.get(l.category) ?? 0) + 1);
+  const roundupCategories = categories
+    .map((c) => c.slug)
+    .filter((slug) => (listedCounts.get(slug) ?? 0) >= MIN_LISTED_FOR_SITEMAP);
 
   // "Alternative to <tool>" directory pages — one per declared target, but only
   // those with 2+ listings: a one-option "alternatives" page is thin and is
   // noindex'd at the page level, so it must stay out of the sitemap too.
-  let altSlugs: string[] = [];
-  try {
-    altSlugs = (await getAlternativeTargets())
-      .filter((t) => t.count >= 2)
-      .map((t) => t.slug)
-      .slice(0, 2000);
-  } catch {
-    altSlugs = [];
-  }
+  const altSlugs = altTargets
+    .filter((t) => t.count >= 2)
+    .map((t) => t.slug)
+    .slice(0, 2000);
 
   // Per-category "fastest-growing" pages — only categories with enough ranked
   // sites to be a real ranking (the page noindexes itself below the same bar).
-  let growingCategories: string[] = [];
-  try {
-    const board = await getLeaderboardData("momentum");
-    const counts = new Map<string, number>();
-    for (const s of board.organic) if (s.category) counts.set(s.category, (counts.get(s.category) ?? 0) + 1);
-    growingCategories = categories
-      .map((c) => c.slug)
-      .filter((slug) => (counts.get(slug) ?? 0) >= MIN_RANKED_FOR_SITEMAP);
-  } catch {
-    growingCategories = [];
-  }
+  const growingCounts = new Map<string, number>();
+  for (const s of board?.organic ?? []) if (s.category) growingCounts.set(s.category, (growingCounts.get(s.category) ?? 0) + 1);
+  const growingCategories = categories
+    .map((c) => c.slug)
+    .filter((slug) => (growingCounts.get(slug) ?? 0) >= MIN_RANKED_FOR_SITEMAP);
 
   return [
     {
