@@ -57,7 +57,7 @@ export function VerifyListing({ host }: { host: string }) {
         Own {host}? Add this badge to your site, then verify. We&apos;ll confirm it&apos;s really
         yours and mark your listing verified (a followed link).
       </p>
-      <CopyField value={badge} />
+      <CopyField value={badge} event="badge_copy" />
 
       {verified ? (
         <p className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-success">

@@ -50,6 +50,17 @@ const EVENT_LABELS: Record<string, string> = {
   listing_verified: "Listing verified",
   outbound_click: "Outbound click to a listed site",
   signup: "Signed up",
+  permalink_copy: "Listing link copied",
+  share_click: "Listing shared",
+  claim_start: "Claim started",
+  claim_code_copy: "Claim code copied",
+  claim_verified: "Claim verified",
+  listing_edited: "Listing edited by owner",
+  sponsor_contact_click: "Sponsor contact clicked",
+  archive_checkout_click: "Archive: founding checkout clicked",
+  archive_reserve_click: "Archive: waitlist CTA clicked",
+  report_cite_copy: "Report citation copied",
+  report_embed_copy: "Report embed copied",
 };
 
 function labelFor(event: string): string {

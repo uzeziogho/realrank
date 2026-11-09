@@ -13,6 +13,7 @@ import {
   PLATFORM_LABELS,
 } from "@/lib/config";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/track";
 import type { Listing } from "@/lib/listed";
 
 const DESC_MIN = 100;
@@ -53,7 +54,10 @@ function ClaimFlow({ host }: { host: string }) {
         window.location.reload();
         return;
       }
-      if (data.ok && data.code) setCode(data.code);
+      if (data.ok && data.code) {
+        track("claim_start", host);
+        setCode(data.code);
+      }
       else setError(data.error ?? "Couldn't start the claim.");
     } catch {
       setError("Couldn't reach the server. Please try again.");
@@ -72,6 +76,7 @@ function ClaimFlow({ host }: { host: string }) {
       });
       const data = (await res.json()) as { ok: boolean; error?: string };
       if (data.ok) {
+        track("claim_verified", host);
         window.location.reload(); // re-render as owner → edit form
         return;
       }
@@ -105,7 +110,7 @@ function ClaimFlow({ host }: { host: string }) {
             <p className="mb-2 text-xs text-muted-foreground">
               A comment, a hidden element, or visible text all work — it just has to appear in the page&apos;s HTML.
             </p>
-            <CopyField value={code} mono />
+            <CopyField value={code} mono event="claim_code_copy" />
           </div>
           <div>
             <p className="text-sm font-medium">2. Then verify</p>
@@ -156,7 +161,10 @@ function EditForm({ listing }: { listing: Listing }) {
         body: JSON.stringify(payload),
       });
       const data = (await res.json()) as { ok: boolean; error?: string };
-      if (data.ok) setSaved(true);
+      if (data.ok) {
+        track("listing_edited");
+        setSaved(true);
+      }
       else setError(data.error ?? "Couldn't save your changes.");
     } catch {
       setError("Couldn't reach the server. Please try again.");

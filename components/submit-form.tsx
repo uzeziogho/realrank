@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Loader2, Check, ArrowRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CopyField } from "@/components/copy-field";
 import { VerifyListing } from "@/components/verify-listing";
+import { ShareListing } from "@/components/share-listing";
 import {
   categories,
   siteConfig,
@@ -35,12 +36,28 @@ export function SubmitForm() {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [host, setHost] = useState<string>("");
+  const [name, setName] = useState<string>("");
+  // Index into SUBMIT_STAGES while the request runs (it can take ~30s+).
+  const [stage, setStage] = useState(0);
   // Only URL + name + pitch show up front; the rest (all optional) stay tucked
   // behind a toggle so the form reads as a 30-second task, not a 7-field wall.
   const [showMore, setShowMore] = useState(false);
   // Controlled only for the live character counter; the value still submits.
   const [desc, setDesc] = useState("");
   const [platforms, setPlatforms] = useState<string[]>([]);
+
+  // Submitting runs a liveness check and an AI review, which can take half a
+  // minute. A bare spinner reads as "hung" — so narrate what's happening.
+  useEffect(() => {
+    if (!pending) return;
+    setStage(0);
+    const t1 = setTimeout(() => setStage(1), 7000);
+    const t2 = setTimeout(() => setStage(2), 20000);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [pending]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -74,6 +91,7 @@ export function SubmitForm() {
       }
       track("listing_created", data.host ?? undefined);
       setHost(data.host ?? "");
+      setName(payload.name);
       setPhase("done");
     } catch {
       setError("Couldn't reach the server. Please try again.");
@@ -82,7 +100,7 @@ export function SubmitForm() {
   }
 
   if (phase === "done") {
-    return <ListedSuccess host={host} />;
+    return <ListedSuccess host={host} name={name} />;
   }
 
   return (
@@ -142,6 +160,12 @@ export function SubmitForm() {
         >
           {desc.trim().length}/{DESC_MIN} min
         </span>
+      </Field>
+
+      {/* Email stays visible (optional): it's how a lister gets their link and
+          verify steps, and the only way to reach them again. */}
+      <Field label="Email" hint="Optional — we'll send your permanent link and verify steps.">
+        <input name="email" type="email" placeholder="you@company.com" className={inputClass} />
       </Field>
 
       {/* Everything below is optional. Hidden by default so the form stays
@@ -207,9 +231,6 @@ export function SubmitForm() {
           <textarea name="details" maxLength={1000} rows={4} className={textareaClass} />
         </Field>
 
-        <Field label="Email" hint="We'll only use it to reach you about this listing.">
-          <input name="email" type="email" placeholder="you@company.com" className={inputClass} />
-        </Field>
       </div>
 
       {!showMore && (
@@ -229,8 +250,21 @@ export function SubmitForm() {
       )}
 
       <Button type="submit" size="lg" disabled={pending} className="mt-1">
-        {pending ? <Loader2 className="size-4 animate-spin" /> : <>List my project — free <ArrowRight className="size-4" /></>}
+        {pending ? (
+          <>
+            <Loader2 className="size-4 animate-spin" /> Listing…
+          </>
+        ) : (
+          <>
+            List my project — free <ArrowRight className="size-4" />
+          </>
+        )}
       </Button>
+      {pending && (
+        <p aria-live="polite" className="text-center text-sm text-muted-foreground">
+          {SUBMIT_STAGES[stage]}
+        </p>
+      )}
       <p className="text-center text-xs text-muted-foreground">
         Free forever · no account needed · you get a permanent link
       </p>
@@ -238,7 +272,7 @@ export function SubmitForm() {
   );
 }
 
-function ListedSuccess({ host }: { host: string }) {
+function ListedSuccess({ host, name }: { host: string; name: string }) {
   const permalink = `${siteConfig.url}/listed/${host}`;
   const badge = `<a href="${permalink}" target="_blank" rel="noopener">Listed on ${siteConfig.name} →</a>`;
 
@@ -255,11 +289,19 @@ function ListedSuccess({ host }: { host: string }) {
       {/* Permanent link */}
       <div>
         <p className="text-sm font-medium">Your permanent link</p>
-        <CopyField value={permalink} mono />
+        <CopyField value={permalink} mono event="permalink_copy" />
         <Link href={`/listed/${host}`} className="mt-2 inline-flex items-center gap-1 text-sm text-primary hover:underline">
           View your listing <ArrowRight className="size-3.5" />
         </Link>
       </div>
+
+      {/* Peak intent: the moment they've listed is when they're likeliest to share. */}
+      {host && (
+        <div>
+          <p className="text-sm font-medium">Tell people you&apos;re listed</p>
+          <ShareListing url={permalink} name={name || host} className="mt-2" />
+        </div>
+      )}
 
       {/* Badge → verify ownership (optional). The same panel the listing page
           shows, so an owner who comes back later finds it in both places. */}
@@ -280,6 +322,13 @@ function ListedSuccess({ host }: { host: string }) {
     </div>
   );
 }
+
+/** Narration for the slow submit step (liveness check → AI review → save). */
+const SUBMIT_STAGES = [
+  "Checking your site is live…",
+  "Reviewing your listing…",
+  "Almost there — saving your listing…",
+] as const;
 
 const inputClass =
   "h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none ring-ring focus-visible:ring-2";

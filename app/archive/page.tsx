@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import {
   Archive,
   History,
@@ -12,6 +13,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { ArchiveCta } from "@/components/archive-cta";
+import { ArchiveThanks } from "@/components/archive-thanks";
 import { WaitlistForm } from "@/components/waitlist-form";
 import { siteConfig } from "@/lib/config";
 
@@ -116,6 +118,11 @@ export default function ArchivePage() {
 
   return (
     <>
+      {/* Post-checkout thank-you (?founding=success from the payment link). */}
+      <Suspense fallback={null}>
+        <ArchiveThanks supportEmail={siteConfig.email.support} />
+      </Suspense>
+
       {/* Hero */}
       <section className="hero-glow border-b border-border/60">
         <div className="container max-w-4xl py-14 text-center">

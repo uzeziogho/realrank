@@ -9,6 +9,7 @@ import { SoftwareApplicationJsonLd } from "@/components/json-ld";
 import { VisitLink } from "@/components/visit-link";
 import { VisitsChain } from "@/components/visits-chain";
 import { VerifyListing } from "@/components/verify-listing";
+import { ShareListing } from "@/components/share-listing";
 import { ListingCard } from "@/components/listing-card";
 import { getListingByHost, getListedSites, normalizeHost } from "@/lib/listed";
 import { getOutboundClicks } from "@/lib/data";
@@ -143,12 +144,25 @@ export default async function ListingProfilePage({ params }: { params: Params })
         )}
       </div>
 
-      <p className="mt-3 text-xs text-muted-foreground">
-        Own {listing.host}?{" "}
-        <Link href={`/listed/${listing.host}/edit`} className="font-medium text-primary hover:underline">
-          Claim &amp; edit this listing →
-        </Link>
-      </p>
+      {/* Owner panel. Returning owners are the warmest lead on the site, so the
+          claim path is a real call-to-action, not a footnote; sharing sits
+          beside it because owners are also the likeliest sharers. */}
+      <div className="mt-6 grid gap-4 rounded-xl border border-border bg-card p-5 sm:grid-cols-2">
+        <div>
+          <p className="font-medium">Own {listing.host}?</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Claim it to edit your description, pricing and details, and keep your listing current.
+          </p>
+          <Button asChild size="sm" className="mt-3">
+            <Link href={`/listed/${listing.host}/edit`}>Claim &amp; edit this listing</Link>
+          </Button>
+        </div>
+        <div>
+          <p className="font-medium">Share this listing</p>
+          <p className="mt-1 text-sm text-muted-foreground">Every share is a backlink and a few more visitors.</p>
+          <ShareListing url={`${siteConfig.url}/listed/${listing.host}`} name={listing.displayName} className="mt-3" stacked />
+        </div>
+      </div>
 
       {/* Verifying means adding the badge to your own site, which means leaving
           the submit page and shipping a change — so the panel has to be here

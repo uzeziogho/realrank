@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Check, ShieldCheck, Plus, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConnectCTA } from "@/components/connect-cta";
+import { TrackedLink } from "@/components/tracked-link";
 import { siteConfig } from "@/lib/config";
 
 const CONTACT = siteConfig.email.support;
@@ -81,7 +82,7 @@ export default function PricingPage() {
           ]}
           cta={
             <Button asChild size="lg" variant="outline" className="w-full">
-              <a href={`mailto:${SPONSOR_CONTACT}?subject=Sponsoring%20${siteConfig.name}`}>Get in touch</a>
+              <TrackedLink event="sponsor_contact_click" label="pricing_tier" href={`mailto:${SPONSOR_CONTACT}?subject=Sponsoring%20${siteConfig.name}`}>Get in touch</TrackedLink>
             </Button>
           }
         />
@@ -131,9 +132,9 @@ export default function PricingPage() {
         <Faq q="How do sponsorships work?">
           A sponsored placement is a fixed, labeled slot in the leaderboard. It&apos;s excluded
           from scoring, so it never changes where any site ranks. Email{" "}
-          <a href={`mailto:${SPONSOR_CONTACT}`} className="text-primary hover:underline">
+          <TrackedLink event="sponsor_contact_click" label="pricing_faq" href={`mailto:${SPONSOR_CONTACT}`} className="text-primary hover:underline">
             {SPONSOR_CONTACT}
-          </a>{" "}
+          </TrackedLink>{" "}
           to ask.
         </Faq>
       </section>

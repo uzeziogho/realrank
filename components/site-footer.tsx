@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+import { TrackedLink } from "@/components/tracked-link";
 import {
   siteConfig,
   categories,
@@ -91,12 +92,14 @@ export function SiteFooter() {
                   /pricing was the only page that gave an address — too far in
                   for someone who lands on the board and wants to talk. */}
               <li>
-                <a
+                <TrackedLink
+                  event="sponsor_contact_click"
+                  label="footer"
                   href={`mailto:${siteConfig.email.sponsors}?subject=${encodeURIComponent(`${siteConfig.name} — advertising / partnership`)}`}
                   className="hover:text-foreground"
                 >
                   Advertise or partner
-                </a>
+                </TrackedLink>
               </li>
               <li><Link href="/privacy" className="hover:text-foreground">Privacy</Link></li>
               <li><Link href="/terms" className="hover:text-foreground">Terms</Link></li>

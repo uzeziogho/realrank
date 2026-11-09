@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { track } from "@/lib/track";
+import { withRef } from "@/lib/utils";
 
 /**
  * Outbound link to a listed site, recorded first-party on click.
@@ -32,7 +33,7 @@ export function VisitLink({
 }) {
   return (
     <a
-      href={href}
+      href={withRef(href)}
       target="_blank"
       rel={rel}
       className={className}

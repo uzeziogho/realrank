@@ -54,3 +54,21 @@ export function siteHref(url: string): string {
   return url;
 }
 
+
+/**
+ * Tag an outbound link with `ref=realrank.lol` so RealRank shows up as a named
+ * source in the destination's own analytics (Plausible, Fathom, Umami and GA all
+ * read `ref` / `utm_source`). Owners who can see the traffic we send are the ones
+ * who verify, claim and upgrade. Leaves the URL untouched if it already carries a
+ * ref or UTM source, or if it can't be parsed.
+ */
+export function withRef(url: string): string {
+  try {
+    const u = new URL(url);
+    if (u.searchParams.has("ref") || u.searchParams.has("utm_source")) return url;
+    u.searchParams.set("ref", "realrank.lol");
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
