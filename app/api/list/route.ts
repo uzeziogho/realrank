@@ -18,13 +18,13 @@ function clientIp(xff: string | null, real: string | null): string | null {
 
 /**
  * Regions whose submissions are silently dropped, by ISO-3166-1 alpha-2 code
- * from Vercel's `x-vercel-ip-country` header. Greater China: mainland (CN),
- * Hong Kong (HK), Macau (MO), Taiwan (TW). Edit this set to change coverage.
- * This is a volume filter — a VPN routes around IP geo, which is why the content
- * fit gate below runs too. Fail-open: the header is absent off Vercel, so an
- * unknown country is allowed through.
+ * from Vercel's `x-vercel-ip-country` header. Mainland China only (CN) — Hong
+ * Kong (HK), Macau (MO) and Taiwan (TW) are allowed through. Edit this set to
+ * change coverage. This is a volume filter — a VPN routes around IP geo, which
+ * is why the content fit gate below runs too. Fail-open: the header is absent
+ * off Vercel, so an unknown country is allowed through.
  */
-const BLOCKED_COUNTRIES = new Set(["CN", "HK", "MO", "TW"]);
+const BLOCKED_COUNTRIES = new Set(["CN"]);
 
 
 /**
