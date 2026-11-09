@@ -16,6 +16,16 @@ function clientIp(xff: string | null, real: string | null): string | null {
   return first || real || null;
 }
 
+/**
+ * Regions whose submissions are silently dropped, by ISO-3166-1 alpha-2 code
+ * from Vercel's `x-vercel-ip-country` header. Greater China: mainland (CN),
+ * Hong Kong (HK), Macau (MO), Taiwan (TW). Edit this set to change coverage.
+ * This is a volume filter — a VPN routes around IP geo, which is why the content
+ * fit gate below runs too. Fail-open: the header is absent off Vercel, so an
+ * unknown country is allowed through.
+ */
+const BLOCKED_COUNTRIES = new Set(["CN", "HK", "MO", "TW"]);
+
 
 /**
  * Create an open "$0" listing. Server-side validation + spam guards live in
@@ -47,6 +57,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, host: null, ownerVerified: false });
   }
 
+  const h = await headers();
+
+  // Geo gate: submissions from blocked regions are silently accepted and then
+  // discarded (same response shape as the honeypot), so a blocked source isn't
+  // told it was blocked. Runs alongside the content fit gate below — this one
+  // catches submissions FROM the region, that one catches Chinese-content / .cn
+  // listings wherever they come from. Fail-open when the country is unknown.
+  const country = h.get("x-vercel-ip-country")?.toUpperCase();
+  if (country && BLOCKED_COUNTRIES.has(country)) {
+    return NextResponse.json({ ok: true, host: null, ownerVerified: false });
+  }
+
   // Fit gate (content, not nationality): a listing written in Chinese or on a
   // .cn domain targets the Baidu/mainland market this board can't rank and its
   // audience can't read. Silently accepted and discarded (same shape as the
@@ -60,7 +82,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "A URL and a project name are required." }, { status: 400 });
   }
 
-  const h = await headers();
   const ip = clientIp(h.get("x-forwarded-for"), h.get("x-real-ip"));
 
   const result = await createListing(
