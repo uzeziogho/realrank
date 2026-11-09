@@ -10,6 +10,7 @@ import {
   MousePointerClick,
   Globe,
   ArrowUpRight,
+  Archive,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -113,6 +114,19 @@ export default async function DashboardPage() {
       </header>
 
       <DashboardTabs owner={isOwner(user.email)} />
+
+      {/* Archive validation prompt — connected users are the highest-intent audience. */}
+      <Link
+        href="/archive"
+        className="mt-6 flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm transition-colors hover:border-primary/40"
+      >
+        <Archive className="size-4 shrink-0 text-primary" />
+        <span className="flex-1">
+          <span className="font-medium text-foreground">Search Console deletes data after 16 months.</span>{" "}
+          <span className="text-muted-foreground">Keep yours forever with RealRank Archive — founding access open.</span>
+        </span>
+        <ArrowRight className="size-4 shrink-0 text-primary" />
+      </Link>
 
       {liveCount > 0 ? (
         <>

@@ -87,6 +87,21 @@ export default function PricingPage() {
         />
       </div>
 
+      {/* Coming soon: Archive (validation) — an optional add-on; ranking stays free. */}
+      <Link
+        href="/archive"
+        className="mt-6 flex flex-col gap-1 rounded-2xl border border-dashed border-primary/30 bg-primary/5 p-5 text-center transition-colors hover:border-primary/50 sm:flex-row sm:items-center sm:justify-between sm:text-left"
+      >
+        <span>
+          <span className="text-sm font-semibold">Coming soon: RealRank Archive</span>
+          <span className="block text-sm text-muted-foreground">
+            Keep your Search Console history forever, export it anywhere, get alerted when traffic moves.
+            An optional add-on — ranking stays free.
+          </span>
+        </span>
+        <span className="shrink-0 text-sm font-medium text-primary">Founding access →</span>
+      </Link>
+
       {/* The integrity line */}
       <div className="mt-12 flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-8 text-center">
         <ShieldCheck className="size-6 text-primary" />
