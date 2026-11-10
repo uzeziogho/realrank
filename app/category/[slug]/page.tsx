@@ -15,6 +15,7 @@ import {
   type RankingView,
 } from "@/lib/config";
 import { formatCompact, timeAgo } from "@/lib/utils";
+import { MIN_RANKED_FOR_CATEGORY, rankedOnly } from "@/lib/indexing";
 
 export const revalidate = 3600;
 
@@ -38,10 +39,16 @@ export async function generateMetadata({
   const known = categories.find((c) => c.slug === slug);
   if (!known) return {};
   const label = known.label;
+  // A board with only a site or two is thin — keep it crawlable (it links to
+  // real profiles) but out of the index until it's a real ranking. The sitemap
+  // applies the same bar.
+  const data = await getLeaderboardData("momentum", { category: slug });
+  const thin = rankedOnly(data.organic).length < MIN_RANKED_FOR_CATEGORY;
   return {
     title: `Top ${label} Sites by Organic Traffic`,
     description: `The fastest-growing ${label} websites ranked by verified organic Search Console clicks on ${siteConfig.name}.`,
     alternates: { canonical: `/category/${slug}` },
+    ...(thin ? { robots: { index: false, follow: true } } : {}),
   };
 }
 

@@ -8,6 +8,7 @@ import { SiteFavicon } from "@/components/site-favicon";
 import { getSiteProfileBySlug, type SiteProfile } from "@/lib/site";
 import { siteConfig } from "@/lib/config";
 import { formatCompact, formatGrowth, hostname } from "@/lib/utils";
+import { canonicalPair, isIndexablePair } from "@/lib/indexing";
 
 export const revalidate = 3600;
 
@@ -28,12 +29,20 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const pair = parsePair(slug);
   if (!pair) return { title: "Compare sites" };
   const [a, b] = pair;
+  const [aProfile, bProfile] = await Promise.all([getSiteProfileBySlug(a), getSiteProfileBySlug(b)]);
+  if (!aProfile || !bProfile) return { title: "Compare sites", robots: { index: false, follow: false } };
   const title = `${a} vs ${b} — organic traffic & momentum compared`;
+  // a-vs-b and b-vs-a are the same page: one canonical, in sorted order.
+  const canonical = `/compare/${canonicalPair(a, b)}`;
+  // Only real head-to-heads (both ranked, same category) are indexable; any
+  // other pair still renders for visitors who build it, but stays out of the index.
+  const indexable = isIndexablePair(aProfile.site, bProfile.site);
   return {
     title,
     description: `Side-by-side: ${a} vs ${b} by verified organic search traffic, momentum, and domain authority on ${siteConfig.name}.`,
-    alternates: { canonical: `/compare/${a}-vs-${b}` },
-    openGraph: { title, url: `${siteConfig.url}/compare/${a}-vs-${b}` },
+    alternates: { canonical },
+    openGraph: { title, url: `${siteConfig.url}${canonical}` },
+    ...(indexable ? {} : { robots: { index: false, follow: true } }),
   };
 }
 

@@ -4,6 +4,13 @@ import { getAllSiteSlugs } from "@/lib/site";
 import { getListedSites, getAlternativeTargets } from "@/lib/listed";
 import { getLeaderboardData } from "@/lib/data";
 import { articles } from "@/lib/articles";
+import {
+  MIN_RANKED_FOR_CATEGORY,
+  MIN_ALTERNATIVES,
+  rankedCountsByCategory,
+  alternativeCounts,
+  seedComparePairs,
+} from "@/lib/indexing";
 
 const LANDING_PAGES = [
   "lol-directories",
@@ -35,12 +42,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     getLeaderboardData("momentum").catch(() => null),
   ]);
 
-  // Seed a bounded set of head-to-head compare pages (adjacent slugs). The page
-  // works for any pair on demand; this just gives crawlers a starting set.
-  const comparePairs: string[] = [];
-  for (let i = 0; i < Math.min(siteSlugs.length - 1, 40); i++) {
-    comparePairs.push(`${siteSlugs[i]}-vs-${siteSlugs[i + 1]}`);
-  }
+  // Templated pages are submitted only when they clear the same bar their own
+  // metadata uses to stay indexable (lib/indexing.ts), so the sitemap never
+  // lists a page that noindexes itself.
+  const organic = board?.organic ?? [];
+  // Head-to-heads: same-category neighbours on the board, both with data. The
+  // page works for any pair on demand; only real comparisons are indexable.
+  const comparePairs = seedComparePairs(organic);
+  // Category boards with enough ranked sites to be a real ranking.
+  const rankedByCategory = rankedCountsByCategory(organic);
+  const boardCategories = categories
+    .map((c) => c.slug)
+    .filter((slug) => (rankedByCategory.get(slug) ?? 0) >= MIN_RANKED_FOR_CATEGORY);
+  // "Top <site> alternatives" pages with enough ranked peers to list.
+  const altCounts = alternativeCounts(organic);
+  const alternativeSlugs = siteSlugs.filter((slug) => (altCounts.get(slug) ?? 0) >= MIN_ALTERNATIVES);
 
   // Only owner-verified listings are indexable, so only those go in the sitemap.
   // Count listings per category (same read) to decide which directory roundups
@@ -186,8 +202,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.5,
     },
-    ...categories.map((c) => ({
-      url: `${base}/category/${c.slug}`,
+    ...boardCategories.map((slug) => ({
+      url: `${base}/category/${slug}`,
       lastModified: now,
       changeFrequency: "daily" as const,
       priority: 0.7,
@@ -205,8 +221,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.5,
     })),
-    // "Top <site> alternatives" pages — one per listed site, mirroring profiles.
-    ...siteSlugs.map((slug) => ({
+    // "Top <site> alternatives" pages — only those with enough peers to list.
+    ...alternativeSlugs.map((slug) => ({
       url: `${base}/alternatives/${slug}`,
       lastModified: now,
       changeFrequency: "daily" as const,

@@ -10,6 +10,16 @@ import { getLeaderboardData } from "@/lib/data";
 import { siteConfig, categoryLabel } from "@/lib/config";
 import { cn, formatCompact, formatGrowth, hostname, siteHref } from "@/lib/utils";
 import type { RankedSite } from "@/lib/types";
+import { MIN_ALTERNATIVES } from "@/lib/indexing";
+
+/** Ranked same-category peers (or the whole board when uncategorised), minus the site itself. */
+async function getAlternatives(target: RankedSite): Promise<RankedSite[]> {
+  const targetHost = hostname(target.siteUrl).toLowerCase();
+  const data = target.category
+    ? await getLeaderboardData("momentum", { category: target.category })
+    : await getLeaderboardData("momentum");
+  return data.organic.filter((s) => !s.pending && hostname(s.siteUrl).toLowerCase() !== targetHost);
+}
 
 export const revalidate = 3600;
 
@@ -27,11 +37,15 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const name = profile.site.displayName;
   const label = profile.site.category ? categoryLabel(profile.site.category) : "";
   const title = `Top ${name} Alternatives — Ranked by Verified Traffic`;
+  // With fewer than MIN_ALTERNATIVES peers it isn't a real "top alternatives"
+  // page — render it, but keep it out of the index (the sitemap uses the same bar).
+  const thin = (await getAlternatives(profile.site)).length < MIN_ALTERNATIVES;
   return {
     title,
     description: `The best ${label ? label + " " : ""}alternatives to ${name}, ranked by verified Google Search Console momentum on ${siteConfig.name} — real organic traffic, not estimates.`,
     alternates: { canonical: `/alternatives/${siteSlug(profile.site.siteUrl)}` },
     openGraph: { title, url: `${siteConfig.url}/alternatives/${siteSlug(profile.site.siteUrl)}` },
+    ...(thin ? { robots: { index: false, follow: true } } : {}),
   };
 }
 
@@ -45,12 +59,7 @@ export default async function AlternativesPage({ params }: { params: Params }) {
   const label = target.category ? categoryLabel(target.category) : null;
 
   // Peers = same-category ranked sites, minus the target itself.
-  const data = target.category
-    ? await getLeaderboardData("momentum", { category: target.category })
-    : await getLeaderboardData("momentum");
-  const alternatives = data.organic
-    .filter((s) => !s.pending && hostname(s.siteUrl).toLowerCase() !== targetHost)
-    .slice(0, 12);
+  const alternatives = (await getAlternatives(target)).slice(0, 12);
 
   return (
     <div className="container max-w-3xl py-12">

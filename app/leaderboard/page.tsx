@@ -28,10 +28,15 @@ export async function generateMetadata({
       : "The Organic Traffic Leaderboard";
   const title = page > 1 ? `${base} — Page ${page}` : base;
 
-  // Volume view keeps its own canonical; the search view (?q=) stays out of the
-  // index to avoid thin/duplicate query pages.
+  // Each view and page keeps its own canonical (same param order as the
+  // pagination links), so pages 2+ aren't folded into page 1 and the sites on
+  // them stay discoverable. The search view (?q=) stays out of the index to
+  // avoid thin/duplicate query pages.
   const searching = Boolean(sp.q?.trim());
-  const canonical = view === "volume" ? "/leaderboard?view=volume" : "/leaderboard";
+  const params = new URLSearchParams();
+  if (view === "volume") params.set("view", "volume");
+  if (page > 1) params.set("page", String(page));
+  const canonical = params.size > 0 ? `/leaderboard?${params}` : "/leaderboard";
 
   return {
     title,
