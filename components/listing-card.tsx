@@ -20,7 +20,16 @@ import type { Listing } from "@/lib/listed";
  * one piece of value a free listing can prove — shown only at or above
  * VISITS_FLOOR; below that the number says nothing.
  */
-export function ListingCard({ listing, visits }: { listing: Listing; visits?: number }) {
+export function ListingCard({
+  listing,
+  visits,
+  priority = false,
+}: {
+  listing: Listing;
+  visits?: number;
+  /** First cards on a page: eager, high-priority preview (likely the mobile LCP). */
+  priority?: boolean;
+}) {
   const showVisits = typeof visits === "number" && visits >= VISITS_FLOOR;
   return (
     <li className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/40">
@@ -33,6 +42,7 @@ export function ListingCard({ listing, visits }: { listing: Listing; visits?: nu
         host={listing.host}
         name={listing.displayName}
         className="aspect-[16/9] border-b border-border"
+        priority={priority}
       />
 
       <div className="flex flex-1 flex-col gap-2 p-4">

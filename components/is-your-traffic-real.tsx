@@ -16,7 +16,7 @@ export function IsYourTrafficReal() {
       id="isyourtrafficreal"
       src={`https://isyourtrafficreal.com/t.js?k=${IYTR_KEY}`}
       data-key={IYTR_KEY}
-      strategy="afterInteractive"
+      strategy="lazyOnload"
     />
   );
 }

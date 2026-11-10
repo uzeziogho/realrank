@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
+import localFont from "next/font/local";
+import Script from "next/script";
 import "./globals.css";
 import { siteConfig } from "@/lib/config";
 import { WebsiteJsonLd, OrganizationJsonLd } from "@/components/json-ld";
@@ -10,6 +12,21 @@ import { Analytics } from "@vercel/analytics/next";
 import { Clarity } from "@/components/clarity";
 import { IsYourTrafficReal } from "@/components/is-your-traffic-real";
 import { Pulse } from "@/components/pulse";
+
+/**
+ * Brand wordmark typeface (Space Grotesk 700, latin subset, SIL OFL — license in
+ * app/fonts). Self-hosted via next/font/local: no render-blocking request to
+ * Google Fonts (which delayed every page's first paint), the file is preloaded,
+ * and a size-matched fallback means the logo doesn't jump when it swaps in.
+ */
+const wordmark = localFont({
+  src: "./fonts/space-grotesk-latin-700.woff2",
+  weight: "700",
+  style: "normal",
+  display: "swap",
+  variable: "--font-wordmark",
+  adjustFontFallback: "Arial",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -75,7 +92,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${GeistSans.variable} ${GeistMono.variable}`}
+      className={`${GeistSans.variable} ${GeistMono.variable} ${wordmark.variable}`}
     >
       <head>
         {/* clicks.page analytics — parser-inserted in <head> so its t.js reads
@@ -84,22 +101,6 @@ export default function RootLayout({
           // eslint-disable-next-line @next/next/no-sync-scripts
           <script defer src="https://clicks.page/t.js" data-site={CLICKS_SITE} />
         )}
-        {/* Ahrefs Web Analytics — loads async so it never blocks rendering. The
-            data-key is a public site key, not a secret. */}
-        <script
-          src="https://analytics.ahrefs.com/analytics.js"
-          data-key="nR8nEsmmrgMXGaUAuNEBUw"
-          async
-        />
-        {/* Brand wordmark typeface (Space Grotesk). Loaded via stylesheet so it
-            works without a build-time font fetch; the Logo falls back to the
-            site sans until it arrives. */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&display=swap"
-          rel="stylesheet"
-        />
         {/* Set theme before paint to avoid a flash. Follows the visitor's saved
             choice, else their system preference (dark is the design default). */}
         <script
@@ -117,6 +118,15 @@ export default function RootLayout({
           <SiteFooter />
         </div>
         <Analytics />
+        {/* Ahrefs Web Analytics — lazyOnload: fetched once the page is idle, so
+            it never competes with the visitor's first interactions (INP). The
+            data-key is a public site key, not a secret. */}
+        <Script
+          id="ahrefs-analytics"
+          src="https://analytics.ahrefs.com/analytics.js"
+          data-key="nR8nEsmmrgMXGaUAuNEBUw"
+          strategy="lazyOnload"
+        />
         <Clarity />
         <IsYourTrafficReal />
         <Pulse />

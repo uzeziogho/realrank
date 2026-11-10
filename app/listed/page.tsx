@@ -136,8 +136,8 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
             </div>
           ) : (
             <ul className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(230px,1fr))]">
-              {listings.map((l) => (
-                <ListingCard key={l.host} listing={l} visits={visits.get(l.host) ?? 0} />
+              {listings.map((l, i) => (
+                <ListingCard key={l.host} listing={l} visits={visits.get(l.host) ?? 0} priority={i < 3} />
               ))}
             </ul>
           )}

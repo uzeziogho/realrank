@@ -38,8 +38,8 @@ export function LogoMark({
 
 /**
  * Full lockup: mark + "RealRank" wordmark (Space Grotesk 700, tight tracking).
- * Space Grotesk is loaded via a stylesheet link in the root layout; the stack
- * falls back to the site sans if it hasn't loaded.
+ * Space Grotesk is self-hosted via next/font/local in the root layout and
+ * exposed as --font-wordmark (with a size-matched fallback, so no layout jump).
  */
 export function Logo({
   markSize = 22,
@@ -58,7 +58,7 @@ export function Logo({
           className="font-bold tracking-[-0.035em]"
           style={{
             fontFamily:
-              "'Space Grotesk', var(--font-geist-sans), system-ui, sans-serif",
+              "var(--font-wordmark), var(--font-geist-sans), system-ui, sans-serif",
             fontSize: markSize * 0.82,
             lineHeight: 1,
           }}

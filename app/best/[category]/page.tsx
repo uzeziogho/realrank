@@ -117,8 +117,8 @@ export default async function BestCategoryPage({ params }: { params: Params }) {
         </div>
       ) : (
         <ul className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {listed.map((l) => (
-            <ListingCard key={l.host} listing={l} visits={visits.get(l.host) ?? 0} />
+          {listed.map((l, i) => (
+            <ListingCard key={l.host} listing={l} visits={visits.get(l.host) ?? 0} priority={i < 3} />
           ))}
         </ul>
       )}
