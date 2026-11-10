@@ -396,72 +396,122 @@ export const articles: Article[] = [
   },
   {
     slug: "similarweb-alternative-verified-traffic",
-    title: "A free SimilarWeb alternative for your own traffic (and where it isn't one)",
+    title: "Free SimilarWeb alternatives in 2026 (and the one that's exact for your own site)",
     description:
-      "SimilarWeb estimates traffic from a clickstream panel, which is great for spying on sites you don't own and wrong for the one you do. Here's the free, verified alternative for measuring your own organic traffic - and an honest note on what it does not replace.",
+      "The best free SimilarWeb alternatives, honestly compared: which free tools estimate any site's traffic, which measure your own exactly, and how to get SimilarWeb-style data for free without trusting a guess.",
     date: "2026-09-22",
+    updated: "2026-11-10",
     keywords: [
-      "SimilarWeb alternative",
       "free SimilarWeb alternative",
+      "SimilarWeb free alternatives",
+      "SimilarWeb free",
+      "how to get SimilarWeb for free",
+      "SimilarWeb alternative",
+      "free website traffic checker",
       "verified organic traffic",
-      "organic traffic checker",
-      "similarweb accuracy",
     ],
     Body: () => (
       <>
         <p>
-          People reach for SimilarWeb to answer two very different questions, and it is
-          only honest at one of them. The first is <em>&quot;how much traffic does that
-          site I don&apos;t own get?&quot;</em> The second is <em>&quot;how much traffic
-          does <strong>my</strong> site get?&quot;</em> For your own site there is a free,
-          exact alternative, and this post is about when to switch to it.
+          People reach for SimilarWeb to answer two very different questions:{" "}
+          <em>&quot;how much traffic does a site I don&apos;t own get?&quot;</em> and{" "}
+          <em>&quot;how much traffic does <strong>my</strong> site get?&quot;</em> The free
+          alternatives split the same way. Some estimate any site, with the same caveats as
+          SimilarWeb itself. Others measure your own site exactly, for free. Pick by the
+          question you are asking.
         </p>
-        <h2>How SimilarWeb actually gets its number</h2>
+
+        <h2>Can you get SimilarWeb for free?</h2>
         <p>
-          SimilarWeb does not see your server logs or your analytics. It estimates traffic
-          by modelling a clickstream panel - browsing data from browser extensions,
-          apps and partner devices - then extrapolating to the whole internet with a lot
-          of statistical machinery. For huge sites with millions of visits, that model is
-          directional and often close. For the long tail, where almost every indie and
-          early-stage SaaS site lives, the panel barely samples you, so the number is a
-          guess dressed as a measurement. That is why founders routinely see SimilarWeb
-          report a figure that is{" "}
-          <Link href="/is-my-traffic-real">off by 30-80% in either direction</Link> from
-          what they know is true.
+          Partly. SimilarWeb has a free tier and a browser extension that show headline
+          estimates - total visits, traffic sources, top countries - for most sites, with the
+          deeper reports kept behind its paid plans. For a quick look at a big site, that is
+          often enough. For anything small, remember what the number is: an estimate
+          extrapolated from a browsing panel, not a measurement.
         </p>
-        <h2>The alternative for your own site: your measured clicks</h2>
+
+        <h2>Free alternatives for estimating any site&apos;s traffic</h2>
         <p>
-          For the site you own, you do not need an estimate at all. Google Search Console
-          records your actual organic clicks, and connecting it (read-only) gives you the
-          exact number instead of a modelled one. RealRank is built on top of that: it
-          reads your verified Search Console clicks and ranks you against everyone else who
-          has done the same, so the comparison is measurement against measurement rather
-          than one panel estimate against another. You can sanity-check the gap yourself
-          with the <Link href="/is-my-traffic-real">Is my traffic real?</Link> tool, then{" "}
+          These all model traffic for sites you don&apos;t control. They are useful for
+          sizing competitors and markets, and they share SimilarWeb&apos;s weakness: the
+          smaller the site, the rougher the guess.
+        </p>
+        <ul>
+          <li>
+            <strong>Ahrefs&apos; free traffic checker</strong> - estimates a site&apos;s
+            organic search traffic and its top pages from Ahrefs&apos; keyword rankings. Good
+            for the SEO slice specifically; it does not try to count direct or social visits.
+          </li>
+          <li>
+            <strong>Semrush (free account)</strong> - a limited number of free lookups per day
+            in its domain overview, with estimated organic and paid traffic.
+          </li>
+          <li>
+            <strong>Ubersuggest (free searches)</strong> - a few free daily lookups showing
+            estimated organic traffic and ranking keywords. Simple, and fine for a first look.
+          </li>
+        </ul>
+        <p>
+          A useful habit: check the same site in two of them. When independent estimators
+          disagree by 2-3x - common for small sites - neither number deserves much weight.
+        </p>
+
+        <h2>Free alternatives for your own site (exact, not estimated)</h2>
+        <p>
+          For a site you own, you don&apos;t need an estimate at all.
+        </p>
+        <ul>
+          <li>
+            <strong>Google Search Console</strong> - free, from Google, and the source of truth
+            for your organic search clicks, impressions and queries.
+          </li>
+          <li>
+            <strong>Google Analytics or a privacy-first analytics tool</strong> - your total
+            visits across every channel, measured on your own pages.
+          </li>
+          <li>
+            <strong>RealRank</strong> - free. It reads your verified Search Console clicks
+            (read-only) and ranks you against every other site that has done the same, so a
+            comparison is measurement against measurement rather than one panel guess against
+            another. It is the closest thing to SimilarWeb&apos;s &quot;how do I stack
+            up?&quot; view without estimates - see the{" "}
+            <Link href="/best/fastest-growing">fastest-growing websites</Link> for what that
+            looks like.
+          </li>
+        </ul>
+
+        <h2>Why estimates miss on small sites</h2>
+        <p>
+          SimilarWeb and its peers don&apos;t see your server logs or your analytics. They
+          model a clickstream panel - browsing data from extensions, apps and partners - and
+          extrapolate to the whole web. For sites with millions of visits that is directional
+          and often close. For the long tail, where almost every indie and early-stage SaaS
+          site lives, the panel barely samples you, which is why founders routinely see a
+          figure{" "}
+          <Link href="/is-my-traffic-real">off by 30-80% in either direction</Link> from what
+          they know is true.
+        </p>
+        <p>
+          That matters most when you want to <em>show</em> your traffic - to an investor, a
+          customer, a marketplace or a timeline full of strangers. An estimate can&apos;t be
+          audited, so a skeptical reader discounts it. A verified click count can be checked,
+          so it counts as proof. You can test the gap with{" "}
+          <Link href="/is-my-traffic-real">Is my traffic real?</Link>, then{" "}
           <Link href="/login">connect Search Console</Link> to publish the real figure.
         </p>
-        <p>
-          The difference is not a rounding error, it is a category difference. An estimate
-          is un-auditable, so a skeptical reader discounts it toward zero. A verified click
-          count is checkable, so it counts as proof. If your goal is to <em>show</em> your
-          traffic - to an investor, a customer, a marketplace, or a timeline full of
-          strangers - the verified number is the only one that survives scrutiny.
-        </p>
+
         <h2>Where RealRank is not a SimilarWeb replacement</h2>
         <p>
-          Be clear-eyed about scope. SimilarWeb&apos;s whole point is estimating sites you
-          do <em>not</em> control - competitors, acquisition targets, a market you are
-          sizing. RealRank cannot and does not do that, because it only ever shows verified
-          numbers from sites that have connected their own Search Console. If you need a
-          rough read on a rival&apos;s traffic, an estimator is still the tool for that job,
-          with all its caveats. The verified alternative wins specifically when the site in
-          question is yours, or is one that has chosen to prove its numbers publicly.
+          To be clear about scope: RealRank only ever shows verified numbers from sites that
+          connected their own Search Console. It cannot tell you a competitor&apos;s traffic
+          unless that competitor chose to prove it publicly. For a rough read on a rival, an
+          estimator is still the tool for the job - held loosely.
         </p>
         <p>
-          So use the right lens for the question. Estimating the competition: an estimator,
-          held loosely. Knowing or proving your own traffic: your verified Search Console
-          clicks, free, on the <Link href="/leaderboard">RealRank board</Link>. For the
-          deeper why, see{" "}
+          So match the tool to the question. Estimating the competition: SimilarWeb&apos;s
+          free tier or one of the estimators above, cross-checked. Knowing or proving your own
+          traffic: your verified Search Console clicks, free, on the{" "}
+          <Link href="/leaderboard">RealRank board</Link>. For the deeper why, see{" "}
           <Link href="/blog/verified-vs-estimated-traffic">
             verified traffic vs estimated traffic
           </Link>

@@ -13,8 +13,10 @@ const nextConfig: NextConfig = {
       // Consolidated the two manual "grade from your clicks" tools into one.
       // The growth grader's letter grade now lives in the momentum calculator.
       { source: "/organic-growth-grade", destination: "/momentum-score", permanent: true },
-      // Consolidated the standalone SaaS page into the per-category pattern.
-      { source: "/best/fastest-growing-saas-websites", destination: "/best/fastest-growing/saas", permanent: true },
+      // The old standalone SaaS page ranked for the generic "fastest growing
+      // websites" query, so it consolidates into the all-categories hub (which
+      // links on to the SaaS page) rather than the narrower SaaS-only page.
+      { source: "/best/fastest-growing-saas-websites", destination: "/best/fastest-growing", permanent: true },
     ];
   },
 };

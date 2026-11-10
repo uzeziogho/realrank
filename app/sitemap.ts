@@ -8,6 +8,7 @@ import {
   MIN_RANKED_FOR_CATEGORY,
   MIN_ALTERNATIVES,
   rankedCountsByCategory,
+  rankedOnly,
   alternativeCounts,
   seedComparePairs,
 } from "@/lib/indexing";
@@ -257,6 +258,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly" as const,
       priority: 0.6,
     })),
+    ...(rankedOnly(organic).length >= MIN_RANKED_FOR_CATEGORY
+      ? [
+          {
+            url: `${base}/best/fastest-growing`,
+            lastModified: now,
+            changeFrequency: "daily" as const,
+            priority: 0.8,
+          },
+        ]
+      : []),
     ...growingCategories.map((slug) => ({
       url: `${base}/best/fastest-growing/${slug}`,
       lastModified: now,

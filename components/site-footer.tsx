@@ -55,6 +55,7 @@ export function SiteFooter() {
             <p className="text-sm font-medium">Boards</p>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li><Link href="/leaderboard" className="hover:text-foreground">Leaderboard</Link></li>
+              <li><Link href="/best/fastest-growing" className="hover:text-foreground">Fastest-growing websites</Link></li>
               {boardLinks.map((l) => (
                 <li key={l.href}>
                   <Link href={l.href} className="hover:text-foreground">{l.label}</Link>

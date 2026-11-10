@@ -138,6 +138,9 @@ export default async function FastestGrowingCategoryPage({ params }: { params: P
         >
           See the full {label} leaderboard →
         </Link>
+        <Link href="/best/fastest-growing" className="text-sm font-medium text-primary hover:underline">
+          Fastest-growing websites, all categories →
+        </Link>
       </div>
     </div>
   );
