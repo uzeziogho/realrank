@@ -535,6 +535,28 @@ export async function getOutboundClicks(days?: number): Promise<Map<string, numb
   }
 }
 
+/**
+ * Outbound clicks RealRank sent one host between two UTC days (inclusive), from
+ * the same first-party site_outbound_clicks counter. Powers Spotlight results.
+ */
+export async function getHostClicksBetween(host: string, fromDay: string, toDay: string): Promise<number> {
+  if (!isSupabaseConfigured()) return 0;
+  try {
+    const supabase = createServiceClient();
+    const { data, error } = await supabase
+      .from("site_outbound_clicks")
+      .select("hits")
+      .eq("host", host)
+      .gte("day", fromDay)
+      .lte("day", toDay);
+    if (error) throw error;
+    return (data ?? []).reduce((sum, r) => sum + Number(r.hits), 0);
+  } catch (err) {
+    console.error("[data] host clicks read failed:", err);
+    return 0;
+  }
+}
+
 export interface MoversData {
   /** Sites that gained rank since the previous refresh (largest gain first). */
   climbers: RankedSite[];

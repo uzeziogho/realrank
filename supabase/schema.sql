@@ -580,6 +580,10 @@ create table if not exists public.listed_sites (
   verified_at timestamptz,
   is_active boolean not null default true,
   submitted_ip text,                     -- coarse rate-limit / abuse triage only
+  spotlight_started_at timestamptz,      -- current Spotlight run began (paid, labelled; never affects rank)
+  spotlight_until timestamptz,           -- Spotlight is live while now() < this
+  spotlight_payment_id text,             -- last applied payment (webhook idempotency)
+  badge_checked_at timestamptz,          -- last periodic badge re-check
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

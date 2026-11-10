@@ -8,6 +8,10 @@
     {
       "path": "/api/cron/weekly-movers",
       "schedule": "0 15 * * 1"
+    },
+    {
+      "path": "/api/cron/recheck-badges",
+      "schedule": "40 7 * * *"
     }
   ]
 }

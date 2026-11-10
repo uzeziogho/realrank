@@ -466,6 +466,10 @@ export interface Database {
           verified_at: string | null;
           is_active: boolean;
           submitted_ip: string | null;
+          spotlight_started_at: string | null;
+          spotlight_until: string | null;
+          spotlight_payment_id: string | null;
+          badge_checked_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -491,6 +495,10 @@ export interface Database {
           verified_at?: string | null;
           is_active?: boolean;
           submitted_ip?: string | null;
+          spotlight_started_at?: string | null;
+          spotlight_until?: string | null;
+          spotlight_payment_id?: string | null;
+          badge_checked_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -516,6 +524,10 @@ export interface Database {
           verified_at?: string | null;
           is_active?: boolean;
           submitted_ip?: string | null;
+          spotlight_started_at?: string | null;
+          spotlight_until?: string | null;
+          spotlight_payment_id?: string | null;
+          badge_checked_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };

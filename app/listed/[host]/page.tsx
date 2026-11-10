@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BadgeCheck, ArrowUpRight, ShieldCheck } from "lucide-react";
+import { BadgeCheck, ArrowUpRight, ShieldCheck, Sparkles, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { SiteFavicon } from "@/components/site-favicon";
@@ -10,6 +10,8 @@ import { VisitLink } from "@/components/visit-link";
 import { VisitsChain } from "@/components/visits-chain";
 import { VerifyListing } from "@/components/verify-listing";
 import { ShareListing } from "@/components/share-listing";
+import { TrackedLink } from "@/components/tracked-link";
+import { SPOTLIGHT, isSpotlighted, spotlightAvailability, spotlightCheckoutUrl, shortDate } from "@/lib/spotlight";
 import { ListingCard } from "@/components/listing-card";
 import { getListingByHost, getListedSites, normalizeHost } from "@/lib/listed";
 import { getOutboundClicks } from "@/lib/data";
@@ -35,8 +37,15 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   };
 }
 
-export default async function ListingProfilePage({ params }: { params: Params }) {
+export default async function ListingProfilePage({
+  params,
+  searchParams,
+}: {
+  params: Params;
+  searchParams: Promise<{ spotlight?: string; status?: string }>;
+}) {
   const { host: raw } = await params;
+  const sp = await searchParams;
   const host = normalizeHost(raw) ?? raw.toLowerCase();
   const listing = await getListingByHost(host);
   if (!listing) notFound();
@@ -46,6 +55,16 @@ export default async function ListingProfilePage({ params }: { params: Params })
   // The same read + the directory feed the "more to explore" rail, so a visitor
   // who lands on one profile has somewhere to go next instead of a dead end.
   const [visitsMap, allListings] = await Promise.all([getOutboundClicks(), getListedSites()]);
+
+  // Spotlight state for the owner panel (paid, labelled; never affects rank).
+  const spotlightLive = isSpotlighted(listing);
+  const { slotsLeft, nextOpens } = spotlightAvailability(allListings);
+  const checkout = listing.ownerVerified && !spotlightLive && slotsLeft > 0 ? spotlightCheckoutUrl(listing.host) : null;
+  // Returned from checkout (?spotlight=success). Activation is asynchronous (the
+  // payment webhook), so this confirms the payment rather than the slot.
+  const returnStatus = (sp.status ?? "").toLowerCase();
+  const returnedFromCheckout = sp.spotlight === "success";
+  const checkoutFailed = returnedFromCheckout && returnStatus !== "" && returnStatus !== "succeeded" && returnStatus !== "success";
   const visits = visitsMap.get(listing.host) ?? 0;
   const sameCategory = listing.category
     ? allListings.filter((l) => l.host !== listing.host && l.category === listing.category)
@@ -73,6 +92,28 @@ export default async function ListingProfilePage({ params }: { params: Params })
           { name: listing.displayName },
         ]}
       />
+
+      {returnedFromCheckout &&
+        (checkoutFailed ? (
+          <div role="alert" className="mt-4 flex items-start gap-3 rounded-xl border border-danger/30 bg-danger/10 p-4 text-sm">
+            <AlertCircle className="mt-0.5 size-5 shrink-0 text-danger" />
+            <p>
+              <span className="font-semibold">Your payment didn&apos;t go through.</span> No charge was made — you can
+              try again from the Spotlight section below.
+            </p>
+          </div>
+        ) : (
+          <div role="status" className="mt-4 flex items-start gap-3 rounded-xl border border-success/30 bg-success/10 p-4 text-sm">
+            <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-success" />
+            <p>
+              <span className="font-semibold">Payment received — thank you!</span>{" "}
+              {spotlightLive
+                ? `${listing.displayName} is spotlighted until ${shortDate(listing.spotlightUntil!)}.`
+                : `Your ${SPOTLIGHT.days}-day Spotlight starts within a minute — refresh to see it.`}{" "}
+              Questions? <a className="underline" href={`mailto:${siteConfig.email.support}`}>{siteConfig.email.support}</a>
+            </p>
+          </div>
+        ))}
 
       <div className="mt-6 flex items-start gap-4">
         <SiteFavicon url={listing.siteUrl} name={listing.displayName} size={52} />
@@ -161,6 +202,58 @@ export default async function ListingProfilePage({ params }: { params: Params })
           <p className="font-medium">Share this listing</p>
           <p className="mt-1 text-sm text-muted-foreground">Every share is a backlink and a few more visitors.</p>
           <ShareListing url={`${siteConfig.url}/listed/${listing.host}`} name={listing.displayName} className="mt-3" stacked />
+        </div>
+
+        {/* Spotlight — money buys labelled visibility, never a rank. */}
+        <div id="spotlight" className="scroll-mt-24 border-t border-border/60 pt-4 sm:col-span-2">
+          <p className="inline-flex items-center gap-1.5 font-medium">
+            <Sparkles className="size-4 text-primary" /> Spotlight
+          </p>
+          {spotlightLive ? (
+            <p className="mt-1 text-sm text-muted-foreground">
+              Spotlighted until <span className="font-medium text-foreground">{shortDate(listing.spotlightUntil!)}</span>.
+              The owner can see the clicks it sent on the{" "}
+              <Link href={`/listed/${listing.host}/edit`} className="text-primary hover:underline">
+                listing&apos;s edit page
+              </Link>
+              .
+            </p>
+          ) : !listing.ownerVerified ? (
+            <p className="mt-1 text-sm text-muted-foreground">
+              Verify ownership with the badge below to unlock Spotlight: {SPOTLIGHT.days} days at the top of the
+              directory for {SPOTLIGHT.price}, labelled &ldquo;Sponsored&rdquo; and never affecting rank.
+            </p>
+          ) : slotsLeft === 0 ? (
+            <p className="mt-1 text-sm text-muted-foreground">
+              All {SPOTLIGHT.slots} Spotlight slots are taken
+              {nextOpens ? ` — the next one opens ${shortDate(nextOpens)}` : ""}. Check back then.
+            </p>
+          ) : (
+            <div className="mt-1 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-muted-foreground">
+                Put {listing.displayName} at the top of the directory, its category page and the homepage for{" "}
+                {SPOTLIGHT.days} days. Labelled &ldquo;Sponsored&rdquo;, never affects rank, and you&apos;ll see the
+                clicks it sends. {slotsLeft} of {SPOTLIGHT.slots} slots open.
+              </p>
+              {checkout ? (
+                <Button asChild size="sm" className="shrink-0">
+                  <TrackedLink event="spotlight_checkout_click" label={listing.host} href={checkout}>
+                    Spotlight for {SPOTLIGHT.price}
+                  </TrackedLink>
+                </Button>
+              ) : (
+                <Button asChild size="sm" variant="outline" className="shrink-0">
+                  <TrackedLink
+                    event="spotlight_contact_click"
+                    label={listing.host}
+                    href={`mailto:${siteConfig.email.sponsors}?subject=${encodeURIComponent(`Spotlight: ${listing.host}`)}`}
+                  >
+                    Request a Spotlight
+                  </TrackedLink>
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

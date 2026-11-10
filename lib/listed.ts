@@ -38,6 +38,9 @@ export interface Listing {
   details: string | null;
   ownerVerified: boolean;
   createdAt: string;
+  /** Paid Spotlight window (labelled sponsored placement; never affects rank). */
+  spotlightStartedAt: string | null;
+  spotlightUntil: string | null;
 }
 
 function toListing(row: ListedSite): Listing {
@@ -56,6 +59,8 @@ function toListing(row: ListedSite): Listing {
     details: row.details ?? null,
     ownerVerified: row.owner_verified,
     createdAt: row.created_at,
+    spotlightStartedAt: row.spotlight_started_at ?? null,
+    spotlightUntil: row.spotlight_until ?? null,
   };
 }
 
@@ -359,6 +364,7 @@ export async function createListing(
   }
 }
 
+
 /** Active listings, newest first (verified pinned above unverified). */
 export const getListedSites = unstable_cache(
   async (): Promise<Listing[]> => {
@@ -525,6 +531,130 @@ export async function verifyOwnership(host: string): Promise<VerifyResult> {
   } catch (err) {
     console.error("[listed] verify update failed:", err);
     return { ok: false, verified: false, error: "Found the badge, but couldn't save it. Please try again." };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Spotlight (paid, labelled directory placement) + periodic badge re-check
+// ---------------------------------------------------------------------------
+
+export type SpotlightActivation =
+  | { ok: true; until: string; alreadyApplied: boolean }
+  /** permanent: retrying can never succeed (e.g. not owner-verified); otherwise transient. */
+  | { ok: false; error: string; permanent: boolean };
+
+/**
+ * Start (or extend) a listing's Spotlight after a payment. Idempotent per
+ * payment: a retried webhook carrying the same payment id changes nothing.
+ * Buying again while a run is live extends it from its current end date.
+ * Only owner-verified listings can be spotlighted — the same rule the checkout
+ * button enforces — so a payment for anything else is refused (and should be
+ * refunded by hand).
+ */
+export async function activateSpotlight(
+  host: string,
+  paymentId: string | null,
+  days: number,
+): Promise<SpotlightActivation> {
+  if (!isSupabaseConfigured()) return { ok: false, error: "Database not configured.", permanent: false };
+  try {
+    const supabase = createServiceClient();
+    const { data: row, error } = await supabase
+      .from("listed_sites")
+      .select("*")
+      .eq("host", host)
+      .eq("is_active", true)
+      .maybeSingle();
+    if (error) throw error;
+    if (!row) return { ok: false, error: `No active listing for ${host}.`, permanent: true };
+    if (!row.owner_verified) return { ok: false, error: `${host} isn't owner-verified.`, permanent: true };
+    if (paymentId && row.spotlight_payment_id === paymentId && row.spotlight_until) {
+      return { ok: true, until: row.spotlight_until, alreadyApplied: true };
+    }
+
+    const now = Date.now();
+    const currentEnd = row.spotlight_until ? Date.parse(row.spotlight_until) : 0;
+    const live = currentEnd > now;
+    const start = live && row.spotlight_started_at ? row.spotlight_started_at : new Date(now).toISOString();
+    const until = new Date(Math.max(now, currentEnd) + days * 24 * 60 * 60 * 1000).toISOString();
+
+    const { error: updErr } = await supabase
+      .from("listed_sites")
+      .update({
+        spotlight_started_at: start,
+        spotlight_until: until,
+        spotlight_payment_id: paymentId,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("host", host);
+    if (updErr) throw updErr;
+    revalidateTag(LISTED_TAG);
+    return { ok: true, until, alreadyApplied: false };
+  } catch (err) {
+    console.error("[listed] spotlight activation failed:", err);
+    return { ok: false, error: "Couldn't activate the spotlight.", permanent: false };
+  }
+}
+
+/** Owner-verified listings whose badge was checked longest ago (never-checked first). */
+export async function getStaleVerifiedHosts(limit: number): Promise<string[]> {
+  if (!isSupabaseConfigured()) return [];
+  try {
+    const supabase = createServiceClient();
+    const { data, error } = await supabase
+      .from("listed_sites")
+      .select("host")
+      .eq("is_active", true)
+      .eq("owner_verified", true)
+      .order("badge_checked_at", { ascending: true, nullsFirst: true })
+      .limit(limit);
+    if (error) throw error;
+    return (data ?? []).map((r) => r.host);
+  } catch (err) {
+    console.error("[listed] stale verified read failed:", err);
+    return [];
+  }
+}
+
+export type BadgeRecheck = "kept" | "removed" | "unreachable" | "error";
+
+/**
+ * Re-check that an owner-verified listing still carries the RealRank badge, so
+ * "verified" means verified now, not once. Fail-safe: only a page we actually
+ * reached that no longer has the badge loses verification (and the followed
+ * link that comes with it). An unreachable site keeps its status and is simply
+ * retried on a later run.
+ */
+export async function recheckBadge(host: string): Promise<BadgeRecheck> {
+  if (!isSupabaseConfigured()) return "error";
+  const check = await siteCarriesMarker(host);
+  const nowIso = new Date().toISOString();
+  try {
+    const supabase = createServiceClient();
+    if (!check.ok) {
+      await supabase.from("listed_sites").update({ badge_checked_at: nowIso }).eq("host", host);
+      return "unreachable";
+    }
+    if (check.found) {
+      await supabase.from("listed_sites").update({ badge_checked_at: nowIso }).eq("host", host);
+      return "kept";
+    }
+    const { error } = await supabase
+      .from("listed_sites")
+      .update({
+        owner_verified: false,
+        status: "listed",
+        verified_at: null,
+        badge_checked_at: nowIso,
+        updated_at: nowIso,
+      })
+      .eq("host", host);
+    if (error) throw error;
+    revalidateTag(LISTED_TAG);
+    return "removed";
+  } catch (err) {
+    console.error("[listed] badge recheck failed:", err);
+    return "error";
   }
 }
 

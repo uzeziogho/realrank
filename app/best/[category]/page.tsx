@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { Plus, BadgeCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ListingCard } from "@/components/listing-card";
+import { SpotlightLane } from "@/components/spotlight-lane";
+import { activeSpotlights, spotlightAvailability } from "@/lib/spotlight";
 import { getListedSites } from "@/lib/listed";
 import { getOutboundClicks } from "@/lib/data";
 import { categories, categoryLabel, siteConfig } from "@/lib/config";
@@ -48,6 +50,8 @@ export default async function BestCategoryPage({ params }: { params: Params }) {
   const [all, visits] = await Promise.all([getListedSites(), getOutboundClicks()]);
   const listed = all.filter((l) => l.category === category);
   const verifiedCount = listed.filter((l) => l.ownerVerified).length;
+  const laneSpotlights = activeSpotlights(all).filter((l) => l.category === category);
+  const { slotsLeft } = spotlightAvailability(all);
 
   const faq = [
     {
@@ -104,6 +108,15 @@ export default async function BestCategoryPage({ params }: { params: Params }) {
           </Link>
         </div>
       </div>
+
+      {listed.length > 0 && (
+        <SpotlightLane
+          spotlights={laneSpotlights}
+          visits={visits}
+          slotsLeft={slotsLeft}
+          className="mt-10 rounded-xl border border-border/60 bg-muted/20 p-4"
+        />
+      )}
 
       {listed.length === 0 ? (
         <div className="mt-10 rounded-xl border border-dashed border-border bg-card/50 p-12 text-center">

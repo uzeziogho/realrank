@@ -27,8 +27,8 @@ import { siteConfig } from "@/lib/config";
  * Offer terms live in the constants below — edit them here, not in the layout.
  */
 const PRODUCT = "RealRank Archive";
-const FOUNDER_MONTHLY = "£9";
-const FOUNDING_PRICE = "£99";
+const FOUNDER_MONTHLY = "$9";
+const FOUNDING_PRICE = "$99";
 const FOUNDING_CAP = 50;
 const FOUNDING_SITES = 3;
 /** Pre-launch refund promise shown next to the founding offer. Confirm before launch. */
@@ -182,7 +182,7 @@ export default function ArchivePage() {
         <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-3">
           <Plan
             name="Free"
-            price="£0"
+            price="$0"
             cadence="forever"
             features={[
               "1 site",

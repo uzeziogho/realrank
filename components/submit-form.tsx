@@ -306,6 +306,13 @@ function ListedSuccess({ host, name }: { host: string; name: string }) {
       {/* Badge → verify ownership (optional). The same panel the listing page
           shows, so an owner who comes back later finds it in both places. */}
       <VerifyListing host={host} />
+      <p className="-mt-3 text-center text-xs text-muted-foreground">
+        Verified listings can also book a{" "}
+        <Link href="/pricing#spotlight" className="text-primary hover:underline">
+          Spotlight
+        </Link>{" "}
+        — 7 days at the top of the directory for $25, labelled and never affecting rank.
+      </p>
 
       {/* Upgrade path */}
       <div className="rounded-xl border border-dashed border-primary/40 bg-primary/[0.05] p-5 text-center">

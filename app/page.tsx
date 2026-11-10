@@ -4,6 +4,8 @@ import { ShieldCheck, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LeaderboardSection } from "@/components/leaderboard-section";
 import { JustListed } from "@/components/just-listed";
+import { SpotlightLane } from "@/components/spotlight-lane";
+import { activeSpotlights, spotlightAvailability } from "@/lib/spotlight";
 import { getLeaderboardData, getSiteTraffic, getOutboundClicks } from "@/lib/data";
 import { getListedSites } from "@/lib/listed";
 import { BadgeMarquee } from "@/components/badge-marquee";
@@ -110,6 +112,21 @@ export default async function HomePage() {
         page={1}
         interactive={false}
       />
+
+      {/* Spotlight — earned (this week's fastest-growing verified site) beside
+          paid (labelled, owner-verified listings). Never part of the ranking above. */}
+      {listed.length > 0 && (
+        <section className="border-t border-border/60">
+          <div className="container py-10">
+            <SpotlightLane
+              spotlights={activeSpotlights(listed)}
+              mover={data.organic.find((s) => !s.pending) ?? null}
+              visits={outboundClicks}
+              slotsLeft={spotlightAvailability(listed).slotsLeft}
+            />
+          </div>
+        </section>
+      )}
 
       {/* Board 2 — the open directory of freshly listed projects. Visually
           separated and unranked so it never reads as a verified ranking. */}

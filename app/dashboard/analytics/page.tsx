@@ -61,6 +61,9 @@ const EVENT_LABELS: Record<string, string> = {
   archive_reserve_click: "Archive: waitlist CTA clicked",
   report_cite_copy: "Report citation copied",
   report_embed_copy: "Report embed copied",
+  spotlight_checkout_click: "Spotlight: checkout clicked",
+  spotlight_contact_click: "Spotlight: request clicked",
+  sponsor_checkout_click: "Sponsor: checkout clicked",
 };
 
 function labelFor(event: string): string {

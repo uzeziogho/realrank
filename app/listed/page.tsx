@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { ListingCard } from "@/components/listing-card";
 import { BoardViews } from "@/components/board-views";
 import { DirectorySidebar } from "@/components/directory-sidebar";
+import { SpotlightLane } from "@/components/spotlight-lane";
 import { getListedSites } from "@/lib/listed";
-import { getOutboundClicks } from "@/lib/data";
+import { getOutboundClicks, getLeaderboardData } from "@/lib/data";
+import { activeSpotlights, spotlightAvailability } from "@/lib/spotlight";
 import { categories, categoryLabel, siteConfig } from "@/lib/config";
 
 type SearchParams = Promise<{ category?: string; sort?: string; q?: string; verified?: string }>;
@@ -34,7 +36,11 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
   const { category: activeRaw, sort: sortRaw, q: qRaw, verified: verifiedRaw } = await searchParams;
   // Visit counts ride along with the directory read (one query for every host)
   // and also drive the "Most visited" sort.
-  const [all, visits] = await Promise.all([getListedSites(), getOutboundClicks()]);
+  const [all, visits, board] = await Promise.all([
+    getListedSites(),
+    getOutboundClicks(),
+    getLeaderboardData("momentum").catch(() => null),
+  ]);
 
   // Count per category (only categories that actually have listings show up).
   const counts = new Map<string, number>();
@@ -48,6 +54,13 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
   const q = (qRaw ?? "").trim().toLowerCase();
   const verified = verifiedRaw === "1";
   const verifiedCount = all.filter((l) => l.ownerVerified).length;
+
+  // Spotlight lane: paid (labelled) + earned (this week's fastest-growing
+  // verified site). Category views show only that category's spotlights; the
+  // earned mover shows on the unfiltered directory.
+  const { slotsLeft } = spotlightAvailability(all);
+  const laneSpotlights = activeSpotlights(all).filter((l) => !active || l.category === active);
+  const mover = board?.organic.find((s) => !s.pending) ?? null;
 
   // Search → category → verified → sort. getListedSites() is already
   // verified-first then newest (the "Newest" order); the other sorts re-order.
@@ -109,6 +122,16 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
               <span className="text-muted-foreground/80">{verifiedCount} verified so far.</span>
             )}
           </p>
+
+          {!q && all.length > 0 && (
+            <SpotlightLane
+              spotlights={laneSpotlights}
+              mover={!active && !verified ? mover : null}
+              visits={visits}
+              slotsLeft={slotsLeft}
+              className="rounded-xl border border-border/60 bg-muted/20 p-4"
+            />
+          )}
 
           {all.length === 0 ? (
             <div className="rounded-xl border border-dashed border-border bg-card/50 p-12 text-center">

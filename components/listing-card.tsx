@@ -24,11 +24,17 @@ export function ListingCard({
   listing,
   visits,
   priority = false,
+  sponsored = false,
 }: {
   listing: Listing;
   visits?: number;
   /** First cards on a page: eager, high-priority preview (likely the mobile LCP). */
   priority?: boolean;
+  /**
+   * Paid Spotlight placement: labelled "Sponsored" on the card and the outbound
+   * link carries rel="sponsored" — money buys visibility, never a followed link.
+   */
+  sponsored?: boolean;
 }) {
   const showVisits = typeof visits === "number" && visits >= VISITS_FLOOR;
   return (
@@ -44,6 +50,11 @@ export function ListingCard({
         className="aspect-[16/9] border-b border-border"
         priority={priority}
       />
+      {sponsored && (
+        <span className="absolute left-2 top-2 z-10 rounded-full bg-background/90 px-2 py-0.5 text-[11px] font-medium text-muted-foreground shadow-sm backdrop-blur">
+          Sponsored
+        </span>
+      )}
 
       <div className="flex flex-1 flex-col gap-2 p-4">
         <div className="flex items-start gap-3">
@@ -90,7 +101,7 @@ export function ListingCard({
           <VisitLink
             href={listing.siteUrl}
             host={listing.host}
-            rel={listing.ownerVerified ? "noopener" : "noopener nofollow"}
+            rel={sponsored ? "noopener sponsored" : listing.ownerVerified ? "noopener" : "noopener nofollow"}
             className="relative z-10 ml-auto inline-flex shrink-0 items-center gap-1 rounded-md border border-input px-2.5 py-1 font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-accent"
             aria-label={`Visit ${listing.displayName}`}
           >
