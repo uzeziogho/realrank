@@ -6,7 +6,7 @@ import { formatCompact } from "@/lib/utils";
 
 /**
  * Daily first-party traffic as one combined chart: visitors (area + line) and
- * pageviews (bars), on independent scales. Click a legend chip to toggle a
+ * pageviews (bars), on one shared count axis — so their relative heights are true. Click a legend chip to toggle a
  * series; hover for a per-day readout. Theme-aware via the dash categorical CSS
  * vars (--cat-1 visitors, --cat-2 pageviews). Client component — the toggle and
  * hover need state — but a small leaf fed pre-read, serializable data.
@@ -41,7 +41,7 @@ export function TrafficChart({ days }: { days: TrafficDay[] }) {
   const W = 760;
   const H = 240;
   const L = 44;
-  const R = 46;
+  const R = 12;
   const T = 12;
   const B = 28;
   const pw = W - L - R;
@@ -53,8 +53,13 @@ export function TrafficChart({ days }: { days: TrafficDay[] }) {
     const e = Math.pow(10, String(Math.round(x)).length - 1);
     return Math.ceil(x / e) * e;
   };
-  const maxV = niceMax(Math.max(...series.map((d) => d.visitors)));
-  const maxP = niceMax(Math.max(...series.map((d) => d.pageviews)));
+  // One axis for both: they're the same unit (counts). The scale follows the
+  // visible series, so hiding pageviews zooms in on visitors.
+  const shared = niceMax(
+    Math.max(...series.map((d) => Math.max(showV ? d.visitors : 0, showP ? d.pageviews : 0))),
+  );
+  const maxV = shared;
+  const maxP = shared;
   const xStep = pw / n;
   const xAt = (i: number) => L + xStep * i + xStep / 2;
   const yV = (v: number) => T + ph - (v / maxV) * ph;
@@ -114,11 +119,10 @@ export function TrafficChart({ days }: { days: TrafficDay[] }) {
             </linearGradient>
           </defs>
 
-          {/* gridlines + dual axis labels */}
+          {/* gridlines + shared axis labels */}
           {[0, 1, 2].map((g) => {
             const gy = T + (ph / 2) * g;
-            const lvV = Math.round(maxV - (maxV / 2) * g);
-            const lvP = Math.round(maxP - (maxP / 2) * g);
+            const lv = Math.round(shared - (shared / 2) * g);
             return (
               <g key={g}>
                 <line
@@ -130,16 +134,9 @@ export function TrafficChart({ days }: { days: TrafficDay[] }) {
                   strokeWidth={1}
                   strokeDasharray={g === 2 ? "0" : "3 4"}
                 />
-                {showV && (
-                  <text x={L - 8} y={gy + 4} textAnchor="end" fill="hsl(var(--muted-foreground))" style={{ fontSize: 10 }}>
-                    {formatCompact(lvV)}
-                  </text>
-                )}
-                {showP && (
-                  <text x={L + pw + 8} y={gy + 4} textAnchor="start" fill="hsl(var(--muted-foreground))" style={{ fontSize: 10 }}>
-                    {formatCompact(lvP)}
-                  </text>
-                )}
+                <text x={L - 8} y={gy + 4} textAnchor="end" fill="hsl(var(--muted-foreground))" style={{ fontSize: 10 }}>
+                  {formatCompact(lv)}
+                </text>
               </g>
             );
           })}
