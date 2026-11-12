@@ -14,7 +14,8 @@ import { TrackedLink } from "@/components/tracked-link";
 import { SPOTLIGHT, isSpotlighted, spotlightAvailability, spotlightCheckoutUrl, shortDate } from "@/lib/spotlight";
 import { ListingCard } from "@/components/listing-card";
 import { getListingByHost, getListedSites, normalizeHost } from "@/lib/listed";
-import { getOutboundClicks } from "@/lib/data";
+import { getOutboundClicks, getActiveSites } from "@/lib/data";
+import { hostname } from "@/lib/utils";
 import { categoryLabel, siteConfig, VISITS_FLOOR, PRICING_LABELS, PLATFORM_LABELS } from "@/lib/config";
 
 export const revalidate = 300;
@@ -54,7 +55,10 @@ export default async function ListingProfilePage({
   // RealRank sent it, shown as the attribution chain (only above VISITS_FLOOR).
   // The same read + the directory feed the "more to explore" rail, so a visitor
   // who lands on one profile has somewhere to go next instead of a dead end.
-  const [visitsMap, allListings] = await Promise.all([getOutboundClicks(), getListedSites()]);
+  const [visitsMap, allListings, board] = await Promise.all([getOutboundClicks(), getListedSites(), getActiveSites()]);
+  // Also verified on the ranked board (Search Console)? Then point at its rank
+  // instead of telling the visitor it isn't ranked.
+  const onBoard = board.sites.some((s) => hostname(s.site_url).toLowerCase() === listing.host);
 
   // Spotlight state for the owner panel (paid, labelled; never affects rank).
   const spotlightLive = isSpotlighted(listing);
@@ -269,6 +273,21 @@ export default async function ListingProfilePage({
 
       {/* A listing isn't a ranked spot — make the difference (and the path to a
           real rank) explicit. Copy adapts to whether the owner has verified. */}
+      {onBoard ? (
+        <div className="mt-10 rounded-xl border border-primary/40 bg-primary/[0.05] p-6 text-center">
+          <ShieldCheck className="mx-auto size-6 text-primary" />
+          <p className="mt-2 font-medium">Also ranked on the verified leaderboard.</p>
+          <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
+            {listing.displayName} connected Google Search Console, so its organic clicks are verified and it has a
+            real momentum rank.
+          </p>
+          <div className="mt-4 flex items-center justify-center">
+            <Button asChild>
+              <Link href={`/site/${listing.host}`}>See its verified rank</Link>
+            </Button>
+          </div>
+        </div>
+      ) : (
       <div className="mt-10 rounded-xl border border-dashed border-primary/40 bg-primary/[0.05] p-6 text-center">
         <ShieldCheck className="mx-auto size-6 text-primary" />
         <p className="mt-2 font-medium">A free listing — not a ranked spot.</p>
@@ -284,6 +303,7 @@ export default async function ListingProfilePage({
           </Button>
         </div>
       </div>
+      )}
 
       {/* Keep the visitor browsing: a rail of related listings (same category
           first, then the rest of the directory) so a profile isn't a dead end. */}

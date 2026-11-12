@@ -35,6 +35,8 @@ export function SubmitForm() {
   const [phase, setPhase] = useState<Phase>("form");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // "ranked" = already verified on the board: the owner adds it from the dashboard.
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   const [host, setHost] = useState<string>("");
   const [name, setName] = useState<string>("");
   // Index into SUBMIT_STAGES while the request runs (it can take ~30s+).
@@ -62,6 +64,7 @@ export function SubmitForm() {
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    setErrorCode(null);
     setPending(true);
     const fd = new FormData(e.currentTarget);
     const payload = {
@@ -83,9 +86,10 @@ export function SubmitForm() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const data = (await res.json()) as { ok: boolean; host?: string | null; error?: string };
+      const data = (await res.json()) as { ok: boolean; host?: string | null; error?: string; code?: string };
       if (!res.ok || !data.ok) {
         setError(data.error ?? "Something went wrong. Please try again.");
+        setErrorCode(data.code ?? null);
         setPending(false);
         return;
       }
@@ -246,7 +250,17 @@ export function SubmitForm() {
       )}
 
       {error && (
-        <p className="rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p>
+        <p className="rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+          {error}
+          {errorCode === "ranked" && (
+            <>
+              {" "}
+              <Link href="/dashboard#directory" className="font-medium underline underline-offset-2">
+                Go to your dashboard →
+              </Link>
+            </>
+          )}
+        </p>
       )}
 
       <Button type="submit" size="lg" disabled={pending} className="mt-1">

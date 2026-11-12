@@ -7,6 +7,8 @@ import { TrackedLink } from "@/components/tracked-link";
 import { getListedSites, normalizeHost, type Listing } from "@/lib/listed";
 import { SPOTLIGHT, activeSpotlights, isSpotlighted, spotlightAvailability, spotlightCheckoutUrl, shortDate } from "@/lib/spotlight";
 import { siteConfig } from "@/lib/config";
+import { getActiveSites } from "@/lib/data";
+import { hostname } from "@/lib/utils";
 
 type SearchParams = Promise<{ host?: string }>;
 
@@ -31,6 +33,12 @@ export default async function SpotlightPage({ searchParams }: { searchParams: Se
   const query = (rawHost ?? "").trim();
   const host = query ? normalizeHost(query) : null;
   const listing = host ? (all.find((l) => l.host === host) ?? null) : null;
+  // Not in the directory but verified on the board (Search Console)? Its owner
+  // can add it, already verified, in one click from the dashboard.
+  const onBoard =
+    host && !listing
+      ? (await getActiveSites()).sites.some((s) => hostname(s.site_url).toLowerCase() === host)
+      : false;
 
   return (
     <div className="container max-w-2xl py-14">
@@ -79,6 +87,16 @@ export default async function SpotlightPage({ searchParams }: { searchParams: Se
           {!host ? (
             <Result tone="muted" title="That doesn't look like a website address">
               Try the domain on its own, like <code>yourproject.com</code>.
+            </Result>
+          ) : !listing && onBoard ? (
+            <Result tone="muted" icon={<BadgeCheck className="size-5 text-primary" />} title={`${host} is verified on the leaderboard`}>
+              <p>
+                It isn&apos;t in the directory yet. If it&apos;s yours, add it from your dashboard: one click, already
+                verified by Search Console, and you&apos;ll come straight back here to book.
+              </p>
+              <Button asChild className="mt-3">
+                <Link href="/dashboard#directory">Add it from my dashboard</Link>
+              </Button>
             </Result>
           ) : !listing ? (
             <Result tone="muted" icon={<Plus className="size-5 text-primary" />} title={`${host} isn't listed yet`}>

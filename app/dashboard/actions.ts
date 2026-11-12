@@ -11,6 +11,7 @@ import { categories } from "@/lib/config";
 import { hostname } from "@/lib/utils";
 import { fetchSiteMetrics } from "@/lib/google";
 import { getUserGscClient, upsertSiteHistory } from "@/lib/gsc-server";
+import { addBoardSiteToDirectory } from "@/lib/listed";
 
 export interface ActionState {
   error?: string;
@@ -116,6 +117,36 @@ export async function setSiteActive(formData: FormData): Promise<void> {
     .eq("user_id", user.id); // defence-in-depth alongside RLS
 
   revalidatePublic();
+}
+
+/**
+ * Add one of the user's verified board sites to the open directory, already
+ * owner-verified (Search Console proved it), so it can book a Spotlight.
+ * Ownership is checked here: the published site must belong to this user.
+ */
+export async function addToDirectory(formData: FormData): Promise<void> {
+  const { supabase, user } = await requireUser();
+  const id = String(formData.get("id"));
+
+  const { data: site } = await supabase
+    .from("published_sites")
+    .select("site_url, display_name, description, category")
+    .eq("id", id)
+    .eq("user_id", user.id) // only the owner's own site
+    .maybeSingle();
+  if (!site) redirect("/dashboard?directory=notfound#directory");
+
+  const result = await addBoardSiteToDirectory({
+    userId: user.id,
+    siteUrl: site.site_url,
+    displayName: site.display_name,
+    description: site.description,
+    category: site.category,
+  });
+  revalidatePath("/dashboard");
+  if (!result.ok) redirect(`/dashboard?directory=error#directory`);
+  // Straight to booking: the listing is verified, so the Spotlight page shows "Ready to book".
+  redirect(`/spotlight?host=${encodeURIComponent(result.host)}`);
 }
 
 /** Edit a published site's public details (name, description, category). */

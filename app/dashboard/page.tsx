@@ -25,6 +25,8 @@ import { SiteFavicon } from "@/components/site-favicon";
 import { Sparkline } from "@/components/sparkline";
 import { listUserProperties } from "@/lib/gsc-server";
 import { getLeaderboardData, attachSparklines } from "@/lib/data";
+import { getListedSites } from "@/lib/listed";
+import type { DirectoryStatus } from "@/components/dashboard/site-manager";
 import { siteConfig } from "@/lib/config";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
@@ -38,7 +40,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ directory?: string }>;
+}) {
   // Not configured yet (e.g. local dev without keys): show a setup notice.
   if (!isSupabaseConfigured()) {
     return <SetupNotice />;
@@ -63,6 +69,19 @@ export default async function DashboardPage() {
   ]);
 
   const mySites = (sites ?? []) as PublishedSite[];
+
+  // Directory status of each board site (by host), for the "add to directory &
+  // unlock Spotlight" row. One cached read of the directory.
+  const listed = await getListedSites();
+  const directory: Record<string, DirectoryStatus> = {};
+  for (const l of listed) directory[l.host] = { ownerVerified: l.ownerVerified, spotlightUntil: l.spotlightUntil };
+  const { directory: directoryResult } = await searchParams;
+  const directoryNotice =
+    directoryResult === "error"
+      ? "Couldn't add that site to the directory. Please try again — or email support if it keeps happening."
+      : directoryResult === "notfound"
+        ? "That site isn't one of yours."
+        : null;
   const googleConnected = Boolean(connection?.google_email);
   const liveSites = mySites.filter((s) => s.is_active);
   const liveCount = liveSites.length;
@@ -261,11 +280,16 @@ export default async function DashboardPage() {
 
       {/* Manage */}
       {mySites.length > 0 && (
-        <section className="mt-12">
+        <section id="directory" className="mt-12 scroll-mt-24">
           <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Manage sites
           </h2>
-          <SiteManager sites={mySites} />
+          {directoryNotice && (
+            <p role="alert" className="mb-4 rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+              {directoryNotice}
+            </p>
+          )}
+          <SiteManager sites={mySites} directory={directory} />
         </section>
       )}
 

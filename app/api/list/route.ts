@@ -118,7 +118,7 @@ export async function POST(req: Request) {
   }
 
   const status =
-    result.code === "duplicate"
+    result.code === "duplicate" || result.code === "ranked"
       ? 409
       : result.code === "rate_limited"
         ? 429

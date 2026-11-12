@@ -126,7 +126,7 @@ export type CreateListingResult =
       error: string;
       // badge_missing / unreachable are retained so the badge requirement can be
       // switched back on without reshaping the type; currently unused.
-      code: "invalid" | "duplicate" | "rate_limited" | "unavailable" | "server" | "badge_missing" | "unreachable";
+      code: "invalid" | "duplicate" | "ranked" | "rate_limited" | "unavailable" | "server" | "badge_missing" | "unreachable";
     };
 
 const BADGE_FETCH_TIMEOUT_MS = 10000;
@@ -273,7 +273,12 @@ export async function createListing(
       (p) => hostname(p.site_url).toLowerCase() === host,
     );
     if (alreadyRanked) {
-      return { ok: false, error: "That site is already on the verified board.", code: "duplicate" };
+      return {
+        ok: false,
+        error:
+          "That site is already verified on the leaderboard. If it's yours, add it to the directory from your dashboard — one click, already verified.",
+        code: "ranked",
+      };
     }
 
     // Already listed?
@@ -535,6 +540,93 @@ export async function verifyOwnership(host: string): Promise<VerifyResult> {
 }
 
 // ---------------------------------------------------------------------------
+// Board → directory: a site already verified through Search Console
+// ---------------------------------------------------------------------------
+
+/** Status for listings whose ownership was proven by a Search Console connection. */
+export const GSC_VERIFIED = "gsc_verified";
+
+/** Is `host` an active site on the verified (Search Console) board? */
+async function onVerifiedBoard(supabase: ReturnType<typeof createServiceClient>, host: string): Promise<boolean> {
+  const { data, error } = await supabase.from("published_sites").select("site_url").eq("is_active", true);
+  if (error) throw error;
+  return (data ?? []).some((p) => hostname(p.site_url).toLowerCase() === host);
+}
+
+export type BoardListingResult = { ok: true; host: string } | { ok: false; error: string };
+
+/**
+ * Put a site the owner has already verified with Search Console into the open
+ * directory — owner-verified from the start, so it can book a Spotlight. The
+ * CALLER must have confirmed `userId` owns this published site (the dashboard
+ * action checks published_sites.user_id); this function trusts that. An
+ * existing listing for the host is upgraded rather than duplicated, and the
+ * owner's board details only fill fields the listing doesn't have yet.
+ */
+export async function addBoardSiteToDirectory(input: {
+  userId: string;
+  siteUrl: string;
+  displayName: string;
+  description: string | null;
+  category: string | null;
+}): Promise<BoardListingResult> {
+  if (!isSupabaseConfigured()) return { ok: false, error: "The directory isn't available in this environment yet." };
+  const host = normalizeHost(hostname(input.siteUrl));
+  if (!host) return { ok: false, error: "That site's address couldn't be read." };
+  const nowIso = new Date().toISOString();
+  try {
+    const supabase = createServiceClient();
+    const { data: existing, error: readErr } = await supabase
+      .from("listed_sites")
+      .select("id, is_active, owner_verified, claimed_by, description, category, verified_at")
+      .eq("host", host)
+      .maybeSingle();
+    if (readErr) throw readErr;
+
+    if (existing) {
+      // A listing removed by moderation stays removed — re-adding goes through support.
+      if (!existing.is_active) {
+        return { ok: false, error: "This site's listing was removed. Contact support if you think that's a mistake." };
+      }
+      const { error } = await supabase
+        .from("listed_sites")
+        .update({
+          owner_verified: true,
+          status: GSC_VERIFIED,
+          verified_at: existing.verified_at ?? nowIso,
+          claimed_by: existing.claimed_by ?? input.userId,
+          description: existing.description ?? input.description,
+          category: existing.category ?? (input.category && VALID_CATEGORIES.has(input.category) ? input.category : null),
+          updated_at: nowIso,
+        })
+        .eq("id", existing.id);
+      if (error) throw error;
+    } else {
+      const { error } = await supabase.from("listed_sites").insert({
+        host,
+        site_url: listingUrl(host),
+        display_name: input.displayName.trim().slice(0, MAX.name) || host,
+        description: input.description?.trim().slice(0, MAX.description) || null,
+        category: input.category && VALID_CATEGORIES.has(input.category) ? input.category : null,
+        platforms: [],
+        owner_verified: true,
+        status: GSC_VERIFIED,
+        verified_at: nowIso,
+        claimed_by: input.userId,
+      });
+      if (error) {
+        if ((error as { code?: string }).code !== "23505") throw error; // lost a race → fine, row exists
+      }
+    }
+    revalidateTag(LISTED_TAG);
+    return { ok: true, host };
+  } catch (err) {
+    console.error("[listed] board → directory failed:", err);
+    return { ok: false, error: "Couldn't add it to the directory. Please try again." };
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Spotlight (paid, labelled directory placement) + periodic badge re-check
 // ---------------------------------------------------------------------------
 
@@ -627,16 +719,29 @@ export type BadgeRecheck = "kept" | "removed" | "unreachable" | "error";
  */
 export async function recheckBadge(host: string): Promise<BadgeRecheck> {
   if (!isSupabaseConfigured()) return "error";
-  const check = await siteCarriesMarker(host);
   const nowIso = new Date().toISOString();
   try {
     const supabase = createServiceClient();
+    // Verified through Search Console: proof holds while the site is still
+    // connected on the board. If it disconnects, fall back to the badge.
+    const { data: row } = await supabase.from("listed_sites").select("status").eq("host", host).maybeSingle();
+    if (row?.status === GSC_VERIFIED) {
+      if (await onVerifiedBoard(supabase, host)) {
+        await supabase.from("listed_sites").update({ badge_checked_at: nowIso }).eq("host", host);
+        return "kept";
+      }
+    }
+    const check = await siteCarriesMarker(host);
     if (!check.ok) {
       await supabase.from("listed_sites").update({ badge_checked_at: nowIso }).eq("host", host);
       return "unreachable";
     }
     if (check.found) {
-      await supabase.from("listed_sites").update({ badge_checked_at: nowIso }).eq("host", host);
+      // A badge also proves it — record that as the reason it's verified now.
+      await supabase
+        .from("listed_sites")
+        .update({ badge_checked_at: nowIso, ...(row?.status === GSC_VERIFIED ? { status: "owner_verified" } : {}) })
+        .eq("host", host);
       return "kept";
     }
     const { error } = await supabase

@@ -1,13 +1,25 @@
 import Link from "next/link";
-import { Globe, Eye, EyeOff, Trash2, Pencil, Share2 } from "lucide-react";
+import { Globe, Eye, EyeOff, Trash2, Pencil, Share2, Sparkles, BadgeCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SubmitButton } from "@/components/dashboard/submit-button";
-import { setSiteActive, deleteSite, updateSiteDetails } from "@/app/dashboard/actions";
+import { setSiteActive, deleteSite, updateSiteDetails, addToDirectory } from "@/app/dashboard/actions";
 import { categories, categoryLabel } from "@/lib/config";
 import { formatCompact, formatGrowth, hostname } from "@/lib/utils";
 import type { PublishedSite } from "@/lib/supabase/types";
 
-export function SiteManager({ sites }: { sites: PublishedSite[] }) {
+/** Directory status of a board site, keyed by host. */
+export interface DirectoryStatus {
+  ownerVerified: boolean;
+  spotlightUntil: string | null;
+}
+
+export function SiteManager({
+  sites,
+  directory = {},
+}: {
+  sites: PublishedSite[];
+  directory?: Record<string, DirectoryStatus>;
+}) {
   if (sites.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-border bg-card/50 p-8 text-center text-sm text-muted-foreground">
@@ -87,6 +99,12 @@ export function SiteManager({ sites }: { sites: PublishedSite[] }) {
               </div>
             </div>
 
+            {/* Directory + Spotlight. Search Console already proved ownership,
+                so one click lists it as owner-verified and unlocks Spotlight. */}
+            {site.is_active && (
+              <DirectoryRow siteId={site.id} host={hostname(site.site_url).toLowerCase()} status={directory[hostname(site.site_url).toLowerCase()]} />
+            )}
+
             {/* Edit public details (name / description / category) */}
             <details className="mt-2 group">
               <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
@@ -126,5 +144,38 @@ export function SiteManager({ sites }: { sites: PublishedSite[] }) {
         ))}
       </ul>
     </div>
+  );
+}
+
+function DirectoryRow({ siteId, host, status }: { siteId: string; host: string; status?: DirectoryStatus }) {
+  const live = status?.spotlightUntil && Date.parse(status.spotlightUntil) > Date.now();
+  if (status?.ownerVerified) {
+    return (
+      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg bg-muted/40 px-3 py-2 text-sm">
+        <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+          <BadgeCheck className="size-4 text-primary" /> In the directory, verified
+        </span>
+        <Link href={`/listed/${host}`} className="text-primary hover:underline">View listing</Link>
+        {live ? (
+          <span className="text-muted-foreground">· Spotlighted until {new Date(status.spotlightUntil!).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+        ) : (
+          <Link href={`/spotlight?host=${encodeURIComponent(host)}`} className="inline-flex items-center gap-1 font-medium text-primary hover:underline">
+            <Sparkles className="size-3.5" /> Book a Spotlight
+          </Link>
+        )}
+      </div>
+    );
+  }
+  return (
+    <form action={addToDirectory} className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg bg-muted/40 px-3 py-2 text-sm">
+      <input type="hidden" name="id" value={siteId} />
+      <span className="text-muted-foreground">
+        {status ? "Listed in the directory, not verified yet." : "Not in the open directory yet."} Search Console already proves
+        you own it.
+      </span>
+      <SubmitButton className="bg-primary text-primary-foreground hover:opacity-90" pendingText="Adding…">
+        <Sparkles className="size-3.5" /> {status ? "Verify listing & unlock Spotlight" : "Add to directory & unlock Spotlight"}
+      </SubmitButton>
+    </form>
   );
 }
