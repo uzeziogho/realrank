@@ -91,7 +91,7 @@ export default function PricingPage() {
           ]}
           cta={
             <Button asChild size="lg" variant="outline" className="w-full">
-              <Link href="/listed">Book from your listing</Link>
+              <Link href="/spotlight">Book a Spotlight</Link>
             </Button>
           }
         />

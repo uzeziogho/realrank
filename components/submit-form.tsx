@@ -308,7 +308,7 @@ function ListedSuccess({ host, name }: { host: string; name: string }) {
       <VerifyListing host={host} />
       <p className="-mt-3 text-center text-xs text-muted-foreground">
         Verified listings can also book a{" "}
-        <Link href="/pricing#spotlight" className="text-primary hover:underline">
+        <Link href="/spotlight" className="text-primary hover:underline">
           Spotlight
         </Link>{" "}
         — 7 days at the top of the directory for $25, labelled and never affecting rank.

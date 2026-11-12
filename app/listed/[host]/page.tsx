@@ -262,7 +262,7 @@ export default async function ListingProfilePage({
           too, or an owner who comes back can never finish. The host is in the
           URL and the badge check is server-side, so nothing is granted here. */}
       {!listing.ownerVerified && (
-        <div className="mt-8">
+        <div id="verify" className="mt-8 scroll-mt-24">
           <VerifyListing host={listing.host} />
         </div>
       )}

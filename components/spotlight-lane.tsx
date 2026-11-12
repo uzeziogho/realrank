@@ -100,7 +100,7 @@ function OpenSlotCard() {
         Owner-verified projects can take this spot for {SPOTLIGHT.days} days — {SPOTLIGHT.price}, labelled, with
         results you can check.
       </p>
-      <Link href="/pricing#spotlight" className="text-sm font-medium text-primary hover:underline">
+      <Link href="/spotlight" className="text-sm font-medium text-primary hover:underline">
         Book a Spotlight →
       </Link>
     </li>
