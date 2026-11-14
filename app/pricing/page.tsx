@@ -6,15 +6,10 @@ import { ConnectCTA } from "@/components/connect-cta";
 import { TrackedLink } from "@/components/tracked-link";
 import { siteConfig } from "@/lib/config";
 import { SPOTLIGHT } from "@/lib/spotlight";
+import { SPONSOR } from "@/lib/sponsor";
 
+const SPONSOR_PRICE = SPONSOR.price;
 const SPONSOR_CONTACT = siteConfig.email.sponsors;
-const SPONSOR_PRICE = "$49";
-
-/** Sponsor subscription checkout (e.g. a Dodo link); unset → email us instead. */
-function sponsorCheckoutUrl(): string | null {
-  const raw = process.env.SPONSOR_CHECKOUT_URL?.trim();
-  return raw && /^https:\/\//.test(raw) ? raw : null;
-}
 
 export const metadata: Metadata = {
   title: "Pricing — listing and ranking are free",
@@ -23,7 +18,6 @@ export const metadata: Metadata = {
 };
 
 export default function PricingPage() {
-  const sponsorCheckout = sponsorCheckoutUrl();
   return (
     <div className="container max-w-6xl py-14">
       <div className="text-center">
@@ -110,16 +104,10 @@ export default function PricingPage() {
             "Reach visitors who trust verified data",
           ]}
           cta={
+            // The booking page collects the ad (name, link, pitch) before checkout,
+            // so the slot can go live straight from the payment.
             <Button asChild size="lg" variant="outline" className="w-full">
-              {sponsorCheckout ? (
-                <TrackedLink event="sponsor_checkout_click" label="pricing_tier" href={sponsorCheckout}>
-                  Sponsor for {SPONSOR_PRICE}/mo
-                </TrackedLink>
-              ) : (
-                <TrackedLink event="sponsor_contact_click" label="pricing_tier" href={`mailto:${SPONSOR_CONTACT}?subject=Sponsoring%20${siteConfig.name}`}>
-                  Get in touch
-                </TrackedLink>
-              )}
+              <Link href="/sponsor">Sponsor for {SPONSOR_PRICE}/mo</Link>
             </Button>
           }
         />
@@ -166,12 +154,15 @@ export default function PricingPage() {
         <Faq q="What is Spotlight?">
           {SPOTLIGHT.days} days at the top of the directory, your category page and the homepage for{" "}
           {SPOTLIGHT.price}, labelled &ldquo;Sponsored&rdquo;. It&apos;s for owner-verified listings only, there are
-          only {SPOTLIGHT.slots} slots at a time, and afterwards you can see exactly how many clicks it sent you.
-          Book it from your listing&apos;s page.
+          only {SPOTLIGHT.slots} slots at a time — if they&apos;re all taken, your {SPOTLIGHT.days} days start at the
+          first free one — and afterwards you get an email with exactly how many clicks it sent you.{" "}
+          <Link href="/spotlight" className="text-primary hover:underline">Book a Spotlight</Link>.
         </Faq>
         <Faq q="How do sponsorships work?">
-          A sponsor slot is a fixed, labelled spot in the leaderboard for {SPONSOR_PRICE}/month. It&apos;s
-          excluded from scoring, so it never changes where any site ranks. Questions? Email{" "}
+          A sponsor slot is a fixed, labelled spot in the leaderboard for {SPONSOR_PRICE}/month — there are only{" "}
+          {SPONSOR.positions.length}. It&apos;s excluded from scoring, so it never changes where any site ranks. It
+          renews monthly; cancel any time and it stays up until the end of the month you&apos;ve paid for.{" "}
+          <Link href="/sponsor" className="text-primary hover:underline">Book a sponsor slot</Link>. Questions? Email{" "}
           <TrackedLink event="sponsor_contact_click" label="pricing_faq" href={`mailto:${SPONSOR_CONTACT}`} className="text-primary hover:underline">
             {SPONSOR_CONTACT}
           </TrackedLink>

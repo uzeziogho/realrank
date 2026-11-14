@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 /**
  * Manually start (or extend) a listing's Spotlight — the fallback when a payment
- * didn't activate automatically (e.g. the webhook isn't set up yet).
+ * didn't activate automatically. Prefer /admin/placements ("Start a Spotlight
+ * by hand"), which also respects the slot limit; this script is a manual
+ * override that starts immediately.
  *
  *   npm run spotlight:activate -- <host> [days]     # default 7 days
  *
@@ -54,9 +56,21 @@ const end = row.spotlight_until ? Date.parse(row.spotlight_until) : 0;
 const start = end > now && row.spotlight_started_at ? row.spotlight_started_at : new Date(now).toISOString();
 const until = new Date(Math.max(now, end) + days * 86400000).toISOString();
 
+const paymentId = `manual-${now}`;
+// Record it like a payment so it shows on /admin/placements and the daily
+// reminder/results emails know about it.
+const { error: ledgerErr } = await supabase.from("spotlight_payments").insert({
+  payment_id: paymentId,
+  host,
+  days,
+  starts_at: new Date(Math.max(now, end)).toISOString(),
+  ends_at: until,
+});
+if (ledgerErr) console.warn("! Couldn't record it in spotlight_payments (migration 20261115 applied?):", ledgerErr.message);
+
 const { error: updErr } = await supabase
   .from("listed_sites")
-  .update({ spotlight_started_at: start, spotlight_until: until, spotlight_payment_id: `manual-${now}`, updated_at: new Date().toISOString() })
+  .update({ spotlight_started_at: start, spotlight_until: until, spotlight_payment_id: paymentId, updated_at: new Date().toISOString() })
   .eq("host", host);
 if (updErr) { console.error("✗ Update failed:", updErr.message); process.exit(1); }
 console.log(`✓ ${host} spotlighted until ${until}. (The directory refreshes within a few minutes.)`);

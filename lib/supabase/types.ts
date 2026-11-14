@@ -300,6 +300,75 @@ export interface Database {
         };
         Relationships: [];
       };
+      sponsor_subscriptions: {
+        Row: {
+          subscription_id: string;
+          slot_id: string | null;
+          customer_email: string | null;
+          status: string;
+          paid_through: string | null;
+          cancelled_at: string | null;
+          last_event: string | null;
+          last_event_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          subscription_id: string;
+          slot_id?: string | null;
+          customer_email?: string | null;
+          status?: string;
+          paid_through?: string | null;
+          cancelled_at?: string | null;
+          last_event?: string | null;
+          last_event_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          subscription_id?: string;
+          slot_id?: string | null;
+          customer_email?: string | null;
+          status?: string;
+          paid_through?: string | null;
+          cancelled_at?: string | null;
+          last_event?: string | null;
+          last_event_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      spotlight_payments: {
+        Row: {
+          payment_id: string;
+          host: string;
+          days: number;
+          customer_email: string | null;
+          starts_at: string;
+          ends_at: string;
+          refunded_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          payment_id: string;
+          host: string;
+          days: number;
+          customer_email?: string | null;
+          starts_at: string;
+          ends_at: string;
+          refunded_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          payment_id?: string;
+          host?: string;
+          days?: number;
+          customer_email?: string | null;
+          starts_at?: string;
+          ends_at?: string;
+          refunded_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       sponsored_slots: {
         Row: {
           id: string;
@@ -313,6 +382,10 @@ export interface Database {
           starts_at: string | null;
           ends_at: string | null;
           created_at: string;
+          subscription_id: string | null;
+          /** active | needs_details | waitlist | paused | cancelled | on_hold | ended */
+          status: string;
+          updated_at: string;
         };
         Insert: {
           id?: string;
@@ -325,6 +398,9 @@ export interface Database {
           starts_at?: string | null;
           ends_at?: string | null;
           created_at?: string;
+          subscription_id?: string | null;
+          status?: string;
+          updated_at?: string;
         };
         Update: {
           id?: string;
@@ -337,6 +413,9 @@ export interface Database {
           starts_at?: string | null;
           ends_at?: string | null;
           created_at?: string;
+          subscription_id?: string | null;
+          status?: string;
+          updated_at?: string;
         };
         Relationships: [];
       };
@@ -470,6 +549,8 @@ export interface Database {
           spotlight_until: string | null;
           spotlight_payment_id: string | null;
           badge_checked_at: string | null;
+          spotlight_reminded_for: string | null;
+          spotlight_reported_for: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -499,6 +580,8 @@ export interface Database {
           spotlight_until?: string | null;
           spotlight_payment_id?: string | null;
           badge_checked_at?: string | null;
+          spotlight_reminded_for?: string | null;
+          spotlight_reported_for?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -528,6 +611,8 @@ export interface Database {
           spotlight_until?: string | null;
           spotlight_payment_id?: string | null;
           badge_checked_at?: string | null;
+          spotlight_reminded_for?: string | null;
+          spotlight_reported_for?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -575,6 +660,8 @@ export type Channel = Database["public"]["Tables"]["channels"]["Row"];
 export type ChannelClick = Database["public"]["Tables"]["channel_clicks"]["Row"];
 export type ChannelConversion = Database["public"]["Tables"]["channel_conversions"]["Row"];
 export type SponsoredSlot = Database["public"]["Tables"]["sponsored_slots"]["Row"];
+export type SponsorSubscription = Database["public"]["Tables"]["sponsor_subscriptions"]["Row"];
+export type SpotlightPayment = Database["public"]["Tables"]["spotlight_payments"]["Row"];
 export type ListedSite = Database["public"]["Tables"]["listed_sites"]["Row"];
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type ConnectedAccount = Database["public"]["Tables"]["connected_accounts"]["Row"];

@@ -97,6 +97,9 @@ export const DUMMY_SPONSORED: SponsoredSlot[] = [
     starts_at: null,
     ends_at: null,
     created_at: "2026-08-01T00:00:00.000Z",
+    subscription_id: null,
+    status: "active",
+    updated_at: "2026-08-01T00:00:00.000Z",
   },
   {
     id: "spon-002",
@@ -109,5 +112,8 @@ export const DUMMY_SPONSORED: SponsoredSlot[] = [
     starts_at: null,
     ends_at: null,
     created_at: "2026-08-01T00:00:00.000Z",
+    subscription_id: null,
+    status: "active",
+    updated_at: "2026-08-01T00:00:00.000Z",
   },
 ];

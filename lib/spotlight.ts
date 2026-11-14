@@ -20,29 +20,77 @@ export const SPOTLIGHT = {
   slots: 3,
 } as const;
 
+const DAY_MS = 86_400_000;
+
+/** A booked run: live now, or queued to start when a slot frees up. */
+function windowOf(l: Listing): { start: number; end: number } | null {
+  if (!l.ownerVerified || !l.spotlightUntil) return null;
+  const end = Date.parse(l.spotlightUntil);
+  const start = l.spotlightStartedAt ? Date.parse(l.spotlightStartedAt) : end - SPOTLIGHT.days * DAY_MS;
+  return { start, end };
+}
+
+/** Live right now (started, not ended). A queued booking isn't live yet. */
+export function isSpotlighted(listing: Listing, now = Date.now()): boolean {
+  const w = windowOf(listing);
+  return Boolean(w && w.start <= now && w.end > now);
+}
+
+/** Booked and paid, waiting for a free slot. */
+export function isSpotlightQueued(listing: Listing, now = Date.now()): boolean {
+  const w = windowOf(listing);
+  return Boolean(w && w.start > now && w.end > now);
+}
+
 /** Paid spotlights that are live right now, earliest-booked first. */
 export function activeSpotlights(listings: Listing[], now = Date.now()): Listing[] {
   return listings
-    .filter((l) => l.ownerVerified && l.spotlightUntil && Date.parse(l.spotlightUntil) > now)
-    .sort((a, b) => Date.parse(a.spotlightStartedAt ?? a.spotlightUntil!) - Date.parse(b.spotlightStartedAt ?? b.spotlightUntil!));
+    .filter((l) => isSpotlighted(l, now))
+    .sort((a, b) => windowOf(a)!.start - windowOf(b)!.start);
 }
 
-export function isSpotlighted(listing: Listing, now = Date.now()): boolean {
-  return Boolean(listing.ownerVerified && listing.spotlightUntil && Date.parse(listing.spotlightUntil) > now);
+/**
+ * When a new `days`-long run could start without ever putting more than
+ * `slots` spotlights live at once: now if there's room for the whole run,
+ * otherwise the first moment a slot frees up for long enough. Runs are the
+ * live and queued bookings. Pure, so the booking pages and the payment
+ * webhook agree on the date.
+ */
+export function earliestSpotlightStart(
+  runs: { start: number; end: number }[],
+  now = Date.now(),
+  days: number = SPOTLIGHT.days,
+  slots: number = SPOTLIGHT.slots,
+): number {
+  const len = days * DAY_MS;
+  const upcoming = runs.filter((r) => r.end > now);
+  const candidates = [now, ...upcoming.map((r) => r.end)].sort((a, b) => a - b);
+  for (const t of candidates) {
+    // Occupancy only rises when a run starts, so check t and every start inside [t, t + len).
+    const checkpoints = [t, ...upcoming.map((r) => r.start).filter((s) => s > t && s < t + len)];
+    const fits = checkpoints.every((p) => upcoming.filter((r) => r.start <= p && r.end > p).length < slots);
+    if (fits) return t;
+  }
+  return candidates[candidates.length - 1];
 }
 
-/** Slots still open, and when the next one frees up if they're all taken. */
+/** Every booked run (live or queued), for scheduling. */
+export function spotlightRuns(listings: Listing[], now = Date.now()): { start: number; end: number }[] {
+  return listings.map(windowOf).filter((w): w is { start: number; end: number } => Boolean(w && w.end > now));
+}
+
+/**
+ * Slots live right now, and when a run booked today would start: `nextOpens`
+ * is null when it would start immediately, otherwise the ISO date it's queued
+ * for. Booking is never refused for want of a slot — it queues.
+ */
 export function spotlightAvailability(listings: Listing[], now = Date.now()): {
   slotsLeft: number;
   nextOpens: string | null;
 } {
-  const live = activeSpotlights(listings, now);
-  const slotsLeft = Math.max(0, SPOTLIGHT.slots - live.length);
-  const nextOpens =
-    slotsLeft > 0 || live.length === 0
-      ? null
-      : live.map((l) => l.spotlightUntil!).sort((a, b) => Date.parse(a) - Date.parse(b))[0];
-  return { slotsLeft, nextOpens };
+  const slotsLeft = Math.max(0, SPOTLIGHT.slots - activeSpotlights(listings, now).length);
+  const start = earliestSpotlightStart(spotlightRuns(listings, now), now);
+  return { slotsLeft, nextOpens: start > now ? new Date(start).toISOString() : null };
 }
 
 /**

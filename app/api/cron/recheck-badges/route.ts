@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getStaleVerifiedHosts, recheckBadge, type BadgeRecheck } from "@/lib/listed";
+import { sendEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,8 +27,9 @@ export async function GET(req: NextRequest) {
 
   const started = Date.now();
   const hosts = await getStaleVerifiedHosts(BATCH);
-  const tally: Record<BadgeRecheck, number> = { kept: 0, removed: 0, unreachable: 0, error: 0 };
+  const tally: Record<BadgeRecheck, number> = { kept: 0, removed: 0, deferred: 0, unreachable: 0, error: 0 };
   const removed: string[] = [];
+  const deferred: string[] = [];
   let next = 0;
 
   async function worker() {
@@ -36,9 +38,21 @@ export async function GET(req: NextRequest) {
       const result = await recheckBadge(host);
       tally[result] += 1;
       if (result === "removed") removed.push(host);
+      if (result === "deferred") deferred.push(host);
     }
   }
   await Promise.all(Array.from({ length: Math.min(CONCURRENCY, hosts.length) }, worker));
 
-  return NextResponse.json({ checked: Object.values(tally).reduce((a, b) => a + b, 0), ...tally, removed });
+  // Badge gone during a paid Spotlight: kept verified until the run ends (the
+  // buyer keeps what they paid for). Tell the owner so it isn't a surprise.
+  const ownerEmail = process.env.OWNER_EMAIL?.trim();
+  if (deferred.length > 0 && ownerEmail) {
+    await sendEmail({
+      to: ownerEmail,
+      subject: `RealRank: badge removed during a paid Spotlight (${deferred.length})`,
+      text: `These listings no longer carry the RealRank badge but have a paid Spotlight running or booked, so they stay verified until it ends and are re-checked after:\n\n${deferred.map((h) => `- ${h}`).join("\n")}\n\nNo action needed unless you want to contact them.`,
+    });
+  }
+
+  return NextResponse.json({ checked: Object.values(tally).reduce((a, b) => a + b, 0), ...tally, removed, deferred });
 }

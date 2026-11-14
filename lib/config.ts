@@ -180,6 +180,11 @@ export const makerLinks: NavLink[] = [
     description: "7 days at the top of the directory. Labelled, never affects rank.",
   },
   {
+    href: "/sponsor",
+    label: "Sponsor the leaderboard",
+    description: "A labelled row on the leaderboard, monthly. Never affects rank.",
+  },
+  {
     href: "/pricing",
     label: "Pricing",
     description: "Listing and ranking are free. What money can and can't buy.",

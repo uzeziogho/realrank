@@ -7,6 +7,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { hostname } from "@/lib/utils";
 import { categories, siteConfig, PRICING_OPTIONS, PLATFORM_OPTIONS } from "@/lib/config";
 import { enrichListing } from "@/lib/listing-enrich";
+import { SPOTLIGHT, earliestSpotlightStart } from "@/lib/spotlight";
 import type { ListedSite } from "@/lib/supabase/types";
 
 /**
@@ -731,26 +732,39 @@ export async function addBoardSiteToDirectory(input: {
 // ---------------------------------------------------------------------------
 
 export type SpotlightActivation =
-  | { ok: true; until: string; alreadyApplied: boolean }
+  | { ok: true; start: string; until: string; queued: boolean; alreadyApplied: boolean }
   /** permanent: retrying can never succeed (e.g. not owner-verified); otherwise transient. */
   | { ok: false; error: string; permanent: boolean };
 
+const SPOT_DAY_MS = 86_400_000;
+
 /**
- * Start (or extend) a listing's Spotlight after a payment. Idempotent per
- * payment: a retried webhook carrying the same payment id changes nothing.
- * Buying again while a run is live extends it from its current end date.
- * Only owner-verified listings can be spotlighted — the same rule the checkout
- * button enforces — so a payment for anything else is refused (and should be
- * refunded by hand).
+ * Start (or extend) a listing's Spotlight after a payment.
+ *
+ *  - Idempotent per payment: the payment is recorded in spotlight_payments
+ *    first (its id is the primary key), so a retried webhook changes nothing.
+ *  - Owner-verified listings only — the same rule the checkout button enforces.
+ *  - Never more than SPOTLIGHT.slots live at once: when every slot is taken the
+ *    run is queued to start at the first free slot (earliestSpotlightStart), so
+ *    the buyer still gets their full run. Buying again while a run is live or
+ *    queued extends it from its end date.
  */
 export async function activateSpotlight(
   host: string,
   paymentId: string | null,
   days: number,
+  opts: { customerEmail?: string | null } = {},
 ): Promise<SpotlightActivation> {
   if (!isSupabaseConfigured()) return { ok: false, error: "Database not configured.", permanent: false };
+  const payId = paymentId || `manual-${Date.now()}`;
   try {
     const supabase = createServiceClient();
+
+    const { data: seen } = await supabase.from("spotlight_payments").select("*").eq("payment_id", payId).maybeSingle();
+    if (seen) {
+      return { ok: true, start: seen.starts_at, until: seen.ends_at, queued: Date.parse(seen.starts_at) > Date.now(), alreadyApplied: true };
+    }
+
     const { data: row, error } = await supabase
       .from("listed_sites")
       .select("*")
@@ -760,32 +774,111 @@ export async function activateSpotlight(
     if (error) throw error;
     if (!row) return { ok: false, error: `No active listing for ${host}.`, permanent: true };
     if (!row.owner_verified) return { ok: false, error: `${host} isn't owner-verified.`, permanent: true };
-    if (paymentId && row.spotlight_payment_id === paymentId && row.spotlight_until) {
-      return { ok: true, until: row.spotlight_until, alreadyApplied: true };
-    }
 
     const now = Date.now();
     const currentEnd = row.spotlight_until ? Date.parse(row.spotlight_until) : 0;
-    const live = currentEnd > now;
-    const start = live && row.spotlight_started_at ? row.spotlight_started_at : new Date(now).toISOString();
-    const until = new Date(Math.max(now, currentEnd) + days * 24 * 60 * 60 * 1000).toISOString();
+    let runStart: number; // when this payment's days begin
+    let listingStart: string; // the listing's (possibly earlier) run start
+    if (currentEnd > now) {
+      // Live or queued already → extend contiguously from its end.
+      runStart = currentEnd;
+      listingStart = row.spotlight_started_at ?? new Date(currentEnd - SPOTLIGHT.days * SPOT_DAY_MS).toISOString();
+    } else {
+      const { data: others, error: oErr } = await supabase
+        .from("listed_sites")
+        .select("host, spotlight_started_at, spotlight_until")
+        .eq("is_active", true)
+        .eq("owner_verified", true)
+        .gt("spotlight_until", new Date(now).toISOString())
+        .neq("host", host);
+      if (oErr) throw oErr;
+      const runs = (others ?? []).map((o) => {
+        const end = Date.parse(o.spotlight_until!);
+        return { start: o.spotlight_started_at ? Date.parse(o.spotlight_started_at) : end - SPOTLIGHT.days * SPOT_DAY_MS, end };
+      });
+      runStart = earliestSpotlightStart(runs, now, days);
+      listingStart = new Date(runStart).toISOString();
+    }
+    const until = new Date(runStart + days * SPOT_DAY_MS).toISOString();
+
+    // Record the payment first: the primary key makes a concurrent retry lose here.
+    const { error: insErr } = await supabase.from("spotlight_payments").insert({
+      payment_id: payId,
+      host,
+      days,
+      customer_email: opts.customerEmail ?? null,
+      starts_at: new Date(runStart).toISOString(),
+      ends_at: until,
+    });
+    if (insErr) {
+      if ((insErr as { code?: string }).code === "23505") {
+        return { ok: true, start: listingStart, until, queued: runStart > now, alreadyApplied: true };
+      }
+      throw insErr;
+    }
 
     const { error: updErr } = await supabase
       .from("listed_sites")
       .update({
-        spotlight_started_at: start,
+        spotlight_started_at: listingStart,
         spotlight_until: until,
-        spotlight_payment_id: paymentId,
+        spotlight_payment_id: payId,
         updated_at: new Date().toISOString(),
       })
       .eq("host", host);
     if (updErr) throw updErr;
     revalidateTag(LISTED_TAG);
-    return { ok: true, until, alreadyApplied: false };
+    return { ok: true, start: listingStart, until, queued: Date.parse(listingStart) > now, alreadyApplied: false };
   } catch (err) {
     console.error("[listed] spotlight activation failed:", err);
     return { ok: false, error: "Couldn't activate the spotlight.", permanent: false };
   }
+}
+
+export type SpotlightRefund =
+  | { matched: false }
+  | { matched: true; host: string; alreadyRefunded: boolean; ended: boolean; until: string | null };
+
+/**
+ * A Spotlight payment was refunded: take back exactly the days it paid for.
+ * If that leaves nothing (or only time already in the past), the run ends now —
+ * or, if it hadn't started yet, the booking is cancelled outright.
+ */
+export async function refundSpotlightPayment(paymentId: string): Promise<SpotlightRefund> {
+  if (!isSupabaseConfigured()) return { matched: false };
+  const supabase = createServiceClient();
+  const { data: pay, error } = await supabase.from("spotlight_payments").select("*").eq("payment_id", paymentId).maybeSingle();
+  if (error) throw error;
+  if (!pay) return { matched: false };
+  if (pay.refunded_at) return { matched: true, host: pay.host, alreadyRefunded: true, ended: false, until: null };
+
+  const nowMs = Date.now();
+  const nowIso = new Date(nowMs).toISOString();
+  await supabase.from("spotlight_payments").update({ refunded_at: nowIso }).eq("payment_id", paymentId);
+
+  const { data: row } = await supabase
+    .from("listed_sites")
+    .select("spotlight_started_at, spotlight_until")
+    .eq("host", pay.host)
+    .maybeSingle();
+  if (!row?.spotlight_until) return { matched: true, host: pay.host, alreadyRefunded: false, ended: true, until: null };
+
+  const start = row.spotlight_started_at ? Date.parse(row.spotlight_started_at) : nowMs;
+  const shortened = Date.parse(row.spotlight_until) - pay.days * SPOT_DAY_MS;
+  let patch: { spotlight_started_at?: string | null; spotlight_until: string | null };
+  let ended = false;
+  if (shortened > Math.max(nowMs, start)) {
+    patch = { spotlight_until: new Date(shortened).toISOString() };
+  } else if (start > nowMs) {
+    patch = { spotlight_started_at: null, spotlight_until: null }; // never started: cancel the booking
+    ended = true;
+  } else {
+    patch = { spotlight_until: nowIso }; // ends now
+    ended = true;
+  }
+  await supabase.from("listed_sites").update({ ...patch, updated_at: nowIso }).eq("host", pay.host);
+  revalidateTag(LISTED_TAG);
+  return { matched: true, host: pay.host, alreadyRefunded: false, ended, until: patch.spotlight_until };
 }
 
 /** Owner-verified listings whose badge was checked longest ago (never-checked first). */
@@ -808,7 +901,12 @@ export async function getStaleVerifiedHosts(limit: number): Promise<string[]> {
   }
 }
 
-export type BadgeRecheck = "kept" | "removed" | "unreachable" | "error";
+/**
+ * "deferred": the badge is gone but the listing has a paid Spotlight run (live
+ * or queued), so it stays verified until the run ends — the buyer keeps what
+ * they paid for — and is re-checked after.
+ */
+export type BadgeRecheck = "kept" | "removed" | "deferred" | "unreachable" | "error";
 
 /**
  * Re-check that an owner-verified listing still carries the RealRank badge, so
@@ -824,7 +922,11 @@ export async function recheckBadge(host: string): Promise<BadgeRecheck> {
     const supabase = createServiceClient();
     // Verified through Search Console: proof holds while the site is still
     // connected on the board. If it disconnects, fall back to the badge.
-    const { data: row } = await supabase.from("listed_sites").select("status").eq("host", host).maybeSingle();
+    const { data: row } = await supabase
+      .from("listed_sites")
+      .select("status, spotlight_until")
+      .eq("host", host)
+      .maybeSingle();
     if (row?.status === GSC_VERIFIED) {
       if (await onVerifiedBoard(supabase, host)) {
         await supabase.from("listed_sites").update({ badge_checked_at: nowIso }).eq("host", host);
@@ -843,6 +945,12 @@ export async function recheckBadge(host: string): Promise<BadgeRecheck> {
         .update({ badge_checked_at: nowIso, ...(row?.status === GSC_VERIFIED ? { status: "owner_verified" } : {}) })
         .eq("host", host);
       return "kept";
+    }
+    // Badge gone — but don't pull a paid Spotlight mid-run. Keep it verified
+    // until the run ends; the next check after that removes it.
+    if (row?.spotlight_until && Date.parse(row.spotlight_until) > Date.now()) {
+      await supabase.from("listed_sites").update({ badge_checked_at: nowIso }).eq("host", host);
+      return "deferred";
     }
     const { error } = await supabase
       .from("listed_sites")

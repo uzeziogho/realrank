@@ -11,7 +11,7 @@ import { VisitsChain } from "@/components/visits-chain";
 import { VerifyListing } from "@/components/verify-listing";
 import { ShareListing } from "@/components/share-listing";
 import { TrackedLink } from "@/components/tracked-link";
-import { SPOTLIGHT, isSpotlighted, spotlightAvailability, spotlightCheckoutUrl, shortDate } from "@/lib/spotlight";
+import { SPOTLIGHT, isSpotlighted, isSpotlightQueued, spotlightAvailability, spotlightCheckoutUrl, shortDate } from "@/lib/spotlight";
 import { ListingCard } from "@/components/listing-card";
 import { getListingByHost, getListedSites, normalizeHost } from "@/lib/listed";
 import { getOutboundClicks, getActiveSites } from "@/lib/data";
@@ -62,8 +62,10 @@ export default async function ListingProfilePage({
 
   // Spotlight state for the owner panel (paid, labelled; never affects rank).
   const spotlightLive = isSpotlighted(listing);
+  const spotlightQueued = isSpotlightQueued(listing);
+  // Booking never dead-ends: with every slot taken it queues for the first free one.
   const { slotsLeft, nextOpens } = spotlightAvailability(allListings);
-  const checkout = listing.ownerVerified && !spotlightLive && slotsLeft > 0 ? spotlightCheckoutUrl(listing.host) : null;
+  const checkout = listing.ownerVerified && !spotlightLive && !spotlightQueued ? spotlightCheckoutUrl(listing.host) : null;
   // Returned from checkout (?spotlight=success). Activation is asynchronous (the
   // payment webhook), so this confirms the payment rather than the slot.
   const returnStatus = (sp.status ?? "").toLowerCase();
@@ -113,7 +115,9 @@ export default async function ListingProfilePage({
               <span className="font-semibold">Payment received — thank you!</span>{" "}
               {spotlightLive
                 ? `${listing.displayName} is spotlighted until ${shortDate(listing.spotlightUntil!)}.`
-                : `Your ${SPOTLIGHT.days}-day Spotlight starts within a minute — refresh to see it.`}{" "}
+                : spotlightQueued
+                  ? `Every slot was taken, so your ${SPOTLIGHT.days} days start ${shortDate(listing.spotlightStartedAt!)}.`
+                  : `Your ${SPOTLIGHT.days}-day Spotlight starts within a minute — refresh to see it.`}{" "}
               Questions? <a className="underline" href={`mailto:${siteConfig.email.support}`}>{siteConfig.email.support}</a>
             </p>
           </div>
@@ -227,17 +231,21 @@ export default async function ListingProfilePage({
               Verify ownership with the badge below to unlock Spotlight: {SPOTLIGHT.days} days at the top of the
               directory for {SPOTLIGHT.price}, labelled &ldquo;Sponsored&rdquo; and never affecting rank.
             </p>
-          ) : slotsLeft === 0 ? (
+          ) : spotlightQueued ? (
             <p className="mt-1 text-sm text-muted-foreground">
-              All {SPOTLIGHT.slots} Spotlight slots are taken
-              {nextOpens ? ` — the next one opens ${shortDate(nextOpens)}` : ""}. Check back then.
+              Booked — your {SPOTLIGHT.days} days start{" "}
+              <span className="font-medium text-foreground">{shortDate(listing.spotlightStartedAt!)}</span>, when a
+              slot frees up.
             </p>
           ) : (
             <div className="mt-1 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-muted-foreground">
                 Put {listing.displayName} at the top of the directory, its category page and the homepage for{" "}
                 {SPOTLIGHT.days} days. Labelled &ldquo;Sponsored&rdquo;, never affects rank, and you&apos;ll see the
-                clicks it sends. {slotsLeft} of {SPOTLIGHT.slots} slots open.
+                clicks it sends.{" "}
+                {nextOpens
+                  ? `All ${SPOTLIGHT.slots} slots are taken now — book today and your days start ${shortDate(nextOpens)}.`
+                  : `${slotsLeft} of ${SPOTLIGHT.slots} slots open.`}
               </p>
               {checkout ? (
                 <Button asChild size="sm" className="shrink-0">

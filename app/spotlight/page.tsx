@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { SiteFavicon } from "@/components/site-favicon";
 import { TrackedLink } from "@/components/tracked-link";
 import { getListedSites, normalizeHost, type Listing } from "@/lib/listed";
-import { SPOTLIGHT, activeSpotlights, isSpotlighted, spotlightAvailability, spotlightCheckoutUrl, shortDate } from "@/lib/spotlight";
+import { SPOTLIGHT, activeSpotlights, isSpotlighted, isSpotlightQueued, spotlightAvailability, spotlightCheckoutUrl, shortDate } from "@/lib/spotlight";
 import { siteConfig } from "@/lib/config";
 import { getActiveSites } from "@/lib/data";
 import { hostname } from "@/lib/utils";
@@ -158,7 +158,7 @@ export default async function SpotlightPage({ searchParams }: { searchParams: Se
 }
 
 function SlotsLine({ slotsLeft, nextOpens }: { slotsLeft: number; nextOpens: string | null }) {
-  if (slotsLeft > 0) {
+  if (!nextOpens && slotsLeft > 0) {
     return (
       <span className="inline-flex items-center gap-1.5 font-medium text-success">
         <span className="size-2 rounded-full bg-success" />
@@ -169,7 +169,7 @@ function SlotsLine({ slotsLeft, nextOpens }: { slotsLeft: number; nextOpens: str
   return (
     <span className="inline-flex items-center gap-1.5 text-muted-foreground">
       <Clock className="size-4" />
-      All {SPOTLIGHT.slots} slots taken{nextOpens ? ` — the next opens ${shortDate(nextOpens)}` : ""}
+      All {SPOTLIGHT.slots} slots taken{nextOpens ? ` — book now and your ${SPOTLIGHT.days} days start ${shortDate(nextOpens)}` : ""}
     </span>
   );
 }
@@ -230,13 +230,13 @@ function ListingResult({
     );
   }
 
-  if (slotsLeft === 0) {
+  if (isSpotlightQueued(listing)) {
     return (
-      <Result tone="muted" icon={<Clock className="size-5 text-muted-foreground" />} title="All slots are taken">
+      <Result tone="success" icon={<Clock className="size-5 text-success" />} title="Booked — waiting for its slot">
         {head}
         <p className="mt-3">
-          {listing.displayName} is eligible. All {SPOTLIGHT.slots} slots are booked
-          {nextOpens ? ` — the next opens ${shortDate(nextOpens)}` : ""}. Check back then.
+          Your {SPOTLIGHT.days} days start <strong>{shortDate(listing.spotlightStartedAt!)}</strong>, when a slot
+          frees up, and run until <strong>{shortDate(listing.spotlightUntil!)}</strong>.
         </p>
       </Result>
     );
@@ -247,13 +247,22 @@ function ListingResult({
     <Result tone="primary" icon={<Sparkles className="size-5 text-primary" />} title="Ready to book">
       {head}
       <p className="mt-3">
-        {SPOTLIGHT.days} days in the Spotlight lane for {SPOTLIGHT.price}, starting as soon as the payment clears.
+        {nextOpens ? (
+          <>
+            All {SPOTLIGHT.slots} slots are taken right now, so your {SPOTLIGHT.days} days start{" "}
+            <strong>{shortDate(nextOpens)}</strong>, when the first one frees up. {SPOTLIGHT.price}, paid today.
+          </>
+        ) : (
+          <>
+            {SPOTLIGHT.days} days in the Spotlight lane for {SPOTLIGHT.price}, starting as soon as the payment clears.
+          </>
+        )}{" "}
         You&apos;ll come back to your listing page with a confirmation.
       </p>
       {checkout ? (
         <Button asChild size="lg" className="mt-4 w-full sm:w-auto">
           <TrackedLink event="spotlight_checkout_click" label={listing.host} href={checkout}>
-            Pay {SPOTLIGHT.price} &amp; book {listing.displayName}
+            {nextOpens ? `Pay ${SPOTLIGHT.price} & book from ${shortDate(nextOpens)}` : `Pay ${SPOTLIGHT.price} & book ${listing.displayName}`}
           </TrackedLink>
         </Button>
       ) : (
