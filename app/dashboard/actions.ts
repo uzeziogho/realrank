@@ -144,7 +144,9 @@ export async function addToDirectory(formData: FormData): Promise<void> {
     category: site.category,
   });
   revalidatePath("/dashboard");
-  if (!result.ok) redirect(`/dashboard?directory=error#directory`);
+  if (!result.ok) {
+    redirect(`/dashboard?directory=${result.code === "name_taken" ? "name_taken" : "error"}#directory`);
+  }
   // Straight to booking: the listing is verified, so the Spotlight page shows "Ready to book".
   redirect(`/spotlight?host=${encodeURIComponent(result.host)}`);
 }

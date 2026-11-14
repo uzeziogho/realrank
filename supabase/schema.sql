@@ -606,6 +606,19 @@ create index if not exists listed_sites_category_idx
 create index if not exists listed_sites_verified_idx
   on public.listed_sites (owner_verified) where is_active;
 
+-- Unique project names (case/spacing/punctuation/domain-ending insensitive).
+-- Mirrors nameKey() in lib/listed.ts; see migration 20261114_unique_listing_names.
+create or replace function public.listing_name_key(name text)
+returns text language sql immutable parallel safe as $$
+  select regexp_replace(
+           regexp_replace(lower(btrim(name)), '\.[a-z]{2,12}$', ''),
+           '[^[:alnum:]]+', '', 'g'
+         )
+$$;
+create unique index if not exists listed_sites_name_key_idx
+  on public.listed_sites (public.listing_name_key(display_name))
+  where is_active and public.listing_name_key(display_name) <> '';
+
 -- ---------------------------------------------------------------------------
 -- Weekly digest suppression list
 -- ---------------------------------------------------------------------------

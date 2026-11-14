@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
-import { createListing, normalizeHost } from "@/lib/listed";
+import { createListing, normalizeHost, checkNameAvailable } from "@/lib/listed";
 import { sendEmail, listingConfirmationEmail } from "@/lib/email";
 import { offTopicReason } from "@/lib/offtopic";
 
@@ -32,6 +32,16 @@ const BLOCKED_COUNTRIES = new Set(["CN"]);
  * createListing(); this route adds a honeypot (`company`) that real users never
  * fill. Inserts run with the service role — the table has no open RLS insert.
  */
+/**
+ * Inline name check for the submit form: GET /api/list?name=… → is that project
+ * name free? Advisory only — the POST re-checks, and a DB index backs both.
+ */
+export async function GET(req: Request) {
+  const name = (new URL(req.url).searchParams.get("name") ?? "").slice(0, 120);
+  const result = await checkNameAvailable(name);
+  return NextResponse.json(result, { headers: { "cache-control": "no-store" } });
+}
+
 export async function POST(req: Request) {
   let body: {
     url?: string;
@@ -118,7 +128,7 @@ export async function POST(req: Request) {
   }
 
   const status =
-    result.code === "duplicate" || result.code === "ranked"
+    result.code === "duplicate" || result.code === "ranked" || result.code === "name_taken"
       ? 409
       : result.code === "rate_limited"
         ? 429

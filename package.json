@@ -11,7 +11,8 @@
     "db:check": "node scripts/check-db.mjs",
     "db:prune-offtopic": "node scripts/remove-offtopic-listings.mjs",
     "db:prune-geo": "node scripts/remove-geo-listings.mjs",
-    "spotlight:activate": "node scripts/activate-spotlight.mjs"
+    "spotlight:activate": "node scripts/activate-spotlight.mjs",
+    "db:dupe-names": "node scripts/check-duplicate-names.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.133.0",

@@ -39,6 +39,20 @@ export function SubmitForm() {
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [host, setHost] = useState<string>("");
   const [name, setName] = useState<string>("");
+  // Inline "name already taken" hint, checked when the name field loses focus.
+  const [nameTaken, setNameTaken] = useState<string | null>(null);
+
+  async function checkName(value: string) {
+    const v = value.trim();
+    if (v.length < 2) return setNameTaken(null);
+    try {
+      const res = await fetch(`/api/list?name=${encodeURIComponent(v)}`);
+      const data = (await res.json()) as { available: boolean; message?: string };
+      setNameTaken(data.available ? null : (data.message ?? "That name is already taken."));
+    } catch {
+      setNameTaken(null); // the submit-time check still applies
+    }
+  }
   // Index into SUBMIT_STAGES while the request runs (it can take ~30s+).
   const [stage, setStage] = useState(0);
   // Only URL + name + pitch show up front; the rest (all optional) stay tucked
@@ -130,8 +144,22 @@ export function SubmitForm() {
         />
       </Field>
 
-      <Field label="Project name">
-        <input name="name" type="text" required maxLength={80} placeholder="RealRank" className={inputClass} />
+      <Field label="Project name" hint="Must be unique on RealRank.">
+        <input
+          name="name"
+          type="text"
+          required
+          maxLength={80}
+          placeholder="RealRank"
+          className={inputClass}
+          aria-invalid={nameTaken ? true : undefined}
+          aria-describedby="name-taken"
+          onBlur={(e) => checkName(e.currentTarget.value)}
+          onChange={() => nameTaken && setNameTaken(null)}
+        />
+        <p id="name-taken" role="status" aria-live="polite" className="text-sm text-danger empty:hidden">
+          {nameTaken}
+        </p>
       </Field>
 
       <Field label="One-line pitch" hint="Shown on the board. Keep it tight.">

@@ -102,6 +102,80 @@ export function normalizeHost(input: string): string | null {
 }
 
 /** Canonical https URL for a listed host. */
+/**
+ * The comparison key for a project name, so names that only differ in case,
+ * spacing, punctuation or a trailing domain ending count as the same name:
+ * "FormBee", "form-bee", "Form Bee!" and "Formbee.app" all → "formbee".
+ * Mirrored in SQL by public.listing_name_key (migration 20261114) — keep the
+ * two in step.
+ */
+export function nameKey(name: string): string {
+  return name
+    .normalize("NFKC")
+    .toLowerCase()
+    .trim()
+    .replace(/\.[a-z]{2,12}$/u, "") // "formbee.app" → "formbee"
+    .replace(/[^\p{L}\p{N}]+/gu, "");
+}
+
+export interface NameClash {
+  /** The existing name, as it's shown on the site. */
+  displayName: string;
+  host: string;
+}
+
+/**
+ * Is this name already used by another directory listing, or by another site on
+ * the verified board? Rows for `ownHost` are ignored, so renaming your own
+ * listing (or adding your own board site to the directory) never clashes with
+ * itself. Inactive (removed) listings don't hold their name.
+ */
+async function findNameClash(
+  supabase: ReturnType<typeof createServiceClient>,
+  name: string,
+  ownHost: string | null,
+): Promise<NameClash | null> {
+  const key = nameKey(name);
+  if (!key) return null;
+  const [{ data: listed, error: e1 }, { data: board, error: e2 }] = await Promise.all([
+    supabase.from("listed_sites").select("host, display_name").eq("is_active", true),
+    supabase.from("published_sites").select("site_url, display_name").eq("is_active", true),
+  ]);
+  if (e1) throw e1;
+  if (e2) throw e2;
+  for (const r of listed ?? []) {
+    if (r.host !== ownHost && nameKey(r.display_name) === key) return { displayName: r.display_name, host: r.host };
+  }
+  for (const r of board ?? []) {
+    const h = hostname(r.site_url).toLowerCase();
+    if (h !== ownHost && nameKey(r.display_name) === key) return { displayName: r.display_name, host: h };
+  }
+  return null;
+}
+
+/** The message shown when a name is taken — same wording on every path. */
+export function nameTakenMessage(clash: NameClash): string {
+  return `“${clash.displayName}” is already on ${siteConfig.name} (${clash.host}). Pick a different name — add what makes yours different.`;
+}
+
+/** Public check for the submit form's inline hint. */
+export async function checkNameAvailable(name: string, ownHost: string | null = null): Promise<{ available: boolean; message?: string }> {
+  if (!isSupabaseConfigured() || nameKey(name).length < 2) return { available: true };
+  try {
+    const clash = await findNameClash(createServiceClient(), name, ownHost);
+    return clash ? { available: false, message: nameTakenMessage(clash) } : { available: true };
+  } catch (err) {
+    console.error("[listed] name check failed:", err);
+    return { available: true }; // the submit-time check still applies
+  }
+}
+
+/** True when a unique-violation came from the name index, not the host one. */
+function isNameIndexViolation(error: unknown): boolean {
+  const e = error as { code?: string; message?: string; details?: string };
+  return e?.code === "23505" && /listed_sites_name_key_idx/.test(`${e.message ?? ""} ${e.details ?? ""}`);
+}
+
 export function listingUrl(host: string): string {
   return `https://${host}`;
 }
@@ -126,7 +200,7 @@ export type CreateListingResult =
       error: string;
       // badge_missing / unreachable are retained so the badge requirement can be
       // switched back on without reshaping the type; currently unused.
-      code: "invalid" | "duplicate" | "ranked" | "rate_limited" | "unavailable" | "server" | "badge_missing" | "unreachable";
+      code: "invalid" | "duplicate" | "ranked" | "name_taken" | "rate_limited" | "unavailable" | "server" | "badge_missing" | "unreachable";
     };
 
 const BADGE_FETCH_TIMEOUT_MS = 10000;
@@ -236,7 +310,9 @@ export async function createListing(
   if (!host) return { ok: false, error: "Enter a valid website URL.", code: "invalid" };
 
   const displayName = input.displayName.trim().slice(0, MAX.name);
-  if (displayName.length < 2) return { ok: false, error: "Add a project name.", code: "invalid" };
+  if (displayName.length < 2 || nameKey(displayName).length < 2) {
+    return { ok: false, error: "Add a project name.", code: "invalid" };
+  }
 
   const tagline = input.tagline?.trim().slice(0, MAX.tagline) || null;
   const description = input.description?.trim().slice(0, MAX.description) || null;
@@ -290,6 +366,11 @@ export async function createListing(
     if (existing) {
       return { ok: false, error: "That site is already listed.", code: "duplicate" };
     }
+
+    // Names are unique across the directory and the board, so two projects
+    // can never look like the same thing.
+    const clash = await findNameClash(supabase, displayName, host);
+    if (clash) return { ok: false, error: nameTakenMessage(clash), code: "name_taken" };
 
     // Coarse per-IP hourly cap (best-effort; ip may be null behind some proxies).
     if (ip) {
@@ -354,7 +435,10 @@ export async function createListing(
       status: "listed",
     });
     if (error) {
-      // Unique-violation race → treat as duplicate.
+      // Unique-violation race: the same name or the same host won by a hair.
+      if (isNameIndexViolation(error)) {
+        return { ok: false, error: "That name was just taken by another listing. Pick a different name.", code: "name_taken" };
+      }
       if ((error as { code?: string }).code === "23505") {
         return { ok: false, error: "That site is already listed.", code: "duplicate" };
       }
@@ -553,7 +637,7 @@ async function onVerifiedBoard(supabase: ReturnType<typeof createServiceClient>,
   return (data ?? []).some((p) => hostname(p.site_url).toLowerCase() === host);
 }
 
-export type BoardListingResult = { ok: true; host: string } | { ok: false; error: string };
+export type BoardListingResult = { ok: true; host: string } | { ok: false; error: string; code?: "name_taken" };
 
 /**
  * Put a site the owner has already verified with Search Console into the open
@@ -602,10 +686,19 @@ export async function addBoardSiteToDirectory(input: {
         .eq("id", existing.id);
       if (error) throw error;
     } else {
+      const displayName = input.displayName.trim().slice(0, MAX.name) || host;
+      const clash = await findNameClash(supabase, displayName, host);
+      if (clash) {
+        return {
+          ok: false,
+          error: `${nameTakenMessage(clash)} Rename your site under “Edit details”, then add it again.`,
+          code: "name_taken",
+        };
+      }
       const { error } = await supabase.from("listed_sites").insert({
         host,
         site_url: listingUrl(host),
-        display_name: input.displayName.trim().slice(0, MAX.name) || host,
+        display_name: displayName,
         description: input.description?.trim().slice(0, MAX.description) || null,
         category: input.category && VALID_CATEGORIES.has(input.category) ? input.category : null,
         platforms: [],
@@ -615,6 +708,13 @@ export async function addBoardSiteToDirectory(input: {
         claimed_by: input.userId,
       });
       if (error) {
+        if (isNameIndexViolation(error)) {
+          return {
+            ok: false,
+            error: "That name was just taken by another listing. Rename your site under “Edit details”, then add it again.",
+            code: "name_taken",
+          };
+        }
         if ((error as { code?: string }).code !== "23505") throw error; // lost a race → fine, row exists
       }
     }
@@ -947,7 +1047,9 @@ export async function updateListing(
 
     if (input.displayName !== undefined) {
       const name = input.displayName.trim().slice(0, MAX.name);
-      if (name.length < 2) return { ok: false, error: "Add a project name." };
+      if (name.length < 2 || nameKey(name).length < 2) return { ok: false, error: "Add a project name." };
+      const clash = await findNameClash(supabase, name, host);
+      if (clash) return { ok: false, error: nameTakenMessage(clash) };
       patch.display_name = name;
     }
     if (input.description !== undefined) {
@@ -973,7 +1075,10 @@ export async function updateListing(
     if (input.details !== undefined) patch.details = input.details.trim().slice(0, MAX.details) || null;
 
     const { error: upErr } = await supabase.from("listed_sites").update(patch).eq("host", host);
-    if (upErr) throw upErr;
+    if (upErr) {
+      if (isNameIndexViolation(upErr)) return { ok: false, error: "That name was just taken by another listing. Pick a different name." };
+      throw upErr;
+    }
     revalidateTag(LISTED_TAG);
     return { ok: true };
   } catch (err) {

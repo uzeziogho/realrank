@@ -81,7 +81,9 @@ export default async function DashboardPage({
       ? "Couldn't add that site to the directory. Please try again — or email support if it keeps happening."
       : directoryResult === "notfound"
         ? "That site isn't one of yours."
-        : null;
+        : directoryResult === "name_taken"
+          ? "Another project on RealRank already uses this site's name. Rename it under “Edit details”, then add it to the directory again."
+          : null;
   const googleConnected = Boolean(connection?.google_email);
   const liveSites = mySites.filter((s) => s.is_active);
   const liveCount = liveSites.length;
