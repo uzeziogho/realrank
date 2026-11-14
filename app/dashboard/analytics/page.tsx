@@ -44,6 +44,7 @@ const EVENT_LABELS: Record<string, string> = {
   cite_copy: "Index citation copied",
   cite_embed_copy: "Index embed copied",
   connect_click: "Connect clicked",
+  list_click: "List-your-project clicked",
   movers_post_copy: "Movers post copied",
   movers_post_share: "Movers post shared",
   listing_created: "Listing created",
@@ -86,7 +87,7 @@ export default async function AnalyticsPage({
   if (!isSupabaseConfigured()) redirect("/dashboard");
 
   const user = await getOptionalUser();
-  if (!user) redirect("/login");
+  if (!user) redirect("/login?next=/dashboard/analytics");
   // Owner-only surface — everyone else lands back on their own dashboard.
   if (!isOwner(user.email)) redirect("/dashboard");
 

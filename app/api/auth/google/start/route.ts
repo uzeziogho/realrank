@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import { getAuthUrl } from "@/lib/google";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { siteConfig } from "@/lib/config";
+import { safeNextPath } from "@/lib/utils";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,7 +16,8 @@ export const dynamic = "force-dynamic";
  * Fails gracefully (redirect to /login with a reason) instead of throwing a 500
  * when configuration is incomplete.
  */
-export async function GET() {
+export async function GET(req: Request) {
+  const next = safeNextPath(new URL(req.url).searchParams.get("next"));
   const missing = [
     "GOOGLE_CLIENT_ID",
     "GOOGLE_CLIENT_SECRET",
@@ -39,6 +41,15 @@ export async function GET() {
       path: "/",
       maxAge: 600,
     });
+    if (next) {
+      res.cookies.set("oauth_next", next, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 600,
+      });
+    }
     return res;
   } catch (err) {
     console.error("[oauth start] failed to build auth URL:", err);

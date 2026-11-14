@@ -72,7 +72,7 @@ export default function PricingPage() {
             "Eligible for Mover of the week — a free Spotlight",
             "A public, verified profile page",
           ]}
-          cta={<ConnectCTA label="Get ranked — free" source="pricing" className="w-full" />}
+          cta={<ConnectCTA label="Get a verified rank — free" source="pricing" className="w-full" />}
         />
 
         {/* Spotlight — paid visibility, owner-verified listings */}

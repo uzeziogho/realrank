@@ -243,7 +243,7 @@ export default async function StateOfIndieOrganicTrafficPage() {
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3 border-t border-border/60 pt-8">
           <Button asChild size="lg">
             <Link href="/login">
-              <ShieldCheck className="size-4" /> Add your site — verified &amp; free
+              <ShieldCheck className="size-4" /> Get a verified rank — free
             </Link>
           </Button>
           <Button asChild size="lg" variant="outline">

@@ -4,7 +4,7 @@ import { SitePreview } from "@/components/site-preview";
 import { SiteFavicon } from "@/components/site-favicon";
 import { VisitLink } from "@/components/visit-link";
 import { categoryLabel, VISITS_FLOOR } from "@/lib/config";
-import { formatCompact } from "@/lib/utils";
+import { formatCompact, cn } from "@/lib/utils";
 import type { Listing } from "@/lib/listed";
 
 /**
@@ -25,8 +25,11 @@ export function ListingCard({
   visits,
   priority = false,
   sponsored = false,
+  className,
 }: {
   listing: Listing;
+  /** Extra classes on the card's <li> (e.g. hide extra cards on phones). */
+  className?: string;
   visits?: number;
   /** First cards on a page: eager, high-priority preview (likely the mobile LCP). */
   priority?: boolean;
@@ -38,16 +41,22 @@ export function ListingCard({
 }) {
   const showVisits = typeof visits === "number" && visits >= VISITS_FLOOR;
   return (
-    <li className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/40">
+    <li
+      className={cn(
+        "group relative flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/40",
+        className,
+      )}
+    >
       {/* The whole card links to the profile; the real links sit above on z-10,
           and the focusable name link is the keyboard target. */}
       <Link href={`/listed/${listing.host}`} aria-hidden tabIndex={-1} className="absolute inset-0 z-0" />
 
+      {/* Decorative: taps on the image fall through to the card link. */}
       <SitePreview
         siteUrl={listing.siteUrl}
         host={listing.host}
         name={listing.displayName}
-        className="aspect-[16/9] border-b border-border"
+        className="pointer-events-none aspect-[16/9] border-b border-border"
         priority={priority}
       />
       {sponsored && (

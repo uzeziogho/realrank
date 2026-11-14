@@ -103,7 +103,7 @@ export default async function ComparePage({ params }: { params: Params }) {
       </p>
 
       {/* Headers with favicons + sparklines */}
-      <div className="mt-8 grid grid-cols-[1fr_auto_1fr] items-start gap-4">
+      <div className="mt-8 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-4">
         <SiteColumn profile={aProfile} />
         <div className="pt-6 text-center text-sm font-semibold text-muted-foreground">vs</div>
         <SiteColumn profile={bProfile} />
@@ -125,7 +125,7 @@ export default async function ComparePage({ params }: { params: Params }) {
       </div>
 
       <p className="mt-4 text-center text-xs text-muted-foreground">
-        Green = leading on that metric. Rankings update hourly from verified Search Console data.
+        Green = leading on that metric. Rankings update daily from verified Search Console data.
       </p>
 
       <div className="mt-10 rounded-xl border border-border bg-card p-6 text-center">
@@ -133,7 +133,7 @@ export default async function ComparePage({ params }: { params: Params }) {
         <p className="mt-1 text-sm text-muted-foreground">
           Connect Google Search Console and your verified momentum joins the board.
         </p>
-        <ConnectCTA label="Get ranked" source="compare" size="default" className="mt-4" />
+        <ConnectCTA label="Get a verified rank" source="compare" size="default" className="mt-4" />
       </div>
     </div>
   );
@@ -143,9 +143,9 @@ function SiteColumn({ profile }: { profile: SiteProfile }) {
   const s = profile.site;
   const host = hostname(s.siteUrl).toLowerCase();
   return (
-    <div className="flex flex-col items-center text-center">
+    <div className="flex min-w-0 flex-col items-center text-center">
       <SiteFavicon url={s.siteUrl} name={s.displayName} size={40} />
-      <Link href={`/site/${host}`} className="mt-2 font-semibold hover:underline">
+      <Link href={`/site/${host}`} className="mt-2 max-w-full truncate font-semibold hover:underline">
         {s.displayName}
       </Link>
       <p className="text-xs text-muted-foreground">#{s.rank} · momentum</p>

@@ -9,12 +9,13 @@ import {
   memberLinks,
   learnLinks,
   guideLinks,
+  makerLinks,
 } from "@/lib/config";
 
 export function SiteFooter() {
   return (
     <footer className="border-t border-border/60 py-10">
-      <div className="container flex flex-col gap-8 md:flex-row md:justify-between">
+      <div className="container flex flex-col gap-8 lg:flex-row lg:justify-between">
         <div className="max-w-xs">
           <Logo markSize={22} />
           <p className="mt-3 text-sm text-muted-foreground">{siteConfig.tagline}</p>
@@ -50,18 +51,26 @@ export function SiteFooter() {
           </a>
         </div>
 
-        <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
+        {/* Same groups, same order, same names as the header menus. */}
+        <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-5">
           <div>
             <p className="text-sm font-medium">Boards</p>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/leaderboard" className="hover:text-foreground">Leaderboard</Link></li>
-              <li><Link href="/best/fastest-growing" className="hover:text-foreground">Fastest-growing websites</Link></li>
               {boardLinks.map((l) => (
                 <li key={l.href}>
                   <Link href={l.href} className="hover:text-foreground">{l.label}</Link>
                 </li>
               ))}
-              <li><Link href="/stats" className="hover:text-foreground">Stats &amp; Index</Link></li>
+            </ul>
+          </div>
+          <div>
+            <p className="text-sm font-medium">For makers</p>
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+              {makerLinks.map((l) => (
+                <li key={l.href}>
+                  <Link href={l.href} className="hover:text-foreground">{l.label}</Link>
+                </li>
+              ))}
             </ul>
           </div>
           <div>
@@ -72,7 +81,6 @@ export function SiteFooter() {
                   <Link href={l.href} className="hover:text-foreground">{l.label}</Link>
                 </li>
               ))}
-              <li><Link href="/login" className="hover:text-foreground">Get ranked</Link></li>
             </ul>
           </div>
           <div>
@@ -88,7 +96,6 @@ export function SiteFooter() {
                   <Link href={l.href} className="hover:text-foreground">{l.label}</Link>
                 </li>
               ))}
-              <li><Link href="/pricing" className="hover:text-foreground">Pricing</Link></li>
               {/* Ads, sponsorship and partnership offers arrive by email, and
                   /pricing was the only page that gave an address — too far in
                   for someone who lands on the board and wants to talk. */}

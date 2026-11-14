@@ -5,6 +5,7 @@ import { getStatsData } from "@/lib/stats";
 import { CiteIndex } from "@/components/cite-index";
 import { siteConfig } from "@/lib/config";
 import { formatCompact, formatGrowth, siteHref, timeAgo } from "@/lib/utils";
+import { GetOnBoard } from "@/components/get-on-board";
 
 export const revalidate = 3600;
 
@@ -146,6 +147,8 @@ export default async function IndexReportPage() {
         Updated {stats.lastUpdated ? timeAgo(stats.lastUpdated) : "—"}.
         {stats.usingDummyData && " Preview data — connect sites to publish real numbers."}
       </p>
+
+      <GetOnBoard source="stats_report" primary="rank" title="Put your site in the next Index" body="Every verified site counts toward the Index. Connect Search Console (read-only, free) — or list your project in the directory." className="mt-12" />
     </div>
   );
 }

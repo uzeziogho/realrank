@@ -130,7 +130,7 @@ export default async function FastestGrowingCategoryPage({ params }: { params: P
 
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
         <Button asChild size="lg">
-          <Link href="/login">Add your {label} site — verified &amp; free</Link>
+          <Link href="/login">Get a verified rank — free</Link>
         </Button>
         <Link
           href={`/category/${category}`}

@@ -72,3 +72,16 @@ export function withRef(url: string): string {
     return url;
   }
 }
+
+/**
+ * A same-site path to return to after sign-in, or null. Only plain absolute
+ * paths are accepted ("/listed/x/edit") — never protocol-relative ("//evil"),
+ * backslash tricks, schemes or control characters — so a crafted ?next= can't
+ * bounce someone to another site.
+ */
+export function safeNextPath(raw: string | null | undefined): string | null {
+  if (!raw || raw.length > 300) return null;
+  if (!raw.startsWith("/") || raw.startsWith("//") || raw.includes("\\") || raw.includes("://")) return null;
+  if (/[\u0000-\u001f\u007f]/.test(raw)) return null;
+  return raw;
+}

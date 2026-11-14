@@ -5,7 +5,7 @@ import { AuthNav } from "@/components/auth-nav";
 import { MobileNav } from "@/components/mobile-nav";
 import { NavMenu } from "@/components/nav-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { boardLinks, toolLinks, memberLinks, learnLinks, guideLinks } from "@/lib/config";
+import { boardLinks, toolLinks, memberLinks, learnLinks, guideLinks, makerLinks } from "@/lib/config";
 
 /**
  * Static server component — no per-request data — so every page that uses the
@@ -21,8 +21,10 @@ export function SiteHeader() {
         </Link>
 
         <nav className="flex items-center gap-1 sm:gap-2">
-          {/* Journey order: browse the board, explore its cuts, use a tool, learn. */}
-          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+          {/* Journey order: browse the board, explore its cuts, use a tool, get
+              listed, learn. The flat Leaderboard link drops below lg so the bar
+              never wraps on tablets (it's first in Boards). */}
+          <Button asChild variant="ghost" size="sm" className="hidden lg:inline-flex">
             <Link href="/leaderboard">Leaderboard</Link>
           </Button>
           <NavMenu label="Boards" sections={[{ links: boardLinks }]} />
@@ -33,15 +35,13 @@ export function SiteHeader() {
               { label: "For connected sites", links: memberLinks },
             ]}
           />
-          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-            <Link href="/stats">Stats</Link>
-          </Button>
+          <NavMenu label="For makers" sections={[{ links: makerLinks }]} />
           <NavMenu
             label="Learn"
             sections={[{ links: learnLinks }, { label: "Guides", links: guideLinks }]}
           />
           {/* Divider between navigation and account/theme actions (desktop) */}
-          <span className="mx-1 hidden h-5 w-px bg-border sm:block" aria-hidden="true" />
+          <span className="mx-1 hidden h-5 w-px bg-border md:block" aria-hidden="true" />
           <ThemeToggle />
           <AuthNav />
           <MobileNav />

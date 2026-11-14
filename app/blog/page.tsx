@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { articles } from "@/lib/articles";
 import { siteConfig } from "@/lib/config";
+import { GetOnBoard } from "@/components/get-on-board";
 
 export const metadata: Metadata = {
   title: "Blog — organic search, leaderboards & the .lol wave",
@@ -44,6 +45,8 @@ export default function BlogIndex() {
           </article>
         ))}
       </div>
+
+      <GetOnBoard source="blog" className="mt-12" />
     </div>
   );
 }

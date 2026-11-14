@@ -15,7 +15,7 @@ export default async function ChannelsPage() {
   if (!isSupabaseConfigured()) redirect("/dashboard");
 
   const user = await getOptionalUser();
-  if (!user) redirect("/login");
+  if (!user) redirect("/login?next=/dashboard/channels");
 
   const [channels, stripe] = await Promise.all([
     getChannelsWithStats(user.id),

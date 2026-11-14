@@ -66,7 +66,7 @@ export default async function MoversPage() {
                 Share this week&apos;s movers <ArrowUpRight className="size-4" />
               </a>
               <Button asChild variant="outline" size="sm">
-                <Link href="/login">Get ranked</Link>
+                <Link href="/login">Get a verified rank</Link>
               </Button>
             </div>
           )}
@@ -151,7 +151,7 @@ export default async function MoversPage() {
             verified traffic, and let real momentum move you up. It&apos;s free.
           </p>
           <Button asChild className="mt-5">
-            <Link href="/login">Get ranked</Link>
+            <Link href="/login">Get a verified rank</Link>
           </Button>
           <ConnectNote className="mt-3" />
         </section>

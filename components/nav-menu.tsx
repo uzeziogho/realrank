@@ -14,8 +14,8 @@ export interface NavSection {
 }
 
 /**
- * A labelled header dropdown (Boards, Tools, Learn). Desktop only (hidden below
- * `sm`, where MobileNav lists the same links). Closes on outside click, Escape,
+ * A labelled header dropdown (Boards, Tools, For makers, Learn). Desktop only (hidden below
+ * `md`, where MobileNav lists the same links). Closes on outside click, Escape,
  * and route change. Descriptions render when present.
  */
 export function NavMenu({ label, sections }: { label: string; sections: NavSection[] }) {
@@ -47,14 +47,14 @@ export function NavMenu({ label, sections }: { label: string; sections: NavSecti
   );
 
   return (
-    <div ref={ref} className="relative hidden sm:block">
+    <div ref={ref} className="relative hidden md:block">
       <button
         type="button"
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "inline-flex h-9 items-center gap-1 rounded-md px-3 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground",
+          "inline-flex h-9 items-center gap-1 whitespace-nowrap rounded-md px-2.5 text-sm font-medium lg:px-3 transition-colors hover:bg-muted hover:text-foreground",
           active ? "text-foreground" : "text-muted-foreground",
         )}
       >

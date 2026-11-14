@@ -173,7 +173,9 @@ const RANK_STEPS = [
 
 function HowItWorksCard() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+    // Desktop only: on a phone it pushes the board below the fold, and the board
+    // carries its own "How does ranking work?" explainer.
+    <div className="hidden overflow-hidden rounded-2xl border border-border bg-card lg:block">
       <div className="border-b border-border/70 px-5 py-3.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
         How ranking works
       </div>

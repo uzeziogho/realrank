@@ -12,11 +12,17 @@ export function Leaderboard({
   rows,
   view,
   foundingCutoff = null,
+  mobileLimit,
 }: {
   rows: LeaderboardRow[];
   view: RankingView;
   /** Sites joined on/before this date show a Founder badge. */
   foundingCutoff?: string | null;
+  /**
+   * On phones, show only the first N rows (rows stack into tall cards there).
+   * The rest stay in the HTML — crawlable, and visible from `sm` up.
+   */
+  mobileLimit?: number;
 }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
@@ -36,18 +42,20 @@ export function Leaderboard({
       </div>
 
       <ol className="divide-y divide-border/70">
-        {rows.map((row) =>
-          row.kind === "organic" ? (
+        {rows.map((row, i) => {
+          const hideOnMobile = mobileLimit !== undefined && i >= mobileLimit;
+          return row.kind === "organic" ? (
             <OrganicRowItem
               key={row.id}
               row={row}
               view={view}
               founding={foundingCutoff !== null && row.createdAt <= foundingCutoff}
+              className={hideOnMobile ? "max-sm:hidden" : undefined}
             />
           ) : (
-            <SponsoredRowItem key={row.id} row={row} />
-          ),
-        )}
+            <SponsoredRowItem key={row.id} row={row} className={hideOnMobile ? "max-sm:hidden" : undefined} />
+          );
+        })}
       </ol>
     </div>
   );
@@ -68,10 +76,12 @@ function OrganicRowItem({
   row,
   view,
   founding = false,
+  className,
 }: {
   row: RankedSite;
   view: RankingView;
   founding?: boolean;
+  className?: string;
 }) {
   const primary =
     view === "momentum" ? formatCompact(row.clicks7d) : formatCompact(row.clicks28d);
@@ -95,6 +105,7 @@ function OrganicRowItem({
       className={cn(
         "group relative grid grid-cols-[3rem_1fr] items-center gap-4 px-4 py-4 transition-colors hover:bg-accent/40 md:grid-cols-[3.75rem_1fr_7rem_6.5rem_5rem] md:px-6 md:py-4",
         pending && "bg-muted/20",
+        className,
       )}
     >
       {/* Podium accent bar on the left edge */}
@@ -288,9 +299,9 @@ function OrganicRowItem({
   );
 }
 
-function SponsoredRowItem({ row }: { row: SponsoredRow }) {
+function SponsoredRowItem({ row, className }: { row: SponsoredRow; className?: string }) {
   return (
-    <li className="grid grid-cols-[3rem_1fr] items-center gap-4 bg-amber-500/[0.06] px-4 py-4 md:grid-cols-[3.75rem_1fr_7rem_6.5rem_5rem] md:px-6">
+    <li className={cn("grid grid-cols-[3rem_1fr] items-center gap-4 bg-amber-500/[0.06] px-4 py-4 md:grid-cols-[3.75rem_1fr_7rem_6.5rem_5rem] md:px-6", className)}>
       <div className="flex items-center justify-center">
         <span className="rounded-md border border-amber-500/30 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-500/80">
           Ad

@@ -29,7 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const thin = rankedOnly(data.organic).length < MIN_RANKED_FOR_CATEGORY;
   const title = `Fastest-growing websites (${monthLabel()}), verified`;
   const description =
-    "The fastest-growing websites right now, ranked by verified Google Search Console clicks — not estimates. Updated hourly, sorted by momentum, so a small site on a tear can outrank a giant.";
+    "The fastest-growing websites right now, ranked by verified Google Search Console clicks — not estimates. Updated daily, sorted by momentum, so a small site on a tear can outrank a giant.";
   return {
     title,
     description,
@@ -64,8 +64,8 @@ export default async function FastestGrowingPage() {
     {
       q: "What are the fastest-growing websites right now?",
       a: leader
-        ? `As of this update, ${leader.displayName} leads with ${formatGrowth(leader.growthRate)} organic clicks week over week. The full list above is re-ranked hourly from verified Google Search Console data.`
-        : "The list above is re-ranked hourly from verified Google Search Console data.",
+        ? `As of this update, ${leader.displayName} leads with ${formatGrowth(leader.growthRate)} organic clicks week over week. The full list above is re-ranked daily from verified Google Search Console data.`
+        : "The list above is re-ranked daily from verified Google Search Console data.",
     },
     {
       q: "How is “fastest-growing” measured?",
@@ -102,7 +102,7 @@ export default async function FastestGrowingPage() {
 
       <div className="max-w-3xl">
         <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-          {monthLabel()} · updated {data.lastUpdated ? timeAgo(data.lastUpdated) : "hourly"}
+          {monthLabel()} · updated {data.lastUpdated ? timeAgo(data.lastUpdated) : "daily"}
         </p>
         <h1 className="mt-2 text-balance text-4xl font-bold tracking-tight">
           The fastest-growing websites, by verified organic traffic
@@ -196,7 +196,7 @@ export default async function FastestGrowingPage() {
 
       <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
         <Button asChild size="lg">
-          <Link href="/login">Add your site — verified &amp; free</Link>
+          <Link href="/login">Get a verified rank — free</Link>
         </Button>
         <Link href="/movers" className="text-sm font-medium text-primary hover:underline">
           This week&apos;s biggest movers →

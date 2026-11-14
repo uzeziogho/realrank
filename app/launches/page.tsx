@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Launch Your Site — Ranked by Real Traffic",
     description:
-      "Get ranked today by real Google Search Console clicks — verified, updated daily.",
+      "Get a verified rank today from real Google Search Console clicks — updated daily.",
     url: `${siteConfig.url}/launches`,
   },
 };
@@ -113,7 +113,7 @@ export default async function LaunchesPage() {
           <div className="mt-6 flex flex-col items-center gap-3">
             <div className="flex flex-col items-center gap-2 sm:flex-row">
               <Button asChild size="lg">
-                <Link href="/login">Get ranked</Link>
+                <Link href="/login">Get a verified rank</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
                 <Link href="/submit">List your project — free</Link>
@@ -137,7 +137,7 @@ export default async function LaunchesPage() {
             </p>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
               <Button asChild>
-                <Link href="/login">Get ranked</Link>
+                <Link href="/login">Get a verified rank</Link>
               </Button>
               <Button asChild variant="outline">
                 <Link href="/submit">List your project — free</Link>
@@ -270,7 +270,7 @@ export default async function LaunchesPage() {
           <div className="mt-6 flex flex-col items-center gap-2 border-t border-border/60 pt-6 text-center">
             <div className="flex flex-wrap items-center justify-center gap-2">
               <Button asChild>
-                <Link href="/login">Get ranked</Link>
+                <Link href="/login">Get a verified rank</Link>
               </Button>
               <Button asChild variant="outline">
                 <Link href="/submit">List your project — free</Link>
@@ -336,7 +336,7 @@ function LaunchCard({ row, showJoined = false }: { row: RankedSite; showJoined?:
           href={siteHref(row.siteUrl)}
           target="_blank"
           rel="noopener nofollow"
-          className="ml-auto inline-flex items-center gap-1 hover:text-foreground"
+          className="-my-2 ml-auto inline-flex items-center gap-1 px-1 py-2 hover:text-foreground"
         >
           Visit <ArrowUpRight className="size-3" />
         </a>

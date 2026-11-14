@@ -7,6 +7,7 @@ import { RankChecker } from "@/components/rank-checker";
 import { getLeaderboardData } from "@/lib/data";
 import { siteConfig, type RankingView } from "@/lib/config";
 import { hostname } from "@/lib/utils";
+import { GetOnBoard } from "@/components/get-on-board";
 
 type SearchParams = Promise<{ view?: string; page?: string; q?: string }>;
 
@@ -102,6 +103,9 @@ export default async function LeaderboardPage({
         page={page}
         interactive
       />
+      <div className="container pb-16">
+        <GetOnBoard source="leaderboard" primary="rank" title="Want your site on this board?" />
+      </div>
     </>
   );
 }

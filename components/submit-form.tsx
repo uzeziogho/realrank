@@ -336,7 +336,7 @@ function ListedSuccess({ host, name }: { host: string; name: string }) {
         </p>
         <Button asChild className="mt-3">
           <Link href="/login" onClick={() => track("connect_click", "listed_success")}>
-            Get ranked with Search Console <ArrowRight className="size-4" />
+            Get a verified rank <ArrowRight className="size-4" />
           </Link>
         </Button>
       </div>

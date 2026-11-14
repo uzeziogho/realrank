@@ -3,6 +3,7 @@ import { exchangeCode, GSC_SCOPE } from "@/lib/google";
 import { encryptToken } from "@/lib/crypto";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { siteConfig } from "@/lib/config";
+import { safeNextPath } from "@/lib/utils";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -66,10 +67,11 @@ export async function GET(req: NextRequest) {
       if (error) console.error("[oauth callback] token store failed:", error);
     }
 
-    const res = NextResponse.redirect(
-      new URL("/dashboard?connected=1", siteConfig.url),
-    );
+    // Back to where they were headed (validated again — a cookie is input too).
+    const next = safeNextPath(req.cookies.get("oauth_next")?.value);
+    const res = NextResponse.redirect(new URL(next ?? "/dashboard?connected=1", siteConfig.url));
     res.cookies.delete("oauth_state");
+    res.cookies.delete("oauth_next");
     return res;
   } catch (err) {
     console.error("[oauth callback]", err);

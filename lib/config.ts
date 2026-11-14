@@ -125,32 +125,64 @@ export interface NavLink {
   description?: string;
 }
 
-/**
- * Flat top-level links in the header, kept to the two flagship destinations so
- * the bar stays uncrowded. Everything else lives under the grouped header menus
- * (Boards, Tools, Learn) and the mobile menu.
- */
-export const primaryNav: NavLink[] = [
-  { href: "/leaderboard", label: "Leaderboard" },
-  { href: "/stats", label: "Stats" },
-];
-
-/** The leaderboard sliced different ways. Header "Boards" menu. */
+/** Places to browse: the ranked board sliced different ways + the directory. Header "Boards" menu. */
 export const boardLinks: NavLink[] = [
   {
-    href: "/submit",
-    label: "List your project",
-    description: "Add your project free — no login, permanent link.",
+    href: "/leaderboard",
+    label: "Leaderboard",
+    description: "Every verified site, ranked by organic momentum.",
+  },
+  {
+    href: "/best/fastest-growing",
+    label: "Fastest-growing websites",
+    description: "This month's top movers across every category.",
+  },
+  {
+    href: "/movers",
+    label: "Weekly movers",
+    description: "The week's biggest climbs and falls.",
   },
   {
     href: "/listed",
     label: "Directory",
-    description: "Browse every listed project.",
+    description: "Browse every listed project — open and free to join.",
+  },
+  {
+    href: "/stats",
+    label: "RealRank Index",
+    description: "Is organic search growing? The verified benchmark.",
   },
   {
     href: "/founding",
     label: "Founding sites",
-    description: "The first 50 sites, with a permanent badge.",
+    description: "The first 50 verified sites, with a permanent badge.",
+  },
+];
+
+/**
+ * Everything a maker can do to get on RealRank, in the order they usually do
+ * it. Header "For makers" menu + the top of the mobile menu.
+ */
+export const makerLinks: NavLink[] = [
+  {
+    href: "/submit",
+    label: "List your project",
+    description: "Free and permanent. No account needed.",
+  },
+  {
+    href: "/login",
+    label: "Get a verified rank",
+    description: "Connect Search Console (read-only) — free.",
+  },
+  {
+    href: "/spotlight",
+    label: "Book a Spotlight",
+    description: "7 days at the top of the directory. Labelled, never affects rank.",
+  },
+  {
+    href: "/pricing",
+    label: "Pricing",
+    description: "Listing and ranking are free. What money can and can't buy.",
   },
 ];
 

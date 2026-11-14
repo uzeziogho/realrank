@@ -299,7 +299,7 @@ export default async function ListingProfilePage({
         </p>
         <div className="mt-4 flex items-center justify-center">
           <Button asChild>
-            <Link href="/login">Get ranked with Search Console</Link>
+            <Link href="/login">Get a verified rank — free</Link>
           </Button>
         </div>
       </div>

@@ -14,6 +14,8 @@ import { siteConfig, categories, type RankingView } from "@/lib/config";
 import { cn, hostname, timeAgo } from "@/lib/utils";
 
 const PAGE_SIZE = 50;
+/** Rows shown on the homepage on a phone before "See all" (the rest stay in the HTML). */
+const HOME_MOBILE_ROWS = 10;
 
 /** Full-board URL preserving view + query + page params (interactive board lives at /leaderboard). */
 function boardHref(view: RankingView, page: number, q = ""): string {
@@ -182,7 +184,21 @@ export async function LeaderboardSection({
       ) : (
         <>
           <LeaderboardJsonLd sites={pageOrganic} />
-          <Leaderboard rows={pageRows} view={view} foundingCutoff={data.founding.cutoff} />
+          <Leaderboard
+            rows={pageRows}
+            view={view}
+            foundingCutoff={data.founding.cutoff}
+            mobileLimit={interactive ? undefined : HOME_MOBILE_ROWS}
+          />
+
+          {/* Homepage on a phone: the top rows, then one clear way to the rest. */}
+          {!interactive && pageRows.length > HOME_MOBILE_ROWS && (
+            <div className="mt-6 text-center sm:hidden">
+              <Button asChild className="w-full">
+                <Link href="/leaderboard">See all {filtered.length} ranked sites →</Link>
+              </Button>
+            </div>
+          )}
 
           {interactive ? (
             <Pagination
@@ -192,7 +208,7 @@ export async function LeaderboardSection({
             />
           ) : (
             filtered.length > pageOrganic.length && (
-              <div className="mt-8 text-center">
+              <div className="mt-8 hidden text-center sm:block">
                 <Button asChild variant="outline">
                   <Link href="/leaderboard">View all {filtered.length} sites →</Link>
                 </Button>

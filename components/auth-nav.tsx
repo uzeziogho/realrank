@@ -54,12 +54,19 @@ export function AuthNav() {
     );
   }
 
+  // Logged out: a way back in for owners (desktop; it's in the mobile menu),
+  // then the primary action.
   return (
-    <Button asChild size="sm">
-      <Link href="/submit">
-        <span className="sm:hidden">List</span>
-        <span className="hidden sm:inline">List your project</span>
-      </Link>
-    </Button>
+    <>
+      <Button asChild variant="ghost" size="sm" className="hidden md:inline-flex">
+        <Link href="/login">Sign in</Link>
+      </Button>
+      <Button asChild size="sm">
+        <Link href="/submit">
+          <span className="lg:hidden">List</span>
+          <span className="hidden lg:inline">List your project</span>
+        </Link>
+      </Button>
+    </>
   );
 }

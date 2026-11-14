@@ -116,7 +116,7 @@ export default async function LolDirectoriesPage() {
           ))}
         </ol>
         <p className="mt-3 text-xs text-muted-foreground">
-          {formatCompact(ranked.length)} sites ranked · updated hourly.{" "}
+          {formatCompact(ranked.length)} sites ranked · updated daily.{" "}
           <Link href="/" className="text-primary hover:underline">See the full board →</Link>
         </p>
       </section>
@@ -136,7 +136,7 @@ export default async function LolDirectoriesPage() {
 
       <div className="mt-12 text-center">
         <Button asChild size="lg">
-          <Link href="/login">Claim my verified rank</Link>
+          <Link href="/login">Get a verified rank — free</Link>
         </Button>
       </div>
     </div>

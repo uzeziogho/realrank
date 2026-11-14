@@ -148,7 +148,7 @@ const FAQ_ITEMS: { q: string; a: string }[] = [
   },
   {
     q: "How does the ranking work?",
-    a: "The default sort is momentum, which compares a site's last 7 days of organic clicks against the prior 21 days, weighted by a logarithm of volume so a fast-growing small site can outrank a large flat one. A volume view (total clicks over 28 days) is also available. Rankings refresh hourly.",
+    a: "The default sort is momentum, which compares a site's last 7 days of organic clicks against the prior 21 days, weighted by a logarithm of volume so a fast-growing small site can outrank a large flat one. A volume view (total clicks over 28 days) is also available. Rankings refresh daily.",
   },
   {
     q: "Is RealRank free?",

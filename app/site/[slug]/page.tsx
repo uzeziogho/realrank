@@ -13,6 +13,7 @@ import { getSiteProfileBySlug, siteSlug } from "@/lib/site";
 import { SoftwareApplicationJsonLd } from "@/components/json-ld";
 import { siteConfig, categoryLabel } from "@/lib/config";
 import { formatCompact, formatGrowth, hostname, siteHref, timeAgo } from "@/lib/utils";
+import { GetOnBoard } from "@/components/get-on-board";
 
 export const revalidate = 3600;
 
@@ -181,6 +182,8 @@ export default async function SiteProfilePage({ params }: { params: Params }) {
       <p className="mt-10 text-center text-xs text-muted-foreground">
         Updated {lastUpdated ? timeAgo(lastUpdated) : "—"}.
       </p>
+
+      <GetOnBoard source="site_profile" primary="rank" title="Rank your own site like this" body="Connect Search Console for a verified rank and a profile like this one — free and read-only. Or list your project in the directory in a minute." className="mt-12" />
     </div>
   );
 }

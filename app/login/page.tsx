@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Activity, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SignupButton } from "@/components/signup-button";
+import { safeNextPath } from "@/lib/utils";
 import { WaitlistForm } from "@/components/waitlist-form";
 import { getOptionalUser } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -26,13 +27,16 @@ const ERROR_MESSAGES: Record<string, string> = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; next?: string }>;
 }) {
-  // Already connected? Go straight to the dashboard.
+  const sp = await searchParams;
+  // Where to land after signing in (e.g. the listing they were trying to edit).
+  const next = safeNextPath(sp.next);
+  // Already connected? Go straight there.
   const user = await getOptionalUser();
-  if (user) redirect("/dashboard");
+  if (user) redirect(next ?? "/dashboard");
 
-  const errorKey = (await searchParams).error;
+  const errorKey = sp.error;
   const errorMessage = errorKey ? ERROR_MESSAGES[errorKey] ?? "Something went wrong. Please try again." : null;
   const ready = isSupabaseConfigured() && Boolean(process.env.GOOGLE_CLIENT_ID);
 
@@ -43,11 +47,12 @@ export default async function LoginPage({
           <Activity className="size-6" />
         </span>
         <h1 className="text-2xl font-bold tracking-tight">
-          Add your site to {siteConfig.name}
+          Get a verified rank
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Connect Google Search Console to verify your organic clicks and claim
-          your spot on the leaderboard. No passwords, no separate sign-up.
+          Connect Google Search Console (read-only) to verify your organic clicks
+          and take your spot on the leaderboard — free. Already connected? The
+          same button signs you back in. No passwords.
         </p>
 
         {errorMessage && (
@@ -58,7 +63,7 @@ export default async function LoginPage({
 
         <div className="mt-8">
           {ready ? (
-            <SignupButton />
+            <SignupButton next={next} />
           ) : (
             <Button size="lg" className="w-full" disabled>
               Connect Search Console

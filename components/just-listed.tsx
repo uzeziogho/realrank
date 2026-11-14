@@ -14,6 +14,9 @@ import type { Listing } from "@/lib/listed";
  * Renders nothing when there are no listings, so the homepage never shows an
  * empty shell.
  */
+/** Cards shown on a phone before "See all". */
+const MOBILE_CARDS = 3;
+
 export function JustListed({
   listings,
   total,
@@ -45,10 +48,23 @@ export function JustListed({
         </div>
 
         <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          {listings.map((l) => (
-            <ListingCard key={l.host} listing={l} visits={visits?.get(l.host) ?? 0} />
+          {listings.map((l, i) => (
+            <ListingCard
+              key={l.host}
+              listing={l}
+              visits={visits?.get(l.host) ?? 0}
+              // Phones: three cards, then the button below — each card is tall there.
+              className={i >= MOBILE_CARDS ? "max-sm:hidden" : undefined}
+            />
           ))}
         </ul>
+        {listings.length > MOBILE_CARDS && (
+          <Button asChild variant="outline" className="mt-4 w-full sm:hidden">
+            <Link href="/listed">
+              See all {total} projects <ArrowRight className="size-4" />
+            </Link>
+          </Button>
+        )}
       </div>
     </section>
   );

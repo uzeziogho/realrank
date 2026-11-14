@@ -16,6 +16,7 @@ import {
 } from "@/lib/config";
 import { formatCompact, timeAgo } from "@/lib/utils";
 import { MIN_RANKED_FOR_CATEGORY, rankedOnly } from "@/lib/indexing";
+import { GetOnBoard } from "@/components/get-on-board";
 
 export const revalidate = 3600;
 
@@ -95,9 +96,9 @@ export default async function CategoryPage({
 
       {data.organic.length === 0 ? (
         <div className="rounded-xl border border-border bg-card p-12 text-center text-muted-foreground">
-          No sites in this category yet.{" "}
-          <Link href="/dashboard" className="text-primary hover:underline">
-            Be the first to publish.
+          No verified sites in this category yet.{" "}
+          <Link href="/login" className="text-primary hover:underline">
+            Be the first — get a verified rank.
           </Link>
         </div>
       ) : (
@@ -116,6 +117,8 @@ export default async function CategoryPage({
           Browse every {label} project in the directory →
         </Link>
       </p>
+
+      <GetOnBoard source="category" primary="rank" className="mt-10" />
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { getUnderdogs, attachSparklines } from "@/lib/data";
 import { siteConfig, categoryLabel } from "@/lib/config";
 import { formatCompact, formatGrowth, hostname, siteHref } from "@/lib/utils";
 import type { RankedSite } from "@/lib/types";
+import { GetOnBoard } from "@/components/get-on-board";
 
 export const revalidate = 3600;
 
@@ -69,7 +70,7 @@ export default async function UnderdogsPage() {
               Connect Search Console and you could be the first to punch above your weight.
             </p>
             <Button asChild className="mt-5">
-              <Link href="/login">Get ranked</Link>
+              <Link href="/login">Get a verified rank</Link>
             </Button>
           </div>
         ) : (
@@ -116,6 +117,8 @@ export default async function UnderdogsPage() {
             </p>
           </div>
         </section>
+
+        <GetOnBoard source="underdogs" primary="rank" title="Are you an underdog?" body="Small sites outrank giants here on momentum. Get a verified rank free — or list your project in the directory." className="mt-12" />
       </div>
     </>
   );

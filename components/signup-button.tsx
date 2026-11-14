@@ -17,11 +17,11 @@ declare global {
  * sign-up). Fires the clicks.page "signup" event, then follows the link to
  * start Google OAuth. The "read-only · ~30s" reassurance lives beside it.
  */
-export function SignupButton() {
+export function SignupButton({ next }: { next?: string | null }) {
   return (
     <Button asChild size="lg" className="w-full">
       <a
-        href="/api/auth/google/start"
+        href={next ? `/api/auth/google/start?next=${encodeURIComponent(next)}` : "/api/auth/google/start"}
         onClick={() => window.clicks?.track("signup")}
       >
         Connect Search Console

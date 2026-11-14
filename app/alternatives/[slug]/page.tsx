@@ -11,6 +11,7 @@ import { siteConfig, categoryLabel } from "@/lib/config";
 import { cn, formatCompact, formatGrowth, hostname, siteHref } from "@/lib/utils";
 import type { RankedSite } from "@/lib/types";
 import { MIN_ALTERNATIVES } from "@/lib/indexing";
+import { GetOnBoard } from "@/components/get-on-board";
 
 /** Ranked same-category peers (or the whole board when uncategorised), minus the site itself. */
 async function getAlternatives(target: RankedSite): Promise<RankedSite[]> {
@@ -77,7 +78,7 @@ export default async function AlternativesPage({ params }: { params: Params }) {
       </h1>
       <p className="mt-3 max-w-2xl text-lg text-muted-foreground">
         {label ? `${label} tools` : "Sites"} ranked by <strong className="text-foreground">verified</strong> organic
-        momentum — real Google Search Console clicks, not third-party estimates. Updated hourly.
+        momentum — real Google Search Console clicks, not third-party estimates. Updated daily.
       </p>
 
       {alternatives.length === 0 ? (
@@ -102,7 +103,7 @@ export default async function AlternativesPage({ params }: { params: Params }) {
           Every {label ? label.toLowerCase() + " " : ""}site on this page is ordered by{" "}
           <strong className="text-foreground">verified organic momentum</strong>: real
           Google Search Console clicks over the last 7 days measured against the prior 21,
-          refreshed hourly. Nothing here is a third-party estimate from a tool like
+          refreshed daily. Nothing here is a third-party estimate from a tool like
           SimilarWeb or Ahrefs, and no site can pay to move up. If a site appears above{" "}
           {target.displayName}, it is because its measured, growing organic traffic earned
           the spot. You can read how the underlying score is built on the{" "}
@@ -171,6 +172,8 @@ export default async function AlternativesPage({ params }: { params: Params }) {
         </p>
         <ConnectCTA label="Claim my verified spot" source="alternatives" className="mt-1" />
       </div>
+
+      <GetOnBoard source="alternatives" title="Building an alternative?" body="Get it in front of people comparing tools: list it free, or connect Search Console for a verified rank on this page." className="mt-12" />
     </div>
   );
 }

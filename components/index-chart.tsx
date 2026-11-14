@@ -148,7 +148,7 @@ export function IndexChart({ points }: { points: IndexPoint[] }) {
 
       {/* Table view for screen readers and anyone who wants the numbers. */}
       <details className="mt-3 text-xs text-muted-foreground">
-        <summary className="cursor-pointer select-none hover:text-foreground">Show the data</summary>
+        <summary className="inline-block cursor-pointer select-none py-2 hover:text-foreground">Show the data</summary>
         <div className="mt-2 max-h-56 overflow-auto rounded-lg border border-border">
           <table className="w-full text-left tabular-nums">
             <thead className="sticky top-0 bg-card">

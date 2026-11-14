@@ -9,6 +9,7 @@ import { IndexChart } from "@/components/index-chart";
 import { SiteFavicon } from "@/components/site-favicon";
 import { StatTile } from "@/components/dash/stat-tile";
 import { CiteIndex } from "@/components/cite-index";
+import { GetOnBoard } from "@/components/get-on-board";
 import { siteConfig } from "@/lib/config";
 import { cn, formatCompact, formatGrowth, timeAgo } from "@/lib/utils";
 
@@ -17,7 +18,7 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "The RealRank Index — Verified Organic Search Benchmark",
   description:
-    "Is organic search traffic growing or shrinking? The RealRank Index tracks the median website's week-over-week change in verified Google Search Console clicks — with history, growth distribution and a breakdown by category. Free to cite, updated hourly.",
+    "Is organic search traffic growing or shrinking? The RealRank Index tracks the median website's week-over-week change in verified Google Search Console clicks — with history, growth distribution and a breakdown by category. Free to cite, updated daily.",
   alternates: { canonical: "/stats" },
   openGraph: {
     title: "The RealRank Index — Verified Organic Search Benchmark",
@@ -260,6 +261,13 @@ export default async function StatsPage() {
             Ranked by click growth. Sites need at least 100 clicks in the prior period to qualify.
           </p>
         </section>
+
+        <GetOnBoard
+          source="stats"
+          primary="rank"
+          title="Count your site in the Index"
+          body="Every verified site feeds the Index and gets its own rank. Connect Search Console (read-only, free) — or list your project in the directory."
+        />
 
         {/* Cite this Index — the link-bait block */}
         <section className="space-y-4">
