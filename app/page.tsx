@@ -6,11 +6,12 @@ import { LeaderboardSection } from "@/components/leaderboard-section";
 import { JustListed } from "@/components/just-listed";
 import { SpotlightLane } from "@/components/spotlight-lane";
 import { activeSpotlights, spotlightAvailability } from "@/lib/spotlight";
-import { getLeaderboardData, getSiteTraffic, getOutboundClicks } from "@/lib/data";
+import { getLeaderboardData, getOutboundClicks } from "@/lib/data";
+import { siteSlug } from "@/lib/site";
 import { getListedSites } from "@/lib/listed";
 import { BadgeMarquee } from "@/components/badge-marquee";
 import { siteConfig } from "@/lib/config";
-import { formatCompact } from "@/lib/utils";
+import { cn, formatCompact, formatGrowth, timeAgo } from "@/lib/utils";
 
 // How many freshly-listed projects to preview under the board (verified-owner
 // listings sort first, so the head of the list is the highest-trust slice).
@@ -31,9 +32,8 @@ export default async function HomePage() {
   // prerenders (ISR) and serves cached HTML — search, the volume toggle, the
   // rank checker and every marketing section live on their own pages
   // (/leaderboard, /about, /movers, /founding), reachable from the nav.
-  const [data, traffic, listed, outboundClicks] = await Promise.all([
+  const [data, listed, outboundClicks] = await Promise.all([
     getLeaderboardData("momentum"),
-    getSiteTraffic(),
     getListedSites(),
     // Visits each listing has sent its site (28d) — social proof on the cards.
     getOutboundClicks(),
@@ -47,26 +47,27 @@ export default async function HomePage() {
         <div className="container grid items-center gap-10 py-10 sm:py-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
           {/* Left — the pitch */}
           <div className="flex flex-col items-start gap-5">
-            {/* Live activity pill — real first-party numbers, makes the board feel active. */}
-            <div className="inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-full border border-border bg-card px-3.5 py-1.5 text-sm">
-              <span className="relative flex size-2">
+            {/* One short line that never wraps: the scarcity hook (founding spots
+                left), or — once the program is full — that the board is live. */}
+            <Link
+              href={data.founding.spotsLeft > 0 ? "/founding" : "/leaderboard"}
+              className="inline-flex max-w-full items-center gap-2 whitespace-nowrap rounded-full border border-border bg-card px-3.5 py-1.5 text-sm transition-colors hover:border-primary/40"
+              title={`The first ${data.founding.total} verified sites get a permanent Founder badge`}
+            >
+              <span className="relative flex size-2 shrink-0">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
                 <span className="relative inline-flex size-2 rounded-full bg-primary" />
               </span>
-              <Link
-                href="/founding"
-                className="font-medium text-foreground hover:text-primary"
-                title={`The first ${data.founding.total} verified sites get permanent founder status`}
-              >
-                Founding {data.founding.claimed}/{data.founding.total}
-              </Link>
-              <span className="text-border">·</span>
-              <PillStat value={traffic.sessions} label="sessions" />
-              <span className="text-border">·</span>
-              <PillStat value={traffic.visitors} label="visitors" />
-              <span className="text-border">·</span>
-              <Link href="/stats" className="font-medium text-primary hover:underline">stats →</Link>
-            </div>
+              {data.founding.spotsLeft > 0 ? (
+                <span className="truncate">
+                  <span className="font-semibold tabular-nums">{data.founding.spotsLeft}</span> of {data.founding.total} founding
+                  spots left
+                </span>
+              ) : (
+                <span className="truncate">Live board · updated {data.lastUpdated ? timeAgo(data.lastUpdated) : "daily"}</span>
+              )}
+              <span className="shrink-0 font-medium text-primary">→</span>
+            </Link>
 
             <h1 className="max-w-2xl text-balance text-3xl font-bold tracking-tight sm:text-5xl">
               The leaderboard for sites that actually get traffic.
@@ -97,6 +98,13 @@ export default async function HomePage() {
                 Listing is free and permanent · a verified rank is free too — connect Search Console (read-only)
               </p>
             </div>
+
+            {/* Proof the board is real and worth joining — the numbers a visitor
+                (and a maker deciding whether to list) actually cares about. */}
+            <HeroStats
+              stats={heroStats(data, listed.length, outboundClicks)}
+              updated={data.lastUpdated}
+            />
           </div>
 
           {/* Right — how ranking works */}
@@ -142,12 +150,61 @@ export default async function HomePage() {
   );
 }
 
-function PillStat({ value, label }: { value: number; label: string }) {
+interface HeroStat {
+  value: string;
+  label: string;
+  href: string;
+  /** Colour the value as growth. */
+  growth?: boolean;
+}
+
+/**
+ * The four hero numbers, best first: how big the verified board is, who's
+ * winning this week, what listing has done for makers, and how big the
+ * directory is. A number that would read as weak (no mover yet, a handful of
+ * visits, an empty directory) is left out rather than shown. (Founding spots
+ * live in the pill above, so they're not repeated here.)
+ */
+function heroStats(
+  data: Awaited<ReturnType<typeof getLeaderboardData>>,
+  listedCount: number,
+  visits: Map<string, number>,
+): HeroStat[] {
+  const ranked = data.organic.filter((s) => !s.pending);
+  const mover = ranked.reduce<(typeof ranked)[number] | null>((best, s) => (!best || s.growthRate > best.growthRate ? s : best), null);
+  const sent = [...visits.values()].reduce((a, b) => a + b, 0);
+  const out: HeroStat[] = [{ value: formatCompact(ranked.length), label: "verified sites ranked", href: "/leaderboard" }];
+  if (mover && mover.growthRate > 0) {
+    out.push({ value: formatGrowth(mover.growthRate), label: `${mover.displayName} · top mover this week`, href: `/site/${siteSlug(mover.siteUrl)}`, growth: true });
+  }
+  if (sent >= 100) out.push({ value: formatCompact(sent), label: "visits sent to listed projects", href: "/listed" });
+  if (listedCount > 0) out.push({ value: formatCompact(listedCount), label: "projects in the directory", href: "/listed" });
+  return out.slice(0, 4);
+}
+
+function HeroStats({ stats, updated }: { stats: HeroStat[]; updated: string | null }) {
   return (
-    <span className="inline-flex items-center gap-1">
-      <span className="font-semibold tabular-nums text-foreground">{formatCompact(value)}</span>
-      <span className="text-muted-foreground">{label}</span>
-    </span>
+    <div className="w-full max-w-2xl">
+      <ul className={cn("grid grid-cols-2 gap-2", stats.length >= 4 ? "sm:grid-cols-4" : stats.length === 3 ? "sm:grid-cols-3" : "sm:grid-cols-2")}>
+        {stats.map((s) => (
+          <li key={s.label} className="min-w-0">
+            <Link
+              href={s.href}
+              className="flex h-full flex-col rounded-xl border border-border bg-card/80 px-3 py-2.5 transition-colors hover:border-primary/40"
+            >
+              <span className={cn("text-xl font-bold tabular-nums tracking-tight", s.growth && "text-success")}>{s.value}</span>
+              <span className="line-clamp-2 text-xs leading-snug text-muted-foreground">{s.label}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-2 text-xs text-muted-foreground">
+        Live from verified Search Console data · updated {updated ? timeAgo(updated) : "daily"} ·{" "}
+        <Link href="/stats" className="font-medium text-primary hover:underline">
+          more stats
+        </Link>
+      </p>
+    </div>
   );
 }
 
