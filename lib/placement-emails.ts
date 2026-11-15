@@ -4,6 +4,7 @@ import { sendEmail } from "@/lib/email";
 import { siteConfig } from "@/lib/config";
 import { SPOTLIGHT } from "@/lib/spotlight";
 import { SPONSOR } from "@/lib/sponsor";
+import { notifyAdmin } from "@/lib/admin-log";
 
 /**
  * Emails to people who paid for visibility (Spotlight, Sponsor), plus alerts
@@ -23,11 +24,17 @@ async function send(to: string | null | undefined, subject: string, text: string
   return sendEmail({ to, subject, text, replyTo: siteConfig.email.support });
 }
 
-/** Alert the site owner (OWNER_EMAIL) about something that needs a person. */
-export async function alertOwner(subject: string, text: string) {
+/**
+ * Alert the site owner about something that needs a person (or good news,
+ * like a new sponsor). Always saved as a dashboard notification (the bell),
+ * and emailed to OWNER_EMAIL when email is configured — so an alert is never
+ * lost just because Resend isn't set up.
+ */
+export async function alertOwner(subject: string, text: string, kind: "info" | "warning" | "money" = "warning") {
+  await notifyAdmin({ kind, title: subject, body: text, link: "/admin/placements" });
   const to = process.env.OWNER_EMAIL?.trim();
   if (!to) {
-    console.warn("[placements] OWNER_EMAIL not set — alert not sent:", subject);
+    console.warn("[placements] OWNER_EMAIL not set — alert emailed to nobody:", subject);
     return;
   }
   await sendEmail({ to, subject: `${siteConfig.name}: ${subject}`, text });

@@ -18,6 +18,11 @@ export function adminEmails(): string[] {
     .filter(Boolean);
 }
 
+/** Is this email an admin? (Non-throwing — for showing admin-only UI.) */
+export function isAdminEmail(email?: string | null): boolean {
+  return Boolean(email && adminEmails().includes(email.trim().toLowerCase()));
+}
+
 export async function requireAdmin(nextPath = "/admin/placements") {
   const user = await getOptionalUser();
   if (!user) redirect(`/login?next=${encodeURIComponent(nextPath)}`);

@@ -5,6 +5,7 @@ import { requireAdmin } from "@/lib/admin";
 import { activateSpotlight, normalizeHost } from "@/lib/listed";
 import { createManualSponsorSlot, endSpotlightNow, updateSponsorSlot, type SlotPatch } from "@/lib/placements";
 import { SPONSOR, cleanSponsorDetails } from "@/lib/sponsor";
+import { markAllNotificationsRead } from "@/lib/admin-log";
 
 // Every action re-checks the admin gate: server actions are reachable on their
 // own, not only through the page that renders their forms.
@@ -78,4 +79,11 @@ export async function createSlotAction(fd: FormData) {
     ends_at: new Date(endsAt).toISOString(),
   });
   done();
+}
+
+export async function markNotificationsReadAction() {
+  await requireAdmin();
+  await markAllNotificationsRead();
+  revalidatePath("/admin/placements");
+  revalidatePath("/dashboard");
 }

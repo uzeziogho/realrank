@@ -26,6 +26,9 @@ import { Sparkline } from "@/components/sparkline";
 import { listUserProperties } from "@/lib/gsc-server";
 import { getLeaderboardData, attachSparklines } from "@/lib/data";
 import { getListedSites } from "@/lib/listed";
+import { isAdminEmail } from "@/lib/admin";
+import { getNotifications, getSetupCheck } from "@/lib/admin-log";
+import { AdminBell, AdminPanel } from "@/components/dashboard/admin-panel";
 import type { DirectoryStatus } from "@/components/dashboard/site-manager";
 import { siteConfig } from "@/lib/config";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -117,6 +120,12 @@ export default async function DashboardPage({
   const clicks7d = liveSites.reduce((sum, s) => sum + s.clicks_7d, 0);
   const clicks28d = liveSites.reduce((sum, s) => sum + s.clicks_28d, 0);
 
+  // Admin-only: the bell + notifications card (and the way into /admin/placements).
+  const admin = isAdminEmail(user.email);
+  const [adminNotes, adminSetup] = admin
+    ? await Promise.all([getNotifications(10), getSetupCheck()])
+    : [null, null];
+
   return (
     <div className="container max-w-5xl py-10">
       <header className="flex flex-wrap items-end justify-between gap-3">
@@ -126,13 +135,25 @@ export default async function DashboardPage({
             Signed in as <span className="text-foreground">{user.email}</span>
           </p>
         </div>
-        <Button asChild variant="outline" size="sm">
-          <Link href="/">
-            View public board
-            <ArrowUpRight className="size-4" />
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          {adminNotes && <AdminBell unread={adminNotes.unread} />}
+          <Button asChild variant="outline" size="sm">
+            <Link href="/">
+              View public board
+              <ArrowUpRight className="size-4" />
+            </Link>
+          </Button>
+        </div>
       </header>
+
+      {adminNotes && adminSetup && (
+        <AdminPanel
+          items={adminNotes.items}
+          unread={adminNotes.unread}
+          available={adminNotes.available}
+          setupProblems={adminSetup.filter((s) => !s.ok).length}
+        />
+      )}
 
       <DashboardTabs owner={isOwner(user.email)} />
 

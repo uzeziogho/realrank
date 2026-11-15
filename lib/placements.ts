@@ -157,6 +157,7 @@ export async function applySubscriptionEvent(type: string, data: SubscriptionDat
       await alertOwner(
         `New sponsor live — ${details!.name}`,
         `${details!.name} (${details!.url}) is live after rank #${free[0]}, paid through ${iso(paidThrough).slice(0, 10)}.\nPitch: ${details!.pitch ?? "—"}\nCustomer: ${email ?? "unknown"}\n\nReview or pause it: /admin/placements`,
+        "money",
       );
       revalidateBoard();
     } else if (status === "needs_details") {

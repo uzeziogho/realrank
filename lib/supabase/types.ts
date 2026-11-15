@@ -300,6 +300,18 @@ export interface Database {
         };
         Relationships: [];
       };
+      webhook_events: {
+        Row: { id: number; received_at: string; delivery_id: string | null; event_type: string | null; http_status: number; outcome: string | null; error: string | null; summary: Json | null };
+        Insert: { id?: number; received_at?: string; delivery_id?: string | null; event_type?: string | null; http_status: number; outcome?: string | null; error?: string | null; summary?: Json | null };
+        Update: { id?: number; received_at?: string; delivery_id?: string | null; event_type?: string | null; http_status?: number; outcome?: string | null; error?: string | null; summary?: Json | null };
+        Relationships: [];
+      };
+      admin_notifications: {
+        Row: { id: number; created_at: string; kind: string; title: string; body: string | null; link: string | null; read_at: string | null };
+        Insert: { id?: number; created_at?: string; kind?: string; title: string; body?: string | null; link?: string | null; read_at?: string | null };
+        Update: { id?: number; created_at?: string; kind?: string; title?: string; body?: string | null; link?: string | null; read_at?: string | null };
+        Relationships: [];
+      };
       sponsor_subscriptions: {
         Row: {
           subscription_id: string;
@@ -662,6 +674,8 @@ export type ChannelConversion = Database["public"]["Tables"]["channel_conversion
 export type SponsoredSlot = Database["public"]["Tables"]["sponsored_slots"]["Row"];
 export type SponsorSubscription = Database["public"]["Tables"]["sponsor_subscriptions"]["Row"];
 export type SpotlightPayment = Database["public"]["Tables"]["spotlight_payments"]["Row"];
+export type WebhookEvent = Database["public"]["Tables"]["webhook_events"]["Row"];
+export type AdminNotification = Database["public"]["Tables"]["admin_notifications"]["Row"];
 export type ListedSite = Database["public"]["Tables"]["listed_sites"]["Row"];
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type ConnectedAccount = Database["public"]["Tables"]["connected_accounts"]["Row"];

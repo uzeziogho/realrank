@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin";
 import { getPlacementsOverview, freeSponsorPositions, type AdminSponsor, type AdminSpotlight } from "@/lib/placements";
+import { getNotifications, getRecentWebhookEvents, getSetupCheck } from "@/lib/admin-log";
 import { SPONSOR } from "@/lib/sponsor";
 import { SPOTLIGHT } from "@/lib/spotlight";
 import { cn } from "@/lib/utils";
@@ -9,6 +10,7 @@ import {
   createSlotAction,
   endSpotlightAction,
   grantSpotlightAction,
+  markNotificationsReadAction,
   saveSlotAction,
   setSlotStateAction,
 } from "./actions";
@@ -38,10 +40,14 @@ function spotlightState(s: AdminSpotlight, now: number): "live" | "queued" | "en
  */
 export default async function PlacementsAdminPage() {
   await requireAdmin();
-  const [{ spotlights, sponsors }, free] = await Promise.all([
-    getPlacementsOverview(),
+  const [{ spotlights, sponsors }, free, setup, notes, deliveries] = await Promise.all([
+    getPlacementsOverview().catch(() => ({ spotlights: [], sponsors: [] })),
     freeSponsorPositions().catch(() => [] as number[]),
+    getSetupCheck(),
+    getNotifications(15),
+    getRecentWebhookEvents(25),
   ]);
+  const setupProblems = setup.filter((s) => !s.ok);
   const now = Date.now();
   const live = spotlights.filter((s) => spotlightState(s, now) === "live").length;
   const queued = spotlights.filter((s) => spotlightState(s, now) === "queued").length;
@@ -56,7 +62,55 @@ export default async function PlacementsAdminPage() {
         for anything that needs a person.
       </p>
 
-      <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {/* Setup check — the first thing to look at when an event "did nothing". */}
+      <section className={cn("mt-6 rounded-xl border p-4 text-sm", setupProblems.length ? "border-amber-500/40 bg-amber-500/[0.06]" : "border-border bg-card")}>
+        <p className="font-semibold">
+          {setupProblems.length ? `Setup: ${setupProblems.length} thing${setupProblems.length === 1 ? "" : "s"} to fix` : "Setup: everything in place ✓"}
+        </p>
+        <ul className="mt-2 space-y-1">
+          {setup.map((s) => (
+            <li key={s.label} className="flex gap-2">
+              <span className={s.ok ? "text-success" : "text-danger"}>{s.ok ? "✓" : "✗"}</span>
+              <span>
+                {s.label}
+                {!s.ok && <span className="block text-xs text-muted-foreground">{s.fix}</span>}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* Notifications — the same feed as the dashboard bell. */}
+      <section className="mt-6">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold">
+            Notifications{notes.unread > 0 && <span className="ml-2 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">{notes.unread} new</span>}
+          </h2>
+          {notes.unread > 0 && (
+            <form action={markNotificationsReadAction}>
+              <button className={btn}>Mark all read</button>
+            </form>
+          )}
+        </div>
+        {notes.items.length === 0 ? (
+          <p className="mt-2 text-sm text-muted-foreground">{notes.available ? "Nothing yet." : "Unavailable until migration 20261116 is applied."}</p>
+        ) : (
+          <ul className="mt-2 divide-y divide-border rounded-xl border border-border bg-card text-sm">
+            {notes.items.map((n) => (
+              <li key={n.id} className={cn("p-3", !n.read_at && "bg-primary/[0.04]")}>
+                <p className="flex flex-wrap items-center gap-2 font-medium">
+                  {!n.read_at && <span className="size-2 rounded-full bg-primary" aria-label="unread" />}
+                  {n.title}
+                  <span className="text-xs font-normal text-muted-foreground">{fmt(n.created_at)}</span>
+                </p>
+                {n.body && <p className="mt-1 whitespace-pre-line text-xs text-muted-foreground">{n.body}</p>}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <dl className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Stat label="Spotlights live" value={`${live} / ${SPOTLIGHT.slots}`} />
         <Stat label="Spotlights queued" value={String(queued)} />
         <Stat label="Sponsors live" value={`${liveSponsors} / ${SPONSOR.positions.length}`} />
@@ -146,6 +200,51 @@ export default async function PlacementsAdminPage() {
           <p className="mt-2 text-muted-foreground">For a sponsor paying outside Dodo. It shows until the end date.</p>
           <SlotForm action={createSlotAction} submit="Add slot" />
         </details>
+      </section>
+
+      {/* ── Webhook log ────────────────────────────────────────────────── */}
+      <section className="mt-12">
+        <h2 className="text-lg font-semibold">Webhook deliveries</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Every event Dodo sent, newest first. 401 = signature mismatch (wrong secret, or test vs live mode); 500 =
+          an error here (Dodo retries); 200 = handled.
+        </p>
+        {!deliveries.available ? (
+          <p className="mt-2 text-sm text-muted-foreground">Unavailable until migration 20261116 is applied.</p>
+        ) : deliveries.items.length === 0 ? (
+          <p className="mt-2 text-sm text-muted-foreground">
+            No deliveries recorded yet. If you sent a test from Dodo and nothing appears here, the event didn&apos;t reach
+            the site — check the endpoint URL is exactly https://www.realrank.lol/api/webhooks/dodo.
+          </p>
+        ) : (
+          <div className="mt-2 overflow-x-auto rounded-xl border border-border bg-card">
+            <table className="w-full min-w-[40rem] text-left text-xs">
+              <thead className="text-muted-foreground">
+                <tr className="border-b border-border">
+                  <th className="px-3 py-2 font-medium">When</th>
+                  <th className="px-3 py-2 font-medium">Event</th>
+                  <th className="px-3 py-2 font-medium">Status</th>
+                  <th className="px-3 py-2 font-medium">Result</th>
+                  <th className="px-3 py-2 font-medium">Details</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/60 align-top">
+                {deliveries.items.map((d) => (
+                  <tr key={d.id}>
+                    <td className="whitespace-nowrap px-3 py-2">{fmt(d.received_at)}</td>
+                    <td className="px-3 py-2 font-mono">{d.event_type ?? "—"}</td>
+                    <td className={cn("px-3 py-2 font-semibold", d.http_status >= 400 ? "text-danger" : "text-success")}>{d.http_status}</td>
+                    <td className="px-3 py-2">{d.outcome ?? "—"}</td>
+                    <td className="max-w-[22rem] break-words px-3 py-2 font-mono text-muted-foreground">
+                      {d.error && <span className="block text-danger">{d.error}</span>}
+                      {d.summary ? JSON.stringify(d.summary) : ""}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
     </div>
   );
