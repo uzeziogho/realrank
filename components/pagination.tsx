@@ -10,10 +10,13 @@ export function Pagination({
   currentPage,
   totalPages,
   buildHref,
+  label = "Leaderboard pages",
 }: {
   currentPage: number;
   totalPages: number;
   buildHref: (page: number) => string;
+  /** Accessible name for the nav landmark. */
+  label?: string;
 }) {
   if (totalPages <= 1) return null;
 
@@ -23,7 +26,7 @@ export function Pagination({
 
   return (
     <nav
-      aria-label="Leaderboard pages"
+      aria-label={label}
       className="mt-6 flex items-center justify-center gap-1"
     >
       <PageLink

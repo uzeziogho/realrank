@@ -104,7 +104,7 @@ export function DirectorySidebar(props: SidebarProps) {
       )}
 
       {/* Desktop rail */}
-      <aside className="hidden lg:sticky lg:top-24 lg:flex lg:flex-col lg:gap-7 lg:self-start lg:pr-2">
+      <aside className="hidden lg:sticky lg:top-24 lg:flex lg:max-h-[calc(100vh-7rem)] lg:flex-col lg:gap-7 lg:self-start lg:overflow-y-auto lg:overscroll-contain lg:pb-6 lg:pr-2 [scrollbar-width:thin]">
         <FilterControls {...props} />
       </aside>
     </>
@@ -128,6 +128,7 @@ function FilterControls({
 
   function hrefFor(patch: Record<string, string | null>): string {
     const sp = new URLSearchParams(params.toString());
+    sp.delete("page"); // any filter change starts again at page 1
     for (const [k, v] of Object.entries(patch)) {
       if (!v) sp.delete(k);
       else sp.set(k, v);

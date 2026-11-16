@@ -6,25 +6,35 @@ import { ListingCard } from "@/components/listing-card";
 import { BoardViews } from "@/components/board-views";
 import { DirectorySidebar } from "@/components/directory-sidebar";
 import { SpotlightLane } from "@/components/spotlight-lane";
+import { Pagination } from "@/components/pagination";
 import { getListedSites } from "@/lib/listed";
 import { getOutboundClicks, getLeaderboardData } from "@/lib/data";
 import { activeSpotlights, spotlightAvailability } from "@/lib/spotlight";
 import { categories, categoryLabel, siteConfig } from "@/lib/config";
 
-type SearchParams = Promise<{ category?: string; sort?: string; q?: string; verified?: string }>;
+type SearchParams = Promise<{ category?: string; sort?: string; q?: string; verified?: string; page?: string }>;
+
+/** Cards per page — 8 rows of 3 on desktop, short enough to scan on a phone. */
+const PAGE_SIZE = 24;
 
 export async function generateMetadata({
   searchParams,
 }: {
   searchParams: SearchParams;
 }): Promise<Metadata> {
-  const { category, verified } = await searchParams;
+  const { category, verified, page: pageRaw } = await searchParams;
   const label = category ? categoryLabel(category) : null;
-  const title = label ? `${label} projects — the ${siteConfig.name} directory` : "The directory — freshly listed projects";
+  // Clamp to the real page count (cached read) so an out-of-range ?page=
+  // names the page actually shown.
+  const lastPage = Math.max(1, Math.ceil((await getListedSites()).length / PAGE_SIZE));
+  const page = Math.min(lastPage, Math.max(1, Number.parseInt(pageRaw ?? "1", 10) || 1));
+  const base = label ? `${label} projects — the ${siteConfig.name} directory` : "The directory — freshly listed projects";
   return {
-    title,
+    title: page > 1 ? `${base} — Page ${page}` : base,
     description: `Every project listed on ${siteConfig.name}. Open and free to join; connect Search Console to earn a verified, ranked spot on the momentum board.`,
-    alternates: { canonical: "/listed" },
+    // Each page of the unfiltered directory names itself, so pages 2+ (and the
+    // listings on them) stay discoverable instead of folding into page 1.
+    alternates: { canonical: page > 1 ? `/listed?page=${page}` : "/listed" },
     // Filtered views (category or verified-only) are thin/duplicative of the
     // canonical directory and the indexable /best/<category> roundups — keep
     // them crawlable but out of the index.
@@ -33,7 +43,7 @@ export async function generateMetadata({
 }
 
 export default async function ListedPage({ searchParams }: { searchParams: SearchParams }) {
-  const { category: activeRaw, sort: sortRaw, q: qRaw, verified: verifiedRaw } = await searchParams;
+  const { category: activeRaw, sort: sortRaw, q: qRaw, verified: verifiedRaw, page: pageRaw } = await searchParams;
   // Visit counts ride along with the directory read (one query for every host)
   // and also drive the "Most visited" sort.
   const [all, visits, board] = await Promise.all([
@@ -79,6 +89,22 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
   } else if (sort === "az") {
     listings = [...listings].sort((a, b) => a.displayName.localeCompare(b.displayName));
   }
+
+  // Paginate after filtering + sorting. Out-of-range pages clamp to the last.
+  const totalPages = Math.max(1, Math.ceil(listings.length / PAGE_SIZE));
+  const page = Math.min(totalPages, Math.max(1, Number.parseInt(pageRaw ?? "1", 10) || 1));
+  const start = (page - 1) * PAGE_SIZE;
+  const pageListings = listings.slice(start, start + PAGE_SIZE);
+  const pageHref = (p: number) => {
+    const sp = new URLSearchParams();
+    if (active) sp.set("category", active);
+    if (sort !== "new") sp.set("sort", sort);
+    if (qRaw?.trim()) sp.set("q", qRaw.trim());
+    if (verified) sp.set("verified", "1");
+    if (p > 1) sp.set("page", String(p));
+    const qs = sp.toString();
+    return qs ? `/listed?${qs}` : "/listed";
+  };
 
   const title = active ? `${categoryLabel(active)} projects` : "The directory";
 
@@ -158,11 +184,21 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
               </p>
             </div>
           ) : (
-            <ul className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(230px,1fr))]">
-              {listings.map((l, i) => (
-                <ListingCard key={l.host} listing={l} visits={visits.get(l.host) ?? 0} priority={i < 3} />
-              ))}
-            </ul>
+            <>
+              <ul className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(230px,1fr))]">
+                {pageListings.map((l, i) => (
+                  <ListingCard key={l.host} listing={l} visits={visits.get(l.host) ?? 0} priority={page === 1 && i < 3} />
+                ))}
+              </ul>
+              {totalPages > 1 && (
+                <div className="flex flex-col items-center gap-1">
+                  <Pagination currentPage={page} totalPages={totalPages} buildHref={pageHref} label="Directory pages" />
+                  <p className="text-xs text-muted-foreground">
+                    Showing {start + 1}–{start + pageListings.length} of {listings.length}
+                  </p>
+                </div>
+              )}
+            </>
           )}
 
           {sidebarCategories.length > 0 && (
