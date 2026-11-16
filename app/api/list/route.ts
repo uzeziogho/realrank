@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { createListing, normalizeHost, checkNameAvailable } from "@/lib/listed";
+import { isBlockedCountry } from "@/lib/geo";
 import { sendEmail, listingConfirmationEmail } from "@/lib/email";
 import { offTopicReason } from "@/lib/offtopic";
 
@@ -16,15 +17,6 @@ function clientIp(xff: string | null, real: string | null): string | null {
   return first || real || null;
 }
 
-/**
- * Regions whose submissions are silently dropped, by ISO-3166-1 alpha-2 code
- * from Vercel's `x-vercel-ip-country` header. Mainland China only (CN) — Hong
- * Kong (HK), Macau (MO) and Taiwan (TW) are allowed through. Edit this set to
- * change coverage. This is a volume filter — a VPN routes around IP geo, which
- * is why the content fit gate below runs too. Fail-open: the header is absent
- * off Vercel, so an unknown country is allowed through.
- */
-const BLOCKED_COUNTRIES = new Set(["CN"]);
 
 
 /**
@@ -74,8 +66,9 @@ export async function POST(req: Request) {
   // told it was blocked. Runs alongside the content fit gate below — this one
   // catches submissions FROM the region, that one catches Chinese-content / .cn
   // listings wherever they come from. Fail-open when the country is unknown.
+  // Blocked countries (mainland China, Singapore) live in lib/geo.ts.
   const country = h.get("x-vercel-ip-country")?.toUpperCase();
-  if (country && BLOCKED_COUNTRIES.has(country)) {
+  if (isBlockedCountry(country)) {
     return NextResponse.json({ ok: true, host: null, ownerVerified: false });
   }
 

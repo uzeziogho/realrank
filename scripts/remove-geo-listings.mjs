@@ -6,8 +6,9 @@
  *   node scripts/remove-geo-listings.mjs --apply    # actually deactivates them
  *
  * Reads every active row in listed_sites, geolocates its stored submitted_ip,
- * and flags the ones in mainland China (CN) — the region the /api/list geo gate
- * now blocks going forward (Hong Kong, Macau and Taiwan are allowed through).
+ * and flags the ones from blocked countries — mainland China (CN) and Singapore
+ * (SG), the regions the /api/list geo gate blocks going forward (Hong Kong,
+ * Macau and Taiwan are allowed through).
  * Runs alongside scripts/remove-offtopic-listings.mjs, which catches Chinese-
  * content / .cn listings wherever they came from; this one catches submissions
  * FROM the region regardless of content.
@@ -25,8 +26,8 @@
 import { readFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 
-// Keep in sync with BLOCKED_COUNTRIES in app/api/list/route.ts.
-const BLOCKED = new Set(["CN"]);
+// Keep in sync with BLOCKED_COUNTRIES in lib/geo.ts.
+const BLOCKED = new Set(["CN", "SG"]);
 const APPLY = process.argv.includes("--apply");
 
 // Minimal .env.local loader (no dotenv dependency) — same as check-db.mjs.
