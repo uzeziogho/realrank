@@ -305,9 +305,12 @@ export default async function ListingProfilePage({
             : `${listing.displayName} is listed but hasn't connected Google Search Console, so it isn't on the ranked momentum board.`}{" "}
           Own this site? Connect Search Console to claim a verified, ranked spot.
         </p>
-        <div className="mt-4 flex items-center justify-center">
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
           <Button asChild>
             <Link href="/login">Get a verified rank — free</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/rank-preview">See where you&apos;d rank</Link>
           </Button>
         </div>
       </div>

@@ -68,8 +68,10 @@ export async function GET(req: NextRequest) {
     }
 
     // Back to where they were headed (validated again — a cookie is input too).
+    // Otherwise the welcome screen: it ranks their site straight away (or shows
+    // it's verified and waiting for clicks) instead of an empty dashboard.
     const next = safeNextPath(req.cookies.get("oauth_next")?.value);
-    const res = NextResponse.redirect(new URL(next ?? "/dashboard?connected=1", siteConfig.url));
+    const res = NextResponse.redirect(new URL(next ?? "/dashboard/welcome", siteConfig.url));
     res.cookies.delete("oauth_state");
     res.cookies.delete("oauth_next");
     return res;

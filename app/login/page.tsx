@@ -78,7 +78,11 @@ export default async function LoginPage({
           <Link href="/submit" className="font-medium text-primary hover:underline">
             List your project free
           </Link>{" "}
-          and upgrade to a ranked spot later.
+          and upgrade to a ranked spot later. Or{" "}
+          <Link href="/rank-preview" className="font-medium text-primary hover:underline">
+            preview your rank from an export
+          </Link>
+          .
         </p>
 
         <p className="mt-6 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">

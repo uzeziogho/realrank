@@ -112,6 +112,13 @@ export default function MomentumScorePage() {
                 Claim a founding spot
               </Link>
             </div>
+            <p className="mt-3 text-sm text-muted-foreground">
+              Have a Search Console export?{" "}
+              <Link href="/rank-preview" className="font-medium text-primary hover:underline">
+                See where it would rank on today&apos;s board
+              </Link>
+              .
+            </p>
           </section>
         </div>
       </div>

@@ -367,6 +367,13 @@ function ListedSuccess({ host, name }: { host: string; name: string }) {
             Get a verified rank <ArrowRight className="size-4" />
           </Link>
         </Button>
+        <p className="mt-3 text-xs text-muted-foreground">
+          Curious first?{" "}
+          <Link href="/rank-preview" className="font-medium text-primary hover:underline">
+            See where you&apos;d rank in 30 seconds
+          </Link>{" "}
+          from a Search Console export — private, nothing saved.
+        </p>
       </div>
     </div>
   );

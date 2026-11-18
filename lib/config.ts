@@ -197,6 +197,11 @@ export const makerLinks: NavLink[] = [
  */
 export const toolLinks: NavLink[] = [
   {
+    href: "/rank-preview",
+    label: "Where would I rank?",
+    description: "Drop a Search Console export and see your place on today's board. Private, no login.",
+  },
+  {
     href: "/report-card",
     label: "Traffic report card",
     description: "Grade any domain's verified organic traffic. Instant and shareable.",

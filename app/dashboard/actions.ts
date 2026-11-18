@@ -201,7 +201,31 @@ export async function publishProperty(
   const { supabase, user } = await requireUser();
   const siteUrl = String(formData.get("site_url") ?? "").trim();
   if (!siteUrl) return { error: "Missing property." };
+  return publishSite(supabase, user.id, siteUrl);
+}
 
+/**
+ * Publish one Search Console property from the post-connect welcome screen
+ * (called directly, not from a form). Same work as publishProperty: the site
+ * is ranked at once from its last 28 days, and its history is backfilled.
+ */
+export async function publishFromWelcome(siteUrl: string): Promise<ActionState> {
+  const { supabase, user } = await requireUser();
+  const clean = String(siteUrl ?? "").trim();
+  if (!clean) return { error: "Missing property." };
+  // Only a property this Google account can actually read may be published.
+  const { listUserProperties } = await import("@/lib/gsc-server");
+  const allowed = await listUserProperties(user.id);
+  if (!allowed.includes(clean)) return { error: "That property isn't on your Google account." };
+  return publishSite(supabase, user.id, clean);
+}
+
+async function publishSite(
+  supabase: Awaited<ReturnType<typeof requireUser>>["supabase"],
+  userId: string,
+  siteUrl: string,
+): Promise<ActionState> {
+  const user = { id: userId };
   const client = await getUserGscClient(user.id);
   if (!client) return { error: "Google isn't connected. Reconnect and try again." };
 
