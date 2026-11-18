@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { WeeklyActivity, joinedThisWeek } from "@/components/weekly-activity";
 import { ChevronLeft } from "lucide-react";
 import { LeaderboardSection } from "@/components/leaderboard-section";
 import { BoardViews } from "@/components/board-views";
@@ -62,6 +63,7 @@ export default async function LeaderboardPage({
   // For the rank checker: hostnames already on the board + the top volume.
   const knownHosts = data.organic.map((s) => hostname(s.siteUrl).toLowerCase());
   const topClicks = data.organic.reduce((m, s) => Math.max(m, s.clicks28d), 0);
+  const joined = joinedThisWeek(data.organic);
 
   return (
     <>
@@ -82,6 +84,13 @@ export default async function LeaderboardPage({
             Switch between momentum and volume, search for a site, or page through
             the full board.
           </p>
+          <WeeklyActivity
+            className="mt-3 inline-flex items-center gap-2 text-sm text-muted-foreground"
+            joined={joined.count}
+            latestName={joined.latest?.displayName ?? null}
+            latestAt={joined.latest?.createdAt ?? null}
+            noun="the board"
+          />
 
           <BoardViews className="mt-5" />
 

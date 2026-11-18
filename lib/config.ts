@@ -202,6 +202,11 @@ export const toolLinks: NavLink[] = [
     description: "Drop a Search Console export and see your place on today's board. Private, no login.",
   },
   {
+    href: "/search-console-regex",
+    label: "Search Console regex builder",
+    description: "Brand vs non-brand, questions, long-tail: build, test and copy regex filters.",
+  },
+  {
     href: "/report-card",
     label: "Traffic report card",
     description: "Grade any domain's verified organic traffic. Instant and shareable.",

@@ -4,6 +4,7 @@ import { getAllSiteSlugs } from "@/lib/site";
 import { getListedSites, getAlternativeTargets } from "@/lib/listed";
 import { getLeaderboardData } from "@/lib/data";
 import { articles } from "@/lib/articles";
+import { getSnapshotMonths } from "@/lib/monthly";
 import {
   MIN_RANKED_FOR_CATEGORY,
   MIN_ALTERNATIVES,
@@ -34,13 +35,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // so one slow or failing source never blocks the others — a cold sitemap fetch
   // takes as long as the slowest read, not their sum, which keeps Googlebot from
   // timing the request out ("Couldn't fetch").
-  const [siteSlugs, listed, altTargets, board] = await Promise.all([
+  const [siteSlugs, listed, altTargets, board, snapshotMonths] = await Promise.all([
     getAllSiteSlugs()
       .then((s) => s.slice(0, 5000))
       .catch(() => [] as string[]),
     getListedSites().catch(() => [] as Awaited<ReturnType<typeof getListedSites>>),
     getAlternativeTargets().catch(() => [] as Awaited<ReturnType<typeof getAlternativeTargets>>),
     getLeaderboardData("momentum").catch(() => null),
+    getSnapshotMonths().catch(() => [] as Awaited<ReturnType<typeof getSnapshotMonths>>),
   ]);
 
   // Templated pages are submitted only when they clear the same bar their own
@@ -174,6 +176,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
+      url: `${base}/search-console-regex`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
       url: `${base}/rank-preview`,
       lastModified: now,
       changeFrequency: "daily",
@@ -274,6 +282,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           },
         ]
       : []),
+    // Monthly snapshots — only months with a real ranking (the page's own bar).
+    ...snapshotMonths.map((m) => {
+      const [y, mo] = m.month.split("-").map(Number);
+      return {
+        url: `${base}/best/fastest-growing/${m.month}`,
+        lastModified: new Date(Date.UTC(y, mo, 4)), // settled a few days after the month ends
+        changeFrequency: "yearly" as const,
+        priority: 0.5,
+      };
+    }),
     ...growingCategories.map((slug) => ({
       url: `${base}/best/fastest-growing/${slug}`,
       lastModified: now,

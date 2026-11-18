@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { WeeklyActivity, joinedThisWeek } from "@/components/weekly-activity";
 import { BadgeCheck, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ListingCard } from "@/components/listing-card";
@@ -46,9 +47,10 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
   const { category: activeRaw, sort: sortRaw, q: qRaw, verified: verifiedRaw, page: pageRaw } = await searchParams;
   // Visit counts ride along with the directory read (one query for every host)
   // and also drive the "Most visited" sort.
-  const [all, visits, board] = await Promise.all([
+  const [all, visits, weekVisits, board] = await Promise.all([
     getListedSites(),
     getOutboundClicks(),
+    getOutboundClicks(7),
     getLeaderboardData("momentum").catch(() => null),
   ]);
 
@@ -107,6 +109,8 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
   };
 
   const title = active ? `${categoryLabel(active)} projects` : "The directory";
+  const joined = joinedThisWeek(all);
+  const visitsThisWeek = [...weekVisits.values()].reduce((n, v) => n + v, 0);
 
   return (
     <section className="container py-8">
@@ -135,6 +139,16 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
               Alternatives to popular tools →
             </Link>
           </div>
+
+          {!active && !q && page === 1 && (
+            <WeeklyActivity
+              joined={joined.count}
+              latestName={joined.latest?.displayName ?? null}
+              latestAt={joined.latest?.createdAt ?? null}
+              noun="the directory"
+              visits={visitsThisWeek}
+            />
+          )}
 
           <p className="max-w-2xl text-sm text-muted-foreground">
             Open to everyone, free to join. The{" "}

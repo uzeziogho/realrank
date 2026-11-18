@@ -632,7 +632,18 @@ export interface Database {
       };
     };
     Views: {
-      [_ in never]: never;
+      /** Monthly click totals per site (20261118_site_click_monthly.sql). */
+      site_click_monthly: {
+        Row: {
+          site_id: string;
+          /** First day of the month, YYYY-MM-DD. */
+          month: string;
+          clicks: number;
+          /** Days in the month with a history row. */
+          days: number;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
       bump_site_traffic: {

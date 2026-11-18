@@ -8,6 +8,7 @@ import { getLeaderboardData, attachSparklines } from "@/lib/data";
 import { categories, siteConfig } from "@/lib/config";
 import { MIN_RANKED_FOR_CATEGORY, rankedOnly } from "@/lib/indexing";
 import { formatCompact, formatGrowth, timeAgo } from "@/lib/utils";
+import { getSnapshotMonths } from "@/lib/monthly";
 
 export const revalidate = 3600;
 
@@ -51,7 +52,7 @@ export default async function FastestGrowingPage() {
   const data = await getLeaderboardData("momentum");
   const ranked = rankedOnly(data.organic);
   const top = ranked.slice(0, TOP_N);
-  const rows = await attachSparklines(top);
+  const [rows, snapshots] = await Promise.all([attachSparklines(top), getSnapshotMonths().catch(() => [])]);
   const leader = top[0] ?? null;
   const growing = ranked.filter((s) => s.growthRate > 0).length;
 
@@ -155,6 +156,26 @@ export default async function FastestGrowingPage() {
                   className="inline-flex items-center rounded-full border border-border bg-card px-3 py-1 text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
                 >
                   Fastest-growing {c.label} sites
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
+
+      {snapshots.length > 0 && (
+        <nav className="mt-10" aria-label="Monthly snapshots">
+          <h2 className="text-xl font-semibold tracking-tight">Past months</h2>
+          <p className="mt-1 text-sm text-muted-foreground">The fastest-growing websites of each month, frozen once it ends.</p>
+          <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+            {snapshots.slice(0, 6).map((m) => (
+              <li key={m.month}>
+                <Link
+                  href={`/best/fastest-growing/${m.month}`}
+                  className="flex items-baseline justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm transition-colors hover:border-primary/50"
+                >
+                  <span className="font-medium">{m.label}</span>
+                  {m.leader && <span className="truncate text-xs text-muted-foreground">#1 {m.leader}</span>}
                 </Link>
               </li>
             ))}

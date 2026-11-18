@@ -729,3 +729,14 @@ create table if not exists public.admin_notifications (
 create index if not exists admin_notifications_unread_idx on public.admin_notifications (created_at desc) where read_at is null;
 alter table public.admin_notifications enable row level security;
 -- No policies on either table: only the server (service role) reads or writes.
+
+-- Monthly click totals per site (monthly fastest-growing snapshots).
+create or replace view public.site_click_monthly
+with (security_invoker = true) as
+select
+  site_id,
+  date_trunc('month', date)::date as month,
+  sum(clicks)::bigint as clicks,
+  count(*)::int as days
+from public.site_click_history
+group by site_id, date_trunc('month', date);

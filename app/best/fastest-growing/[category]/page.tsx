@@ -7,6 +7,8 @@ import { Leaderboard } from "@/components/leaderboard";
 import { getLeaderboardData, attachSparklines } from "@/lib/data";
 import { categories, categoryLabel, siteConfig } from "@/lib/config";
 import { formatCompact } from "@/lib/utils";
+import { MonthSnapshotPage, monthSnapshotMetadata } from "@/components/month-snapshot";
+import { isMonthKey } from "@/lib/monthly";
 
 export const revalidate = 3600;
 
@@ -25,6 +27,8 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { category } = await params;
+  // /best/fastest-growing/2026-10 is a monthly snapshot, not a category.
+  if (isMonthKey(category)) return monthSnapshotMetadata(category);
   if (!VALID.has(category)) return { title: "Not found", robots: { index: false, follow: false } };
   const label = categoryLabel(category);
   const data = await getLeaderboardData("momentum", { category: category as (typeof categories)[number]["slug"] });
@@ -42,6 +46,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
 export default async function FastestGrowingCategoryPage({ params }: { params: Params }) {
   const { category } = await params;
+  if (isMonthKey(category)) return <MonthSnapshotPage month={category} />;
   if (!VALID.has(category)) notFound();
   const label = categoryLabel(category);
 
