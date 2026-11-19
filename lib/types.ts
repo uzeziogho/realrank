@@ -41,6 +41,8 @@ export interface SponsoredRow {
   ctaLabel: string | null;
   /** The organic rank this ad is displayed after. */
   afterRank: number;
+  /** An unsold slot, shown as "Your site here" so the product sells itself. */
+  placeholder?: boolean;
 }
 
 export type LeaderboardRow = RankedSite | SponsoredRow;

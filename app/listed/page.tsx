@@ -157,6 +157,7 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
               latestAt={joined.latest?.createdAt ?? null}
               noun="the directory"
               visits={visitsThisWeek}
+              cta={{ label: "List yours free", href: "/submit", event: "list_click", source: "directory_activity" }}
             />
           )}
 

@@ -1,3 +1,4 @@
+import { TrackedLink } from "@/components/tracked-link";
 import { timeAgo, formatCompact } from "@/lib/utils";
 
 /**
@@ -30,8 +31,11 @@ export function WeeklyActivity({
   latestAt,
   noun,
   visits,
+  cta,
   className,
 }: {
+  /** The action the social proof points at, e.g. "List yours" → /submit. */
+  cta?: { label: string; href: string; event: string; source: string };
   joined: number;
   latestName: string | null;
   latestAt: string | null;
@@ -58,6 +62,14 @@ export function WeeklyActivity({
         <span className="relative inline-flex size-2 rounded-full bg-success" />
       </span>
       {parts.join(" · ")}
+      {cta && (
+        <>
+          {" · "}
+          <TrackedLink href={cta.href} event={cta.event} label={cta.source} className="font-medium text-primary hover:underline">
+            {cta.label} →
+          </TrackedLink>
+        </>
+      )}
     </p>
   );
 }

@@ -140,6 +140,13 @@ function RankedCard({
           </a>
         </Button>
       </div>
+      <p className="mt-4 text-sm text-muted-foreground">
+        Also free:{" "}
+        <Link href="/dashboard#directory" className="font-medium text-primary hover:underline">
+          add it to the directory
+        </Link>{" "}
+        — it&apos;s verified already, so it gets a followed link, and you can book a Spotlight for extra visitors.
+      </p>
     </section>
   );
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { GetOnBoard } from "@/components/get-on-board";
 import { Prose } from "@/components/prose";
 import { Leaderboard } from "@/components/leaderboard";
 import { LeaderboardJsonLd } from "@/components/json-ld";
@@ -215,14 +215,18 @@ export default async function FastestGrowingPage() {
         </dl>
       </section>
 
-      <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-        <Button asChild size="lg">
-          <Link href="/login">Get a verified rank — free</Link>
-        </Button>
+      <GetOnBoard
+        source="fastest_growing"
+        primary="rank"
+        title="Growing fast? Get on this list."
+        body="Connect Search Console (read-only, free) and your site is ranked on the next refresh. Not ready? List it free in the directory."
+        className="mt-10"
+      />
+      <p className="mt-4 text-center">
         <Link href="/movers" className="text-sm font-medium text-primary hover:underline">
           This week&apos;s biggest movers →
         </Link>
-      </div>
+      </p>
     </div>
   );
 }

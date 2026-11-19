@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AudienceProof } from "@/components/audience-proof";
 import { Megaphone, CheckCircle2, ShieldCheck, CalendarClock, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Leaderboard } from "@/components/leaderboard";
@@ -78,6 +79,8 @@ export default async function SponsorPage({ searchParams }: { searchParams: Sear
           </p>
         </div>
       )}
+
+      <AudienceProof />
 
       {!soldOut && sp.status !== "success" && (
         <form action="/sponsor" method="get" className="mt-8 flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 sm:p-6">

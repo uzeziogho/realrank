@@ -9,7 +9,7 @@ import { Leaderboard } from "@/components/leaderboard";
 import { LeaderboardJsonLd } from "@/components/json-ld";
 import { Pagination } from "@/components/pagination";
 import { attachSparklines, type LeaderboardData } from "@/lib/data";
-import { injectSponsored } from "@/lib/ranking";
+import { injectSponsored, withOpenSponsorSlot } from "@/lib/ranking";
 import { siteConfig, categories, type RankingView } from "@/lib/config";
 import { cn, hostname, timeAgo } from "@/lib/utils";
 
@@ -67,7 +67,11 @@ export async function LeaderboardSection({
   // Sponsored slots only inject on an unfiltered page 1. Attach sparklines for
   // just this page's rows.
   const pageRows = await attachSparklines(
-    query ? pageOrganic : injectSponsored(pageOrganic, data.sponsored),
+    query
+      ? pageOrganic
+      : safePage === 1
+        ? withOpenSponsorSlot(injectSponsored(pageOrganic, data.sponsored), data.sponsored)
+        : injectSponsored(pageOrganic, data.sponsored),
   );
 
   return (

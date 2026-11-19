@@ -349,11 +349,12 @@ function ListedSuccess({ host, name }: { host: string; name: string }) {
           shows, so an owner who comes back later finds it in both places. */}
       <VerifyListing host={host} />
       <p className="-mt-3 text-center text-xs text-muted-foreground">
-        Verified listings can also book a{" "}
-        <Link href="/spotlight" className="text-primary hover:underline">
+        Your listing shows a <span className="font-semibold text-primary">New</span> badge at the top of the directory
+        for its first week. To stay at the top after that, verified listings can book a{" "}
+        <Link href={host ? `/spotlight?host=${encodeURIComponent(host)}` : "/spotlight"} onClick={() => track("spotlight_click", "listed_success")} className="text-primary hover:underline">
           Spotlight
         </Link>{" "}
-        — 7 days at the top of the directory for $25, labelled and never affecting rank.
+        — 7 days for $25, labelled and never affecting rank.
       </p>
 
       {/* Upgrade path */}

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, CalendarDays, TrendingUp, TrendingDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { GetOnBoard } from "@/components/get-on-board";
 import { Prose } from "@/components/prose";
 import { getMonthSnapshot, getSnapshotMonths, SNAPSHOT_TOP_N, type MonthSnapshot } from "@/lib/monthly";
 import { categoryLabel, siteConfig } from "@/lib/config";
@@ -204,11 +204,13 @@ export async function MonthSnapshotPage({ month }: { month: string }) {
         </section>
       )}
 
-      <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-        <Button asChild size="lg">
-          <Link href="/login">Get your site on next month&apos;s list — free</Link>
-        </Button>
-      </div>
+      <GetOnBoard
+        source="monthly_snapshot"
+        primary="rank"
+        title="Get your site on next month's list"
+        body="Connect Search Console (read-only, free) and your growth is tracked from today. Not ready? List it free in the directory."
+        className="mt-10"
+      />
     </div>
   );
 }

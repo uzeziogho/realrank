@@ -6,6 +6,7 @@ import {
   toSponsoredRow,
 } from "@/lib/types";
 import type { RankingView } from "@/lib/config";
+import { SPONSOR } from "@/lib/sponsor";
 
 /**
  * Sort active sites by the selected view and assign 1-based ranks.
@@ -66,6 +67,33 @@ export function injectSponsored(
     }
   }
   return out;
+}
+
+/**
+ * Add one "Your site here" row at the first sponsor position nobody has
+ * bought, so the board advertises its own ad slot instead of hiding it.
+ * Only one, even when both are free, to keep the board a board.
+ */
+export function withOpenSponsorSlot(rows: LeaderboardRow[], slots: SponsoredSlot[]): LeaderboardRow[] {
+  const taken = new Set(slots.filter(isSlotLive).map((s) => s.position_after_rank));
+  const open = SPONSOR.positions.find((p) => !taken.has(p));
+  if (open === undefined) return rows;
+  const at = rows.findIndex((r) => r.kind === "organic" && r.rank === open);
+  if (at < 0) return rows;
+  const placeholder: LeaderboardRow = {
+    kind: "sponsored",
+    id: `open-slot-${open}`,
+    displayName: "Your site here",
+    siteUrl: "/sponsor",
+    description: null,
+    ctaLabel: null,
+    afterRank: open,
+    placeholder: true,
+  };
+  // After the organic row and any sponsored rows already following it.
+  let insert = at + 1;
+  while (insert < rows.length && rows[insert].kind === "sponsored") insert++;
+  return [...rows.slice(0, insert), placeholder, ...rows.slice(insert)];
 }
 
 function isSlotLive(slot: SponsoredSlot): boolean {

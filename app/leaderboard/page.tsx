@@ -90,6 +90,7 @@ export default async function LeaderboardPage({
             latestName={joined.latest?.displayName ?? null}
             latestAt={joined.latest?.createdAt ?? null}
             noun="the board"
+            cta={{ label: "Get ranked", href: "/login", event: "connect_click", source: "board_activity" }}
           />
 
           <BoardViews className="mt-5" />

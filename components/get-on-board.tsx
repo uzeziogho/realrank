@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Plus, ShieldCheck } from "lucide-react";
+import { SPOTLIGHT } from "@/lib/spotlight";
+import { SPONSOR } from "@/lib/sponsor";
 import { Button } from "@/components/ui/button";
 import { TrackedLink } from "@/components/tracked-link";
 import { cn } from "@/lib/utils";
@@ -16,8 +18,11 @@ export function GetOnBoard({
   title = "Is your site growing?",
   body = "List it free in a minute, or connect Search Console for a verified, ranked spot — also free.",
   primary = "list",
+  paid = true,
   className,
 }: {
+  /** Show the "want visitors now?" line with Spotlight and Sponsor (default on). */
+  paid?: boolean;
   /** Where the band sits, recorded on the click events (e.g. "leaderboard"). */
   source: string;
   /** Which action leads: "rank" on pages about verified ranks, "list" elsewhere. */
@@ -60,6 +65,19 @@ export function GetOnBoard({
           what&apos;s free
         </Link>
       </p>
+      {paid && (
+        <p className="mt-4 border-t border-primary/15 pt-4 text-sm text-muted-foreground">
+          Want visitors this week?{" "}
+          <TrackedLink href="/spotlight" event="spotlight_click" label={source} className="font-medium text-primary hover:underline">
+            Book a Spotlight
+          </TrackedLink>{" "}
+          ({SPOTLIGHT.price} for {SPOTLIGHT.days} days at the top of the directory) or{" "}
+          <TrackedLink href="/sponsor" event="sponsor_click" label={source} className="font-medium text-primary hover:underline">
+            sponsor the leaderboard
+          </TrackedLink>{" "}
+          ({SPONSOR.price}/{SPONSOR.cadence}). Always labelled, never changes rankings.
+        </p>
+      )}
     </section>
   );
 }

@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { TrackedLink } from "@/components/tracked-link";
+import { SPONSOR } from "@/lib/sponsor";
 import { ArrowUpRight, TrendingUp, TrendingDown, Minus, ChevronUp, ChevronDown, Sparkles, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Sparkline } from "@/components/sparkline";
@@ -300,6 +302,7 @@ function OrganicRowItem({
 }
 
 function SponsoredRowItem({ row, className }: { row: SponsoredRow; className?: string }) {
+  if (row.placeholder) return <OpenSlotRow className={className} />;
   return (
     <li className={cn("grid grid-cols-[3rem_1fr] items-center gap-4 bg-amber-500/[0.06] px-4 py-4 md:grid-cols-[3.75rem_1fr_7rem_6.5rem_5rem] md:px-6", className)}>
       <div className="flex items-center justify-center">
@@ -333,6 +336,42 @@ function SponsoredRowItem({ row, className }: { row: SponsoredRow; className?: s
           {row.ctaLabel ?? "Learn more"}
           <ArrowUpRight className="size-3.5" />
         </a>
+      </div>
+    </li>
+  );
+}
+
+/** An unsold sponsor position: labelled, quiet, and one click from buying it. */
+function OpenSlotRow({ className }: { className?: string }) {
+  return (
+    <li
+      className={cn(
+        "grid grid-cols-[3rem_1fr] items-center gap-4 border-y border-dashed border-amber-500/30 bg-amber-500/[0.03] px-4 py-3.5 md:grid-cols-[3.75rem_1fr_auto] md:px-6",
+        className,
+      )}
+    >
+      <div className="flex items-center justify-center">
+        <span className="rounded-md border border-dashed border-amber-500/40 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-500/80">
+          Ad
+        </span>
+      </div>
+      <div className="min-w-0">
+        <p className="font-semibold text-foreground">Your site here</p>
+        <p className="text-sm text-muted-foreground">
+          This sponsored row is open — seen by everyone checking the board. {SPONSOR.price}/{SPONSOR.cadence}, labelled,
+          never changes rankings.
+        </p>
+      </div>
+      <div className="col-span-2 md:col-span-1">
+        <TrackedLink
+          href="/sponsor"
+          event="sponsor_click"
+          label="board_open_slot"
+          className="inline-flex items-center gap-1 rounded-md border border-amber-500/40 px-3 py-1.5 text-sm font-medium text-amber-600 hover:bg-amber-500/10 dark:text-amber-400"
+        >
+          Sponsor this slot
+          <ArrowUpRight className="size-3.5" />
+        </TrackedLink>
       </div>
     </li>
   );

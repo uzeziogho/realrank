@@ -166,6 +166,13 @@ function Result({ summary, board, onReset }: { summary: ExportSummary; board: Bo
           your site on the public board. It takes about 30 seconds, and your rank updates by itself every day.
         </p>
         <ConnectCTA label="Publish my verified rank" source="rank_preview" align="start" className="mt-4" />
+        <p className="mt-3 text-sm text-muted-foreground">
+          Not ready to connect?{" "}
+          <Link href="/submit" onClick={() => track("list_click", "rank_preview")} className="font-medium text-primary hover:underline">
+            List your site free in the directory
+          </Link>{" "}
+          — upgrade to a ranked spot whenever you like.
+        </p>
       </section>
 
       <button onClick={onReset} className="inline-flex items-center gap-1.5 self-start text-sm text-muted-foreground hover:text-foreground">

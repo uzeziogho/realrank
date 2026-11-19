@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AudienceProof } from "@/components/audience-proof";
 import { Sparkles, Search, BadgeCheck, CheckCircle2, Clock, Plus, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteFavicon } from "@/components/site-favicon";
@@ -55,6 +56,8 @@ export default async function SpotlightPage({ searchParams }: { searchParams: Se
           <SlotsLine slotsLeft={slotsLeft} nextOpens={nextOpens} />
         </p>
       </div>
+
+      <AudienceProof />
 
       {/* Step 1 — find the listing. A plain GET form: ?host=… re-renders this page. */}
       <form action="/spotlight" method="get" className="mt-8 flex flex-col gap-2 sm:flex-row">
