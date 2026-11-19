@@ -64,6 +64,12 @@ export function AdminPanel({
             </form>
           )}
           <Link
+            href="/admin/emails"
+            className="inline-flex h-9 items-center rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-muted"
+          >
+            Emails
+          </Link>
+          <Link
             href="/admin/placements"
             className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90"
           >

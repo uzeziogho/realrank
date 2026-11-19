@@ -32,8 +32,10 @@ export default function PrivacyPage() {
             <li>
               <strong className="text-foreground">Google account identity.</strong>{" "}
               When you connect Google, we receive your Google account email address
-              and a unique identifier, used solely to create and identify your
-              account.
+              and a unique identifier. We use them to create and identify your
+              account, and to email you about your own sites: a weekly rank report
+              and a note when your rank moves sharply. Every one of those emails
+              has a one-click unsubscribe.
             </li>
             <li>
               <strong className="text-foreground">Google Search Console data.</strong>{" "}
@@ -52,7 +54,9 @@ export default function PrivacyPage() {
               <strong className="text-foreground">Email address, if you give us one.</strong>{" "}
               When you join the list without connecting Google, or leave a contact
               address while listing a project. We use it to send you the weekly
-              movers digest and to reach you about your listing — nothing else.
+              movers digest and to reach you about your listing (including a
+              weekly report of the visits we sent it, in weeks it gets some) —
+              nothing else.
               Every digest carries a one-click unsubscribe link, and opting out is
               permanent.
             </li>

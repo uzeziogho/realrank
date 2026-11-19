@@ -10,6 +10,7 @@ import { listUserProperties } from "@/lib/gsc-server";
 import { getLeaderboardData } from "@/lib/data";
 import { siteSlug } from "@/lib/site";
 import { siteConfig } from "@/lib/config";
+import { comebackStatus } from "@/lib/comeback";
 import { cn, formatCompact, formatGrowth, hostname } from "@/lib/utils";
 import type { PublishedSite } from "@/lib/supabase/types";
 
@@ -184,7 +185,8 @@ function WaitingCard({ site, hasHistory }: { site: PublishedSite; hasHistory: bo
           ? "Your site had clicks earlier this month but none in the last 7 days, so it's waiting for this week's clicks. "
           : "Google hasn't recorded organic clicks for this site yet. "}
         Search Console reports clicks with a 2–3 day delay, and we check every day — you&apos;ll move onto the board
-        automatically. Nothing else to do.
+        automatically.{" "}
+        {comebackStatus().enabled ? "We'll email you the day it happens." : "Nothing else to do."}
       </p>
       <div className="mt-5 rounded-xl bg-muted/50 p-4 text-sm">
         <p className="font-medium">While you wait</p>

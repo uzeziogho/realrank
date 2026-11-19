@@ -131,6 +131,53 @@ export interface Database {
         };
         Relationships: [];
       };
+      owner_email_state: {
+        Row: {
+          site_id: string;
+          alert_rank: number | null;
+          alerted_at: string | null;
+          weekly_rank: number | null;
+          weekly_at: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          site_id: string;
+          alert_rank?: number | null;
+          alerted_at?: string | null;
+          weekly_rank?: number | null;
+          weekly_at?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          alert_rank?: number | null;
+          alerted_at?: string | null;
+          weekly_rank?: number | null;
+          weekly_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      email_log: {
+        Row: {
+          id: number;
+          kind: string;
+          recipient: string;
+          subject_key: string;
+          period: string;
+          sent_at: string;
+        };
+        Insert: {
+          kind: string;
+          recipient: string;
+          subject_key: string;
+          period: string;
+          sent_at?: string;
+        };
+        Update: {
+          sent_at?: string;
+        };
+        Relationships: [];
+      };
       site_click_history: {
         Row: {
           site_id: string;
