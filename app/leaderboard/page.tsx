@@ -112,6 +112,7 @@ export default async function LeaderboardPage({
         query={query}
         page={page}
         interactive
+        openSlot
       />
       <div className="container pb-16">
         <GetOnBoard source="leaderboard" primary="rank" title="Want your site on this board?" />

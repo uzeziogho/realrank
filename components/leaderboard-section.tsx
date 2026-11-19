@@ -45,12 +45,15 @@ export async function LeaderboardSection({
   query,
   page,
   interactive,
+  openSlot = false,
 }: {
   data: LeaderboardData;
   view: RankingView;
   query: string;
   page: number;
   interactive: boolean;
+  /** Show an unsold sponsor position as "Your site here" (the /leaderboard page only). */
+  openSlot?: boolean;
 }) {
   const filtered = query
     ? data.organic.filter(
@@ -69,7 +72,7 @@ export async function LeaderboardSection({
   const pageRows = await attachSparklines(
     query
       ? pageOrganic
-      : safePage === 1
+      : openSlot && safePage === 1
         ? withOpenSponsorSlot(injectSponsored(pageOrganic, data.sponsored), data.sponsored)
         : injectSponsored(pageOrganic, data.sponsored),
   );
