@@ -6,12 +6,13 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search, Plus, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { ADDED_FILTERS, type AddedKey } from "@/lib/listing-dates";
 
 /**
  * The directory's filter rail: search, category list (with counts), sort, a
  * verified-only toggle, and the "list your project" nudge. On desktop it's a
  * sticky left rail; on mobile it collapses behind a "Filters" button that opens
- * a slide-over sheet. All controls write to the URL (?q, ?category, ?sort,
+ * a slide-over sheet. All controls write to the URL (?q, ?category, ?sort, ?added,
  * ?verified) so the server page stays the source of truth and every view is
  * linkable; category items are real links (preserving the other params) for
  * crawlers and middle-click, while the controls navigate.
@@ -36,15 +37,18 @@ export interface SidebarProps {
   sort: string;
   q: string;
   verified: boolean;
+  /** "Added" filter: the active window, and how many listings each option shows. */
+  added: AddedKey | null;
+  addedCounts: Record<AddedKey, number>;
 }
 
 export function DirectorySidebar(props: SidebarProps) {
-  const { active, sort, q, verified } = props;
+  const { active, sort, q, verified, added } = props;
   const [open, setOpen] = useState(false);
 
   // Count of filters that differ from the default, for the mobile trigger badge.
   const activeCount =
-    (active ? 1 : 0) + (verified ? 1 : 0) + (q.trim() ? 1 : 0) + (sort !== "new" ? 1 : 0);
+    (active ? 1 : 0) + (verified ? 1 : 0) + (q.trim() ? 1 : 0) + (sort !== "new" ? 1 : 0) + (added ? 1 : 0);
 
   // Lock body scroll while the mobile sheet is open.
   useEffect(() => {
@@ -118,6 +122,8 @@ function FilterControls({
   sort,
   q,
   verified,
+  added,
+  addedCounts,
   onAfterSelect,
 }: SidebarProps & { onAfterSelect?: () => void }) {
   const router = useRouter();
@@ -186,6 +192,32 @@ function FilterControls({
           />
         ))}
       </div>
+
+      {/* Added — hides options that would show nothing (unless it's the active one). */}
+      {(added || ADDED_FILTERS.some((f) => addedCounts[f.key] > 0)) && (
+        <div className="flex flex-col gap-0.5">
+          <p className="px-2.5 pb-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground/70">
+            Added
+          </p>
+          <CategoryItem
+            href={hrefFor({ added: null })}
+            label="Any time"
+            count={total}
+            active={added === null}
+            onSelect={onAfterSelect}
+          />
+          {ADDED_FILTERS.filter((f) => addedCounts[f.key] > 0 || added === f.key).map((f) => (
+            <CategoryItem
+              key={f.key}
+              href={hrefFor({ added: f.key })}
+              label={f.label}
+              count={addedCounts[f.key]}
+              active={added === f.key}
+              onSelect={onAfterSelect}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Sort */}
       <div className="flex flex-col gap-0.5">

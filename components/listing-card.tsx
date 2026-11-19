@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BadgeCheck, ArrowUpRight, MousePointerClick } from "lucide-react";
 import { SitePreview } from "@/components/site-preview";
+import { isNewListing } from "@/lib/listing-dates";
 import { SiteFavicon } from "@/components/site-favicon";
 import { VisitLink } from "@/components/visit-link";
 import { categoryLabel, VISITS_FLOOR } from "@/lib/config";
@@ -59,10 +60,16 @@ export function ListingCard({
         className="pointer-events-none aspect-[16/9] border-b border-border"
         priority={priority}
       />
-      {sponsored && (
+      {sponsored ? (
         <span className="absolute left-2 top-2 z-10 rounded-full bg-background/90 px-2 py-0.5 text-[11px] font-medium text-muted-foreground shadow-sm backdrop-blur">
           Sponsored
         </span>
+      ) : (
+        isNewListing(listing.createdAt) && (
+          <span className="absolute left-2 top-2 z-10 rounded-full bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary-foreground shadow-sm">
+            New
+          </span>
+        )
       )}
 
       <div className="flex flex-1 flex-col gap-2 p-4">

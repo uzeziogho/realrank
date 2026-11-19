@@ -12,8 +12,9 @@ import { getListedSites } from "@/lib/listed";
 import { getOutboundClicks, getLeaderboardData } from "@/lib/data";
 import { activeSpotlights, spotlightAvailability } from "@/lib/spotlight";
 import { categories, categoryLabel, siteConfig } from "@/lib/config";
+import { ADDED_FILTERS, addedCounts, addedWithin, groupByDate, parseAdded } from "@/lib/listing-dates";
 
-type SearchParams = Promise<{ category?: string; sort?: string; q?: string; verified?: string; page?: string }>;
+type SearchParams = Promise<{ category?: string; sort?: string; q?: string; verified?: string; page?: string; added?: string }>;
 
 /** Cards per page — 8 rows of 3 on desktop, short enough to scan on a phone. */
 const PAGE_SIZE = 24;
@@ -23,7 +24,7 @@ export async function generateMetadata({
 }: {
   searchParams: SearchParams;
 }): Promise<Metadata> {
-  const { category, verified, page: pageRaw } = await searchParams;
+  const { category, verified, page: pageRaw, added } = await searchParams;
   const label = category ? categoryLabel(category) : null;
   // Clamp to the real page count (cached read) so an out-of-range ?page=
   // names the page actually shown.
@@ -39,12 +40,13 @@ export async function generateMetadata({
     // Filtered views (category or verified-only) are thin/duplicative of the
     // canonical directory and the indexable /best/<category> roundups — keep
     // them crawlable but out of the index.
-    ...(category || verified ? { robots: { index: false, follow: true } } : {}),
+    // The "Added" filter changes daily, so it stays out of the index too.
+    ...(category || verified || parseAdded(added) ? { robots: { index: false, follow: true } } : {}),
   };
 }
 
 export default async function ListedPage({ searchParams }: { searchParams: SearchParams }) {
-  const { category: activeRaw, sort: sortRaw, q: qRaw, verified: verifiedRaw, page: pageRaw } = await searchParams;
+  const { category: activeRaw, sort: sortRaw, q: qRaw, verified: verifiedRaw, page: pageRaw, added: addedRaw } = await searchParams;
   // Visit counts ride along with the directory read (one query for every host)
   // and also drive the "Most visited" sort.
   const [all, visits, weekVisits, board] = await Promise.all([
@@ -65,6 +67,8 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
   const sort = sortRaw === "visited" || sortRaw === "az" ? sortRaw : "new";
   const q = (qRaw ?? "").trim().toLowerCase();
   const verified = verifiedRaw === "1";
+  const added = parseAdded(addedRaw);
+  const now = Date.now();
   const verifiedCount = all.filter((l) => l.ownerVerified).length;
 
   // Spotlight lane: paid (labelled) + earned (this week's fastest-growing
@@ -74,8 +78,8 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
   const laneSpotlights = activeSpotlights(all).filter((l) => !active || l.category === active);
   const mover = board?.organic.find((s) => !s.pending) ?? null;
 
-  // Search → category → verified → sort. getListedSites() is already
-  // verified-first then newest (the "Newest" order); the other sorts re-order.
+  // Search → category → verified → added → sort. getListedSites() comes
+  // verified-first; every sort here re-orders, and "Newest" is purely by date.
   let listings = all;
   if (q) {
     listings = listings.filter((l) =>
@@ -86,7 +90,10 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
   }
   if (active) listings = listings.filter((l) => l.category === active);
   if (verified) listings = listings.filter((l) => l.ownerVerified);
-  if (sort === "visited") {
+  if (added) listings = listings.filter((l) => addedWithin(l.createdAt, added, now));
+  if (sort === "new") {
+    listings = [...listings].sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0));
+  } else if (sort === "visited") {
     listings = [...listings].sort((a, b) => (visits.get(b.host) ?? 0) - (visits.get(a.host) ?? 0));
   } else if (sort === "az") {
     listings = [...listings].sort((a, b) => a.displayName.localeCompare(b.displayName));
@@ -103,6 +110,7 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
     if (sort !== "new") sp.set("sort", sort);
     if (qRaw?.trim()) sp.set("q", qRaw.trim());
     if (verified) sp.set("verified", "1");
+    if (added) sp.set("added", added);
     if (p > 1) sp.set("page", String(p));
     const qs = sp.toString();
     return qs ? `/listed?${qs}` : "/listed";
@@ -124,6 +132,8 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
           sort={sort}
           q={qRaw ?? ""}
           verified={verified}
+          added={added}
+          addedCounts={addedCounts(all, now)}
         />
 
         <main className="flex min-w-0 flex-col gap-5">
@@ -140,7 +150,7 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
             </Link>
           </div>
 
-          {!active && !q && page === 1 && (
+          {!active && !q && !added && page === 1 && (
             <WeeklyActivity
               joined={joined.count}
               latestName={joined.latest?.displayName ?? null}
@@ -188,6 +198,8 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
               <p className="font-medium">
                 {q
                   ? `No projects match “${qRaw}”`
+                  : added
+                    ? `Nothing listed in the ${ADDED_FILTERS.find((f) => f.key === added)!.label.toLowerCase()}${active ? ` in ${categoryLabel(active)}` : ""}`
                   : verified
                     ? `No verified projects${active ? ` in ${categoryLabel(active)}` : ""} yet`
                     : `No projects in ${active ? categoryLabel(active) : "this category"} yet`}
@@ -199,11 +211,39 @@ export default async function ListedPage({ searchParams }: { searchParams: Searc
             </div>
           ) : (
             <>
-              <ul className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(230px,1fr))]">
-                {pageListings.map((l, i) => (
-                  <ListingCard key={l.host} listing={l} visits={visits.get(l.host) ?? 0} priority={page === 1 && i < 3} />
-                ))}
-              </ul>
+              {sort === "new" ? (
+                // Newest view: date headers ("This week", "Last week", "October")
+                // give the timeline a calendar would, without the empty days.
+                <div className="flex flex-col gap-7">
+                  {groupByDate(pageListings, now).map((g, gi) => (
+                    <section key={g.label} aria-labelledby={`added-${gi}`}>
+                      <h2
+                        id={`added-${gi}`}
+                        className="mb-3 flex items-baseline gap-2 font-mono text-xs uppercase tracking-wider text-muted-foreground"
+                      >
+                        {g.label}
+                        <span className="tabular-nums text-muted-foreground/60">{g.items.length}</span>
+                      </h2>
+                      <ul className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(230px,1fr))]">
+                        {g.items.map((l) => (
+                          <ListingCard
+                            key={l.host}
+                            listing={l}
+                            visits={visits.get(l.host) ?? 0}
+                            priority={page === 1 && pageListings.indexOf(l) < 3}
+                          />
+                        ))}
+                      </ul>
+                    </section>
+                  ))}
+                </div>
+              ) : (
+                <ul className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(230px,1fr))]">
+                  {pageListings.map((l, i) => (
+                    <ListingCard key={l.host} listing={l} visits={visits.get(l.host) ?? 0} priority={page === 1 && i < 3} />
+                  ))}
+                </ul>
+              )}
               {totalPages > 1 && (
                 <div className="flex flex-col items-center gap-1">
                   <Pagination currentPage={page} totalPages={totalPages} buildHref={pageHref} label="Directory pages" />
