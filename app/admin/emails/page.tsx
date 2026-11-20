@@ -83,6 +83,31 @@ export default async function AdminEmailsPage() {
       )}
 
       <section className="mt-8">
+        <h2 className="text-lg font-semibold">The designs</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          The weekly report and the &ldquo;#1&rdquo; alert are designed (React Email), with example data here. Every email
+          also carries a plain-text version, and the other alerts stay plain text.
+        </p>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          {[
+            ["weekly", "Weekly report"],
+            ["top", "“#1” alert"],
+          ].map(([key, label]) => (
+            <figure key={key} className="overflow-hidden rounded-xl border border-border bg-card">
+              <figcaption className="border-b border-border px-4 py-2 text-xs font-medium text-muted-foreground">{label} · example</figcaption>
+              <iframe
+                src={`/admin/emails/preview?sample=${key}`}
+                title={`${label} example`}
+                sandbox=""
+                loading="lazy"
+                className="h-[640px] w-full bg-white"
+              />
+            </figure>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-10">
         <h2 className="text-lg font-semibold">If Monday&apos;s run happened now</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           {counts.owner_weekly ?? 0} weekly reports · {counts.owner_alert ?? 0} rank alerts ·{" "}
@@ -104,7 +129,17 @@ export default async function AdminEmailsPage() {
                   <span className="mt-1 block font-medium">{d.subject}</span>
                   <span className="text-xs text-muted-foreground">to {d.to}</span>
                 </summary>
+                {d.designed && (
+                  <iframe
+                    src={`/admin/emails/preview?kind=${d.kind}&to=${encodeURIComponent(d.to)}`}
+                    title={`Designed version: ${d.subject}`}
+                    sandbox=""
+                    loading="lazy"
+                    className="h-[640px] w-full border-t border-border bg-white"
+                  />
+                )}
                 <pre className="overflow-x-auto whitespace-pre-wrap border-t border-border p-4 font-sans text-sm text-muted-foreground">
+                  {d.designed && <span className="mb-2 block text-xs font-medium uppercase tracking-wide">Plain-text version</span>}
                   {d.text}
                 </pre>
               </details>

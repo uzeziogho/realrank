@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runComeback } from "@/lib/comeback";
+import { comebackHtml } from "@/lib/comeback-html";
 import { notifyAdmin } from "@/lib/admin-log";
 
 export const runtime = "nodejs";
@@ -16,7 +17,7 @@ export async function GET(req: NextRequest) {
   if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const report = await runComeback();
+  const report = await runComeback({ html: comebackHtml });
   const sent = report.sent.owner_weekly + report.sent.owner_alert + report.sent.listing_weekly;
   if (sent > 0 || report.failed > 0) {
     await notifyAdmin({

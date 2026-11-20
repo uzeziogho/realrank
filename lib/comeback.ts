@@ -4,7 +4,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { emailConfig, sendEmail } from "@/lib/email";
 import { unsubUrl } from "@/lib/digest-email";
-import { getActiveSites, getLeaderboardData, getOutboundClicks } from "@/lib/data";
+import { attachSparklines, getActiveSites, getLeaderboardData, getOutboundClicks } from "@/lib/data";
 import { siteConfig } from "@/lib/config";
 import { SPOTLIGHT } from "@/lib/spotlight";
 import { siteSlug } from "@/lib/site";
@@ -43,6 +43,10 @@ export interface Draft {
   to: string;
   subject: string;
   text: string;
+  /** Designed version (weekly report and "#1" alert), when renderers were passed. */
+  html?: string;
+  /** This email has a designed version (whether or not it was rendered this run). */
+  designed?: boolean;
 }
 
 export interface ComebackReport {
@@ -91,6 +95,8 @@ export interface OwnerSiteLine {
   nextUp: { name: string; rank: number } | null;
   listed: boolean;
   spotlightUntil: string | null;
+  /** Recent daily clicks, oldest first, for the designed email's trend bars. */
+  spark?: number[];
 }
 
 const url = (path: string) => `${siteConfig.url}${path}`;
@@ -104,14 +110,45 @@ function change(rank: number, prev: number | null): string {
 }
 
 /** One next step, chosen for where the site is: directory first, then Spotlight. */
-function nudge(s: OwnerSiteLine): string {
+export interface Nudge {
+  text: string;
+  href: string;
+  label: string;
+}
+
+/** The same next step as structured parts, for the designed emails' button. Null once nothing's left to suggest. */
+export function nudgeParts(s: OwnerSiteLine): Nudge | null {
   if (!s.listed) {
-    return `Next step: add ${s.name} to the directory — free, and verified already, so it gets a followed link:\n${url("/dashboard#directory")}`;
+    return {
+      text: `Next step: add ${s.name} to the directory — free, and verified already, so it gets a followed link.`,
+      href: url("/dashboard#directory"),
+      label: "Add it to the directory",
+    };
   }
   if (!s.spotlightUntil || Date.parse(s.spotlightUntil) < Date.now()) {
-    return `Want more visitors this week? A Spotlight puts ${s.name} at the top of the directory for ${SPOTLIGHT.days} days (${SPOTLIGHT.price}):\n${url(`/spotlight?host=${encodeURIComponent(s.host)}`)}`;
+    return {
+      text: `Want more visitors this week? A Spotlight puts ${s.name} at the top of the directory for ${SPOTLIGHT.days} days (${SPOTLIGHT.price}).`,
+      href: url(`/spotlight?host=${encodeURIComponent(s.host)}`),
+      label: "Book a Spotlight",
+    };
   }
-  return `${s.name}'s Spotlight is live until ${day(s.spotlightUntil)}.`;
+  return null;
+}
+
+function nudge(s: OwnerSiteLine): string {
+  const n = nudgeParts(s);
+  if (n) return `${n.text}\n${n.href}`;
+  return `${s.name}'s Spotlight is live until ${day(s.spotlightUntil!)}.`;
+}
+
+/**
+ * Renderers for the designed (HTML) versions, passed in by route handlers —
+ * React Email's renderer can't be imported into server components, so this
+ * module never imports it (see lib/comeback-html.tsx).
+ */
+export interface HtmlRenderers {
+  weekly(lines: OwnerSiteLine[], unsub: string, now: Date): Promise<string>;
+  top(line: OwnerSiteLine, from: number | null, unsub: string): Promise<string>;
 }
 
 function footer(reason: string, unsub: string): string {
@@ -223,7 +260,7 @@ export function composeListingWeekly(items: ListingLine[], unsub: string): { sub
  * without sending or recording anything). forceWeekly runs the Monday reports
  * on any day — for previews. Never throws on a single bad send.
  */
-export async function runComeback(opts: { dryRun?: boolean; forceWeekly?: boolean; now?: Date } = {}): Promise<ComebackReport> {
+export async function runComeback(opts: { dryRun?: boolean; forceWeekly?: boolean; now?: Date; html?: HtmlRenderers } = {}): Promise<ComebackReport> {
   try {
     return await run(opts);
   } catch (err) {
@@ -242,7 +279,7 @@ export async function runComeback(opts: { dryRun?: boolean; forceWeekly?: boolea
   }
 }
 
-async function run(opts: { dryRun?: boolean; forceWeekly?: boolean; now?: Date }): Promise<ComebackReport> {
+async function run(opts: { dryRun?: boolean; forceWeekly?: boolean; now?: Date; html?: HtmlRenderers }): Promise<ComebackReport> {
   const dryRun = opts.dryRun ?? false;
   const now = opts.now ?? new Date();
   const weeklyRun = opts.forceWeekly || now.getUTCDay() === 1;
@@ -286,6 +323,12 @@ async function run(opts: { dryRun?: boolean; forceWeekly?: boolean; now?: Date }
   const rowById = new Map(board.organic.map((r) => [r.id, r]));
   const byRank = new Map(ranked.map((r) => [r.rank, r]));
 
+  // Daily-click series for the designed emails' trend bars (only when rendering them).
+  const sparkById = new Map<string, number[]>();
+  if (opts.html && ranked.length) {
+    for (const r of await attachSparklines(ranked)) if (r.kind === "organic") sparkById.set(r.id, r.spark);
+  }
+
   const userIds = [...new Set(sites.map((s) => s.user_id))];
   const emailByUser = new Map<string, string>();
   if (userIds.length) {
@@ -313,12 +356,13 @@ async function run(opts: { dryRun?: boolean; forceWeekly?: boolean; now?: Date }
       nextUp: above ? { name: above.displayName, rank: above.rank } : null,
       listed: Boolean(listing),
       spotlightUntil: listing?.spotlight_until ?? null,
+      spark: sparkById.get(siteId),
     };
   };
 
   // Send once: claim the log row first (unique per kind/subject/period), send,
   // and release the claim if the send fails so a retry can try again.
-  async function deliver(kind: DraftKind, to: string, subjectKey: string, period: string, mail: { subject: string; text: string }, unsub: string) {
+  async function deliver(kind: DraftKind, to: string, subjectKey: string, period: string, mail: { subject: string; text: string; html?: string; designed?: boolean }, unsub: string) {
     report.drafts.push({ kind, to, ...mail });
     if (dryRun) return true;
     const claim = await supabase.from("email_log").insert({ kind, recipient: to, subject_key: subjectKey, period });
@@ -327,6 +371,7 @@ async function run(opts: { dryRun?: boolean; forceWeekly?: boolean; now?: Date }
       to,
       subject: mail.subject,
       text: mail.text,
+      html: mail.html,
       replyTo: siteConfig.email.support,
       headers: { "List-Unsubscribe": `<${unsub}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
     });
@@ -358,7 +403,12 @@ async function run(opts: { dryRun?: boolean; forceWeekly?: boolean; now?: Date }
       if (!lines.some((l) => l.rank !== null)) continue; // nothing to report yet; the on-board alert covers it
       const unsub = unsubFor(to);
       if (!unsub) continue;
-      const ok = await deliver("owner_weekly", to, userId, week, composeOwnerWeekly(lines, unsub), unsub);
+      const mail = {
+        ...composeOwnerWeekly(lines, unsub),
+        html: opts.html ? await opts.html.weekly(lines, unsub, now) : undefined,
+        designed: true,
+      };
+      const ok = await deliver("owner_weekly", to, userId, week, mail, unsub);
       weeklyUsers.add(userId);
       weeklyEmails.add(to);
       if (ok) {
@@ -403,7 +453,12 @@ async function run(opts: { dryRun?: boolean; forceWeekly?: boolean; now?: Date }
     }
     const unsub = unsubFor(to);
     if (!unsub) continue;
-    const ok = await deliver("owner_alert", to, s.id, `${today}:${reason}`, composeOwnerAlert(reason, line, from, unsub), unsub);
+    const mail = {
+      ...composeOwnerAlert(reason, line, from, unsub),
+      html: reason === "top" && opts.html ? await opts.html.top(line, from, unsub) : undefined,
+      designed: reason === "top",
+    };
+    const ok = await deliver("owner_alert", to, s.id, `${today}:${reason}`, mail, unsub);
     if (ok) await saveState(s.id, { alert_rank: line.rank, alerted_at: now.toISOString() });
   }
 
