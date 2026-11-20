@@ -12,6 +12,12 @@ import { canonicalPair, isIndexablePair } from "@/lib/indexing";
 
 export const revalidate = 3600;
 
+// Render on first visit, then serve from cache (hourly refresh). Without this,
+// a dynamic [slug] route renders on every request.
+export async function generateStaticParams() {
+  return [];
+}
+
 type Params = Promise<{ slug: string }>;
 
 /** Split "a-vs-b" into its two hostnames (first "-vs-" wins). */

@@ -17,6 +17,12 @@ import { GetOnBoard } from "@/components/get-on-board";
 
 export const revalidate = 3600;
 
+// Render on first visit, then serve from cache (hourly refresh). Without this,
+// a dynamic [slug] route renders on every request.
+export async function generateStaticParams() {
+  return [];
+}
+
 type Params = Promise<{ slug: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {

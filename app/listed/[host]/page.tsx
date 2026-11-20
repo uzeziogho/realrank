@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BadgeCheck, ArrowUpRight, ShieldCheck, Sparkles, CheckCircle2, AlertCircle } from "lucide-react";
+import { Suspense } from "react";
+import { BadgeCheck, ArrowUpRight, ShieldCheck, Sparkles } from "lucide-react";
+import { CheckoutNotice } from "@/components/checkout-notice";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { SiteFavicon } from "@/components/site-favicon";
@@ -19,6 +21,13 @@ import { hostname } from "@/lib/utils";
 import { categoryLabel, siteConfig, VISITS_FLOOR, PRICING_LABELS, PLATFORM_LABELS } from "@/lib/config";
 
 export const revalidate = 300;
+
+// Render each listing on its first visit, then serve it from cache (refreshed
+// every 5 minutes, or at once when the listing changes). Without this, a
+// dynamic [host] route renders on every request.
+export async function generateStaticParams() {
+  return [];
+}
 
 type Params = Promise<{ host: string }>;
 
@@ -38,15 +47,8 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   };
 }
 
-export default async function ListingProfilePage({
-  params,
-  searchParams,
-}: {
-  params: Params;
-  searchParams: Promise<{ spotlight?: string; status?: string }>;
-}) {
+export default async function ListingProfilePage({ params }: { params: Params }) {
   const { host: raw } = await params;
-  const sp = await searchParams;
   const host = normalizeHost(raw) ?? raw.toLowerCase();
   const listing = await getListingByHost(host);
   if (!listing) notFound();
@@ -66,11 +68,6 @@ export default async function ListingProfilePage({
   // Booking never dead-ends: with every slot taken it queues for the first free one.
   const { slotsLeft, nextOpens } = spotlightAvailability(allListings);
   const checkout = listing.ownerVerified && !spotlightLive && !spotlightQueued ? spotlightCheckoutUrl(listing.host) : null;
-  // Returned from checkout (?spotlight=success). Activation is asynchronous (the
-  // payment webhook), so this confirms the payment rather than the slot.
-  const returnStatus = (sp.status ?? "").toLowerCase();
-  const returnedFromCheckout = sp.spotlight === "success";
-  const checkoutFailed = returnedFromCheckout && returnStatus !== "" && returnStatus !== "succeeded" && returnStatus !== "success";
   const visits = visitsMap.get(listing.host) ?? 0;
   const sameCategory = listing.category
     ? allListings.filter((l) => l.host !== listing.host && l.category === listing.category)
@@ -99,29 +96,20 @@ export default async function ListingProfilePage({
         ]}
       />
 
-      {returnedFromCheckout &&
-        (checkoutFailed ? (
-          <div role="alert" className="mt-4 flex items-start gap-3 rounded-xl border border-danger/30 bg-danger/10 p-4 text-sm">
-            <AlertCircle className="mt-0.5 size-5 shrink-0 text-danger" />
-            <p>
-              <span className="font-semibold">Your payment didn&apos;t go through.</span> No charge was made — you can
-              try again from the Spotlight section below.
-            </p>
-          </div>
-        ) : (
-          <div role="status" className="mt-4 flex items-start gap-3 rounded-xl border border-success/30 bg-success/10 p-4 text-sm">
-            <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-success" />
-            <p>
-              <span className="font-semibold">Payment received — thank you!</span>{" "}
-              {spotlightLive
-                ? `${listing.displayName} is spotlighted until ${shortDate(listing.spotlightUntil!)}.`
-                : spotlightQueued
-                  ? `Every slot was taken, so your ${SPOTLIGHT.days} days start ${shortDate(listing.spotlightStartedAt!)}.`
-                  : `Your ${SPOTLIGHT.days}-day Spotlight starts within a minute — refresh to see it.`}{" "}
-              Questions? <a className="underline" href={`mailto:${siteConfig.email.support}`}>{siteConfig.email.support}</a>
-            </p>
-          </div>
-        ))}
+      {/* Returned from checkout (?spotlight=success): read in the browser so this
+          page stays cacheable. Activation is asynchronous (the payment
+          webhook), so this confirms the payment rather than the slot. */}
+      <Suspense fallback={null}>
+        <CheckoutNotice
+          displayName={listing.displayName}
+          live={spotlightLive}
+          queued={spotlightQueued}
+          until={listing.spotlightUntil}
+          startsAt={listing.spotlightStartedAt}
+          days={SPOTLIGHT.days}
+          supportEmail={siteConfig.email.support}
+        />
+      </Suspense>
 
       <div className="mt-6 flex items-start gap-4">
         <SiteFavicon url={listing.siteUrl} name={listing.displayName} size={52} />
