@@ -67,6 +67,10 @@ export default function TrafficRealityPage() {
               numbers.{" "}
               <Link href="/blog/verified-vs-estimated-traffic" className="text-primary hover:underline">
                 Read the deeper dive →
+              </Link>{" "}
+              Buying a site?{" "}
+              <Link href="/blog/verify-website-traffic-before-buying" className="text-primary hover:underline">
+                How to verify its traffic first →
               </Link>
             </p>
           </section>

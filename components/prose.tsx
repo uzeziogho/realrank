@@ -17,6 +17,8 @@ export function Prose({ children, className }: { children: React.ReactNode; clas
         "[&>ol]:mt-4 [&>ol]:list-decimal [&>ol]:space-y-2 [&>ol]:pl-5",
         "[&_strong]:font-semibold [&_strong]:text-foreground",
         "[&>blockquote]:mt-6 [&>blockquote]:border-l-2 [&>blockquote]:border-primary [&>blockquote]:pl-4 [&>blockquote]:italic",
+        "[&_table]:w-full [&_table]:text-sm [&_th]:border-b [&_th]:border-border [&_th]:py-2 [&_th]:pr-3 [&_th]:text-left [&_th]:font-semibold [&_th]:text-foreground",
+        "[&_td]:border-b [&_td]:border-border [&_td]:py-2 [&_td]:pr-3 [&_td]:align-top",
         className,
       )}
     >

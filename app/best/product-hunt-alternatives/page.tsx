@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 const FAQ = [
   {
     q: "What's the best Product Hunt alternative in 2026?",
-    a: "It depends what you want. For a launch-day feed with upvotes, DevHunt, Startup Fame and Twelve Tools are popular. For a permanent catalog listing, Findly.tools and Founder.best work well. For a rank you can't campaign or pay your way to, RealRank ranks by verified Google Search Console clicks instead of votes.",
+    a: "It depends what you want. For a big technical audience, Hacker News (Show HN). For early adopters before launch, BetaList. For a dated launch moment with votes, Uneed, Microlaunch, Peerlist Launchpad, DevHunt or Startup Fame. For a permanent catalog listing, curated directories like Findly.tools and Founder.best. For proof that your site actually gets traffic, a rank you can't campaign or pay your way to, RealRank ranks by verified Google Search Console clicks instead of votes.",
   },
   {
     q: "Are these alternatives free?",
@@ -76,6 +76,97 @@ export default async function ProductHuntAlternativesPage() {
       </p>
 
       <Prose className="mt-8">
+        <h2>The big alternatives most founders weigh first</h2>
+        <p>
+          These are the names that come up in almost every &quot;where should I launch?&quot;
+          thread. Each is good at one thing, and none of them tells a visitor whether your
+          product gets traffic.
+        </p>
+        <ul>
+          <li>
+            <a href="https://news.ycombinator.com/show" target="_blank" rel="noopener noreferrer">Hacker News (Show HN)</a>{" "}
+            — free, technical audience, and a front-page hit can send a huge spike. One shot,
+            unpredictable, and the thread fades within a day.
+          </li>
+          <li>
+            <a href="https://betalist.com" target="_blank" rel="noopener noreferrer">BetaList</a>{" "}
+            — built for early-stage and pre-launch startups looking for early adopters. Free
+            submissions wait in a queue; a paid option skips it.
+          </li>
+          <li>
+            <a href="https://www.uneed.best" target="_blank" rel="noopener noreferrer">Uneed</a>{" "}
+            — a daily launch list ranked by votes, with a free queue or a paid skip. Good for
+            a dated launch moment and a backlink.
+          </li>
+          <li>
+            <a href="https://microlaunch.net" target="_blank" rel="noopener noreferrer">Microlaunch</a>{" "}
+            — launches run over a longer window than a single day, which takes some of the
+            launch-day pressure off.
+          </li>
+          <li>
+            <a href="https://peerlist.io/launchpad" target="_blank" rel="noopener noreferrer">Peerlist Launchpad</a>{" "}
+            — weekly launches inside a professional network for builders, so your profile
+            and project live side by side.
+          </li>
+          <li>
+            <a href="https://www.indiehackers.com" target="_blank" rel="noopener noreferrer">Indie Hackers</a>{" "}
+            — a founder community. Better for honest feedback and building in public than
+            for a launch spike.
+          </li>
+        </ul>
+
+        <h2>Which one fits what you need</h2>
+        <div className="mt-4 overflow-x-auto">
+        <table className="min-w-[560px]">
+          <thead>
+            <tr>
+              <th>Option</th>
+              <th>Best for</th>
+              <th>How position is decided</th>
+              <th>What lasts</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Product Hunt</td>
+              <td>A big launch day</td>
+              <td>Upvotes on the day</td>
+              <td>A product page</td>
+            </tr>
+            <tr>
+              <td>Hacker News (Show HN)</td>
+              <td>Technical feedback, a spike</td>
+              <td>Votes and recency</td>
+              <td>A thread</td>
+            </tr>
+            <tr>
+              <td>BetaList</td>
+              <td>Early adopters before launch</td>
+              <td>Queue (or paid skip)</td>
+              <td>A listing</td>
+            </tr>
+            <tr>
+              <td>Uneed, Microlaunch, Peerlist</td>
+              <td>A dated launch moment</td>
+              <td>Votes within a launch window</td>
+              <td>A listing and a backlink</td>
+            </tr>
+            <tr>
+              <td>Curated directories</td>
+              <td>Being findable long-term</td>
+              <td>Editorial or recency</td>
+              <td>A permanent page</td>
+            </tr>
+            <tr>
+              <td>RealRank</td>
+              <td>Proof your site gets traffic</td>
+              <td>Verified Search Console clicks</td>
+              <td>A permanent listing and a live, verified rank</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+
         <h2>Launch feeds (the closest thing to a &quot;launch day&quot;)</h2>
         <p>
           If you want the classic post-and-climb format,{" "}

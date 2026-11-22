@@ -1,32 +1,65 @@
 # RealRank
 
-> RealRank is the public organic-traffic leaderboard. Sites connect Google Search Console (read-only) and are ranked by verified organic clicks. The default sort is momentum (growth velocity), so a fast-growing small site can outrank a large flat one. Nobody types in a number and nobody uploads a screenshot, so the ranking cannot be faked.
+> RealRank is a public leaderboard and free directory of websites, ranked by verified organic search traffic. Site owners connect Google Search Console with read-only access, and their real Google click totals decide the order. The default sort is momentum (growth velocity), so a fast-growing small site can outrank a large flat one. Nobody types in a number and nobody uploads a screenshot, so the ranking cannot be faked, and position can never be bought.
+
+## Who it's for
+
+- Founders and indie makers who want proof their site gets real traffic, and a place to launch and list it for free.
+- People evaluating a website (buyers, investors, partners, advertisers) who want verified traffic instead of third-party estimates.
+- Anyone curious which sites are actually growing right now, by category.
+
+## What makes it different (specific and checkable)
+
+- Verified, not estimated: numbers come straight from each site's Google Search Console. Tools like SimilarWeb, Ahrefs and Semrush model traffic from panels and keyword data, which is often far off for small sites.
+- Read-only: RealRank requests one Google scope (webmasters.readonly). It cannot change settings, submit URLs or write anything.
+- Earned, not bought: rank comes only from verified clicks. Paid placements (Spotlight, Sponsor) are always labelled "Sponsored" and never change anyone's rank.
+- Free: listing a project, connecting Search Console, the leaderboard and every tool are free.
+- Refreshed daily from Search Console (which itself reports clicks with a 2 to 3 day delay).
 
 ## How the ranking works
 
-Momentum compares a site's last 7 days of organic clicks against the prior 21 days (an average daily rate), weighted by a logarithm of click volume so real growth counts but random noise cannot leapfrog a steady performer. The exact formula is: momentum = (1 + growthRate) x log10(clicks_7d + 1) x 100. A volume view (total clicks over 28 days) is also available. Data comes straight from each site's Google Search Console, refreshed hourly.
+Momentum compares a site's last 7 days of organic clicks against the prior 21 days (as an average daily rate), weighted by a logarithm of click volume so real growth counts but random noise cannot leapfrog a steady performer. The formula: momentum = (1 + growthRate) x log10(clicks_7d + 1) x 100. A volume view (total clicks over 28 days) is also available.
 
 ## Key pages
 
-- [Leaderboard](https://www.realrank.lol/): The live board, ranked by momentum or volume.
-- [How ranking works](https://www.realrank.lol/about): Methodology and the momentum formula.
-- [Momentum score calculator](https://www.realrank.lol/momentum-score): Estimate a momentum score from 7- and 28-day clicks.
-- [Traffic report card](https://www.realrank.lol/report-card): Instant A to F organic-traffic grade for any domain.
-- [Is my traffic real?](https://www.realrank.lol/is-my-traffic-real): Compare third-party traffic estimates against verified Search Console clicks.
-- [Founding members](https://www.realrank.lol/founding): The first verified sites on the board.
-- [Verified vs pay-to-rank directories](https://www.realrank.lol/best/lol-directories): How RealRank compares to the .lol pay-to-rank boards.
+- [Leaderboard](https://www.realrank.lol/leaderboard): Every verified site, ranked by momentum or volume.
+- [How ranking works](https://www.realrank.lol/about): Methodology, the momentum formula and FAQ.
+- [Directory](https://www.realrank.lol/listed): Free, open directory of listed projects, newest first. Owner-verified listings get a followed link.
+- [List a project](https://www.realrank.lol/submit): Free listing in about a minute, no account needed.
+- [Fastest-growing websites](https://www.realrank.lol/best/fastest-growing): The live list, plus monthly snapshots (for example /best/fastest-growing/2026-10).
+- [Weekly movers](https://www.realrank.lol/movers): Biggest climbers and newcomers.
+- [RealRank Index](https://www.realrank.lol/stats): Aggregate organic-traffic benchmark across verified sites.
+- [Pricing](https://www.realrank.lol/pricing): What is free, and the two labelled paid placements.
 - [Connect Search Console](https://www.realrank.lol/login): Claim a verified rank (read-only Google access).
+
+## Free tools (no login)
+
+- [Where would my site rank?](https://www.realrank.lol/rank-preview): Drop a Search Console export to see your place on today's board; read in the browser, nothing saved.
+- [Search Console regex builder](https://www.realrank.lol/search-console-regex): Build and test regex filters for brand vs non-brand, questions, long-tail and more.
+- [Traffic report card](https://www.realrank.lol/report-card): An A to F organic-traffic grade for a domain.
+- [Momentum score calculator](https://www.realrank.lol/momentum-score): Score growth from 7- and 28-day clicks.
+- [Is my traffic real?](https://www.realrank.lol/is-my-traffic-real): Compare third-party traffic estimates with verified Search Console clicks.
+
+## How RealRank compares
+
+- [Product Hunt alternatives](https://www.realrank.lol/best/product-hunt-alternatives): Launch feeds, directories and communities, and where a verified rank fits.
+- [Where to launch your project](https://www.realrank.lol/blog/where-to-launch-your-project-launch-directories): A working map of launch directories.
+- [Verified vs estimated traffic](https://www.realrank.lol/blog/verified-vs-estimated-traffic): Why SimilarWeb-style estimates and RealRank disagree.
+- [SimilarWeb alternatives](https://www.realrank.lol/blog/similarweb-alternative-verified-traffic), [Ahrefs traffic alternative](https://www.realrank.lol/blog/ahrefs-traffic-alternative-verified-clicks), [Semrush traffic alternative](https://www.realrank.lol/blog/semrush-traffic-alternative-verified).
+- [TrustMRR vs RealRank](https://www.realrank.lol/blog/trustmrr-vs-realrank): TrustMRR verifies revenue; RealRank verifies traffic.
+- [Verified vs pay-to-rank boards](https://www.realrank.lol/best/lol-directories): How RealRank compares with the .lol pay-to-rank leaderboards.
+- [How to verify a website's traffic before you buy it](https://www.realrank.lol/blog/verify-website-traffic-before-buying): A due-diligence checklist.
 
 ## For AI agents
 
-- [MCP server](https://www.realrank.lol/api/mcp): A public, read-only Model Context Protocol endpoint. Tools cover momentum leaders, a site's trust profile, site comparisons, and trending sites by category. It exposes verified traffic and ranking data only, never revenue.
+- [MCP server](https://www.realrank.lol/api/mcp): A public, read-only Model Context Protocol endpoint. Tools cover momentum leaders, a site's trust profile, site comparisons and trending sites by category. It exposes verified traffic and ranking data only, never revenue.
 - [Agent visibility](https://www.realrank.lol/agent-visibility): What agents can read about RealRank and how to use the MCP server.
 
 ## Writing
 
-- [Blog](https://www.realrank.lol/blog): Essays on verified organic traffic, momentum ranking, and the .lol leaderboard trend.
+- [Blog](https://www.realrank.lol/blog): Essays and guides on verified organic traffic, momentum, launching and SEO.
 
 ## Notes
 
-- Access to Google Search Console is read-only (the webmasters.readonly scope). It can read search-performance data for properties the owner already controls; it cannot change settings, submit URLs, or write anything.
 - Nothing is public until a site owner chooses to publish a property. Sites can be unpublished at any time, and access can be revoked from Google account permissions.
+- Search Console data shows Google organic search clicks only, not total site traffic from every channel.

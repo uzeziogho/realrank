@@ -1422,7 +1422,9 @@ export const articles: Article[] = [
           fairly against peers, verified beats estimated every time. That&apos;s
           the whole reason RealRank exists - see the{" "}
           <Link href="/best/lol-directories">verified vs pay-to-rank landscape</Link>{" "}
-          or <Link href="/login">connect your own property</Link>.
+          or <Link href="/login">connect your own property</Link>. Evaluating a site
+          someone else owns, say before buying it? Use our{" "}
+          <Link href="/blog/verify-website-traffic-before-buying">due-diligence checklist</Link>.
         </p>
       </>
     ),
@@ -1980,6 +1982,122 @@ export const articles: Article[] = [
           <Link href="/login">Connect Search Console to open your dashboard</Link>{" "}
           and create your first tracking link - then finally spend your time where
           it actually pays.
+        </p>
+      </>
+    ),
+  },
+  {
+    slug: "verify-website-traffic-before-buying",
+    title: "How to verify a website's traffic before you buy it (a due-diligence checklist)",
+    description:
+      "Buying a website or SaaS? Don't trust screenshots or SimilarWeb estimates. Here's how to verify organic traffic with Search Console access, what to check in it, the red flags to look for, and how to keep checking after the deal.",
+    date: "2026-11-22",
+    keywords: [
+      "verify website traffic",
+      "buying a website due diligence",
+      "check website traffic before buying",
+      "is website traffic real",
+      "Flippa traffic verification",
+      "Google Search Console access buyer",
+    ],
+    Body: () => (
+      <>
+        <p>
+          Most of a content site&apos;s or small SaaS&apos;s price rests on one claim: that
+          people find it through search and keep coming back. That claim usually arrives as
+          a screenshot, a SimilarWeb estimate, or both. Neither is proof. A screenshot is a
+          cropped, best-day image, and an estimate is a model that is often wildly off for
+          small sites. Here is how to check the traffic properly.
+        </p>
+
+        <h2>1. Ask for read-only Search Console access, not screenshots</h2>
+        <p>
+          Google Search Console is the closest thing to ground truth for organic search: it
+          records the clicks Google actually sent. The seller can add you without handing
+          over their account: in Search Console, <strong>Settings → Users and
+          permissions → Add user</strong>, with <strong>Restricted</strong> permission.
+          You can then see the data yourself, and they can remove you after the deal.
+        </p>
+        <p>
+          If the seller refuses any form of read-only access, treat that as information.
+        </p>
+
+        <h2>2. Check the right things once you&apos;re in</h2>
+        <ul>
+          <li>
+            <strong>The full 16 months.</strong> Search Console keeps 16 months of
+            performance data. Look at the whole range, not the last 28 days: a recent spike
+            before a sale is a classic warning sign.
+          </li>
+          <li>
+            <strong>Brand vs non-brand.</strong> Traffic from people searching the
+            site&apos;s own name doesn&apos;t transfer the same way as traffic from generic
+            searches. Split them with a regex filter (our{" "}
+            <Link href="/search-console-regex">Search Console regex builder</Link> writes it
+            for you).
+          </li>
+          <li>
+            <strong>Concentration.</strong> Under Pages and Queries, check whether most
+            clicks come from one page or one keyword. One ranking change can wipe that out.
+          </li>
+          <li>
+            <strong>Search type.</strong> Web search is the steady part. Image clicks and
+            Discover (a separate report) can be large and very volatile.
+          </li>
+          <li>
+            <strong>Countries.</strong> Does the audience match the niche and the
+            monetisation? Traffic from countries with low ad rates or no buyers is worth
+            less than the total suggests.
+          </li>
+          <li>
+            <strong>Google updates.</strong> Line the timeline up against recent core
+            updates. A site that has dropped with each one carries more risk.
+          </li>
+        </ul>
+
+        <h2>3. Treat third-party estimates as a rough sanity check only</h2>
+        <p>
+          SimilarWeb, Ahrefs and Semrush model traffic for any site from panels and keyword
+          rankings. They are useful for comparing big sites and spotting trends, but for the
+          small and mid-sized sites most people actually buy, they can be off by several
+          times in either direction. We wrote up why in{" "}
+          <Link href="/blog/verified-vs-estimated-traffic">verified vs estimated traffic</Link>
+          , and our <Link href="/is-my-traffic-real">traffic reality check</Link> puts an
+          estimate next to the verified number.
+        </p>
+
+        <h2>4. Verify revenue separately</h2>
+        <p>
+          Traffic and revenue are different claims. Ask for read-only access to the payment
+          processor, or a revenue-verification service. Traffic that doesn&apos;t line up
+          with the revenue it supposedly produces is the question to dig into.
+        </p>
+
+        <h2>5. Keep a verified view after the call</h2>
+        <p>
+          Access gets revoked, and numbers move between the first call and closing. A
+          lighter option is to ask the seller to connect the site to{" "}
+          <Link href="/">RealRank</Link> (read-only, free). The site gets a public profile
+          with its verified organic clicks for the last 7 and 28 days and its momentum,
+          refreshed daily from Search Console, so you can keep checking without asking for
+          access again. If the site is already on the board, its{" "}
+          <Link href="/report-card">traffic report card</Link> gives you the grade in one
+          look.
+        </p>
+
+        <h2>Red flags, in one list</h2>
+        <ul>
+          <li>Screenshots only, and no read-only access of any kind.</li>
+          <li>A sharp rise in the last two or three months before listing the site.</li>
+          <li>Most clicks from a single page, a single keyword or the site&apos;s own name.</li>
+          <li>Large image or Discover traffic presented as steady search traffic.</li>
+          <li>Traffic that drops with each Google core update.</li>
+          <li>Traffic and revenue that tell different stories.</li>
+        </ul>
+
+        <p>
+          None of this replaces a proper review of the business, but it stops the most
+          common mistake: paying for traffic that was never really there.
         </p>
       </>
     ),

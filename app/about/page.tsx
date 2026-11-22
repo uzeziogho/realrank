@@ -162,6 +162,26 @@ const FAQ_ITEMS: { q: string; a: string }[] = [
     q: "Can I fake my traffic to rank higher?",
     a: "No. Click totals are read straight from Google Search Console, so the only way to climb is real organic growth. Nobody types in a number and nobody uploads a screenshot.",
   },
+  {
+    q: "Who is RealRank for?",
+    a: "Founders and indie makers who want proof their site gets real traffic and a free place to list it; people evaluating a website (buyers, investors, partners, advertisers) who want verified numbers instead of estimates; and anyone who wants to see which sites are actually growing, by category.",
+  },
+  {
+    q: "How is RealRank different from Product Hunt and launch directories?",
+    a: "Product Hunt and most launch directories order products by upvotes, recency or payment, which says nothing about whether a product gets visitors. RealRank orders sites by verified Google Search Console clicks, so position reflects real traffic. Many founders use both: a launch platform for the launch-day spike, and RealRank as ongoing proof that it worked. Listing on RealRank is free and permanent.",
+  },
+  {
+    q: "How is RealRank different from SimilarWeb, Ahrefs or Semrush traffic numbers?",
+    a: "Those tools estimate traffic for any site from panel data and keyword rankings, and estimates are often far off for small and fast-growing sites. RealRank only shows sites whose owners connected Google Search Console, so its numbers are Google's own measured organic clicks. The trade-off: RealRank covers fewer sites, but the numbers it shows are exact for organic search.",
+  },
+  {
+    q: "How is RealRank different from TrustMRR?",
+    a: "TrustMRR verifies revenue (through Stripe and similar). RealRank verifies traffic (through Google Search Console). They answer different questions, so many founders show both.",
+  },
+  {
+    q: "Can I pay to rank higher on RealRank?",
+    a: "No. Rank comes only from verified clicks. RealRank sells two placements, a Spotlight at the top of the directory and a Sponsor row on the leaderboard, and both are always labelled Sponsored and never change anyone's rank.",
+  },
 ];
 
 const FEATURES = [
