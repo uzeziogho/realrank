@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 const FAQ = [
   {
     q: "What's the best Product Hunt alternative in 2026?",
-    a: "It depends what you want. For a big technical audience, Hacker News (Show HN). For early adopters before launch, BetaList. For a dated launch moment with votes, Uneed, Microlaunch, Peerlist Launchpad, DevHunt or Startup Fame. For a permanent catalog listing, curated directories like Findly.tools and Founder.best. For proof that your site actually gets traffic, a rank you can't campaign or pay your way to, RealRank ranks by verified Google Search Console clicks instead of votes.",
+    a: "It depends what you want. For a big technical audience, Hacker News (Show HN). For early adopters before launch, BetaList (now mostly paid). For a dated launch moment with votes, Uneed, Fazier, Peerlist Launchpad or DevHunt; for a longer runway, Microlaunch or Smol Launch. For people searching for alternatives to a tool you replace, SaaSHub and AlternativeTo. For a permanent catalog listing, curated directories like Findly.tools and Founder.best. For proof that your site actually gets traffic, a rank you can't campaign or pay your way to, RealRank ranks by verified Google Search Console clicks instead of votes.",
   },
   {
     q: "Are these alternatives free?",
@@ -90,8 +90,8 @@ export default async function ProductHuntAlternativesPage() {
           </li>
           <li>
             <a href="https://betalist.com" target="_blank" rel="noopener noreferrer">BetaList</a>{" "}
-            — built for early-stage and pre-launch startups looking for early adopters. Free
-            submissions wait in a queue; a paid option skips it.
+            — built for pre-launch startups building a waitlist and recruiting early adopters.
+            Submissions are now mostly paid, so check its current terms before planning around it.
           </li>
           <li>
             <a href="https://www.uneed.best" target="_blank" rel="noopener noreferrer">Uneed</a>{" "}
@@ -100,8 +100,8 @@ export default async function ProductHuntAlternativesPage() {
           </li>
           <li>
             <a href="https://microlaunch.net" target="_blank" rel="noopener noreferrer">Microlaunch</a>{" "}
-            — launches run over a longer window than a single day, which takes some of the
-            launch-day pressure off.
+            — launches stay visible for around a month rather than a single day, which suits
+            micro-SaaS and side projects. Paid launch packages are common; check what&apos;s free today.
           </li>
           <li>
             <a href="https://peerlist.io/launchpad" target="_blank" rel="noopener noreferrer">Peerlist Launchpad</a>{" "}
@@ -113,7 +113,31 @@ export default async function ProductHuntAlternativesPage() {
             — a founder community. Better for honest feedback and building in public than
             for a launch spike.
           </li>
+          <li>
+            <a href="https://fazier.com" target="_blank" rel="noopener noreferrer">Fazier</a>{" "}
+            — a daily launch board for SaaS and AI products with less competition, often used
+            as a second launch day. Free launches usually ask you to show their badge.
+          </li>
+          <li>
+            <a href="https://smollaunch.com" target="_blank" rel="noopener noreferrer">Smol Launch</a>{" "}
+            — a 7-day launch window instead of one day, for products that need time to find
+            their audience.
+          </li>
+          <li>
+            <a href="https://www.tinystartups.com" target="_blank" rel="noopener noreferrer">Tiny Startups</a>{" "}
+            — a weekly leaderboard for indie and micro-SaaS products.
+          </li>
+          <li>
+            <a href="https://www.saashub.com" target="_blank" rel="noopener noreferrer">SaaSHub</a> and{" "}
+            <a href="https://alternativeto.net" target="_blank" rel="noopener noreferrer">AlternativeTo</a>{" "}
+            — not launch events. They catch people searching for &quot;alternatives to&quot; a
+            tool you replace, so they keep sending visitors long after launch week.
+          </li>
         </ul>
+        <p>
+          Queues, prices and badge rules change often, so confirm the current terms on each
+          platform&apos;s own submit page.
+        </p>
 
         <h2>Which one fits what you need</h2>
         <div className="mt-4 overflow-x-auto">
@@ -142,14 +166,26 @@ export default async function ProductHuntAlternativesPage() {
             <tr>
               <td>BetaList</td>
               <td>Early adopters before launch</td>
-              <td>Queue (or paid skip)</td>
+              <td>Paid submission, editorial review</td>
               <td>A listing</td>
             </tr>
             <tr>
-              <td>Uneed, Microlaunch, Peerlist</td>
+              <td>Uneed, Fazier, Peerlist, Tiny Startups</td>
               <td>A dated launch moment</td>
-              <td>Votes within a launch window</td>
+              <td>Votes on the day or week</td>
               <td>A listing and a backlink</td>
+            </tr>
+            <tr>
+              <td>Microlaunch, Smol Launch</td>
+              <td>A longer runway</td>
+              <td>Votes over a week to a month</td>
+              <td>A listing and a backlink</td>
+            </tr>
+            <tr>
+              <td>SaaSHub, AlternativeTo</td>
+              <td>&quot;Alternative to X&quot; searchers</td>
+              <td>Comparisons and user votes</td>
+              <td>An evergreen comparison listing</td>
             </tr>
             <tr>
               <td>Curated directories</td>
