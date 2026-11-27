@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { AdminShell } from "@/components/admin/admin-shell";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin";
-import { comebackStatus, runComeback, LISTING_VISITS_FLOOR, type DraftKind } from "@/lib/comeback";
+import { comebackStatus, runComeback, getEmailReturns, LISTING_VISITS_FLOOR, type DraftKind } from "@/lib/comeback";
 import { createServiceClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { cn } from "@/lib/utils";
@@ -42,7 +42,13 @@ async function recentSends() {
 export default async function AdminEmailsPage() {
   await requireAdmin("/admin/emails");
   const status = comebackStatus();
-  const [preview, sends] = await Promise.all([runComeback({ dryRun: true, forceWeekly: true }), recentSends()]);
+  const [preview, sends, returns] = await Promise.all([
+    runComeback({ dryRun: true, forceWeekly: true }),
+    recentSends(),
+    getEmailReturns(30),
+  ]);
+  const totalSent = returns.rows.reduce((n, r) => n + r.sent, 0);
+  const totalVisits = returns.rows.reduce((n, r) => n + r.visits, 0);
   const counts = preview.drafts.reduce(
     (m, d) => ({ ...m, [d.kind]: (m[d.kind] ?? 0) + 1 }),
     {} as Partial<Record<DraftKind, number>>,
@@ -78,6 +84,46 @@ export default async function AdminEmailsPage() {
             </p>
           </>
         )}
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-lg font-semibold">Returns · last {returns.days} days</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Visits that came back through a link in each email. Every link is tagged (for example{" "}
+          <code>utm_source=email-weekly</code>), so these also appear as sources in your dashboard&apos;s Analytics.
+        </p>
+        <div className="mt-4 overflow-x-auto rounded-xl border border-border bg-card">
+          <table className="w-full min-w-[440px] text-sm">
+            <thead className="bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground">
+              <tr>
+                <th className="px-4 py-2 text-left font-medium">Email</th>
+                <th className="px-4 py-2 text-right font-medium">Sent</th>
+                <th className="px-4 py-2 text-right font-medium">Visits back</th>
+                <th className="px-4 py-2 text-right font-medium">Visits per email</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {returns.rows.map((r) => (
+                <tr key={r.kind}>
+                  <td className="px-4 py-2">{KIND_LABEL[r.kind]}</td>
+                  <td className="px-4 py-2 text-right tabular-nums">{r.sent}</td>
+                  <td className="px-4 py-2 text-right tabular-nums">{r.visits}</td>
+                  <td className="px-4 py-2 text-right tabular-nums">{r.sent > 0 ? (r.visits / r.sent).toFixed(2) : "—"}</td>
+                </tr>
+              ))}
+              <tr className="font-semibold">
+                <td className="px-4 py-2">Total</td>
+                <td className="px-4 py-2 text-right tabular-nums">{totalSent}</td>
+                <td className="px-4 py-2 text-right tabular-nums">{totalVisits}</td>
+                <td className="px-4 py-2 text-right tabular-nums">{totalSent > 0 ? (totalVisits / totalSent).toFixed(2) : "—"}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Counts clicks, not opens (open tracking is unreliable and intrusive), and visits rather than unique people.
+          {!returns.available && " Couldn't read the numbers right now."}
+        </p>
       </section>
 
       {preview.skipped && (

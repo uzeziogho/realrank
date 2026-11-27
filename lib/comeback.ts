@@ -63,6 +63,41 @@ export interface ComebackReport {
   drafts: Draft[];
 }
 
+// ── Return tracking ────────────────────────────────────────────────────────
+
+/**
+ * utm_source per email type. The site's beacon records utm_source as the
+ * visit's source, so clicks from each email show up as their own rows in
+ * "Where traffic comes from" (and in the returns figure on /admin/emails).
+ */
+export const EMAIL_SOURCES: Record<DraftKind, string> = {
+  owner_weekly: "email-weekly",
+  owner_alert: "email-alert",
+  listing_weekly: "email-listing",
+};
+
+const escapeRe = (x: string) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/** Add utm tags to one RealRank URL, keeping any #anchor at the end. */
+function tagUrl(href: string, source: string, amp: string): string {
+  if (/\/api\/unsubscribe/.test(href) || /[?&](amp;)?utm_source=/.test(href)) return href;
+  const [base, hash] = href.split("#");
+  const sep = base.includes("?") ? amp : "?";
+  return `${base}${sep}utm_source=${source}${amp}utm_medium=email${hash !== undefined ? `#${hash}` : ""}`;
+}
+
+/** Tag every link to this site in an email's text and HTML. External links and unsubscribe links are left alone. */
+export function tagEmailLinks(mail: { text: string; html?: string }, source: string): { text: string; html?: string } {
+  const host = escapeRe(siteConfig.url.replace(/\/+$/, ""));
+  // Only addresses that start a word, never one embedded inside another site's link.
+  const text = mail.text.replace(new RegExp(`(?<=^|[\\s(])${host}[^\\s<>"')]*`, "gm"), (m) => {
+    const end = m.match(/[.,;:!?]+$/)?.[0] ?? ""; // sentence punctuation stays outside the link
+    return tagUrl(m.slice(0, m.length - end.length), source, "&") + end;
+  });
+  const html = mail.html?.replace(new RegExp(`href="(${host}[^"]*)"`, "g"), (_m, u: string) => `href="${tagUrl(u, source, "&amp;")}"`);
+  return { text, html };
+}
+
 export function comebackStatus(): { enabled: boolean; reason: string | null } {
   if (process.env.COMEBACK_EMAILS_ENABLED?.trim() !== "true") return { enabled: false, reason: "COMEBACK_EMAILS_ENABLED isn't \"true\"" };
   if (!emailConfig()) return { enabled: false, reason: "email isn't configured (RESEND_API_KEY + EMAIL_FROM)" };
@@ -382,7 +417,9 @@ async function run(opts: { dryRun?: boolean; forceWeekly?: boolean; now?: Date; 
 
   // Send once: claim the log row first (unique per kind/subject/period), send,
   // and release the claim if the send fails so a retry can try again.
-  async function deliver(kind: DraftKind, to: string, subjectKey: string, period: string, mail: { subject: string; text: string; html?: string; designed?: boolean }, unsub: string) {
+  async function deliver(kind: DraftKind, to: string, subjectKey: string, period: string, raw: { subject: string; text: string; html?: string; designed?: boolean }, unsub: string) {
+    // Every link back to the site carries this email's utm_source, so returns are measurable.
+    const mail = { ...raw, ...tagEmailLinks(raw, EMAIL_SOURCES[kind]) };
     report.drafts.push({ kind, to, ...mail });
     if (dryRun) return true;
     const claim = await supabase.from("email_log").insert({ kind, recipient: to, subject_key: subjectKey, period });
@@ -515,4 +552,56 @@ async function run(opts: { dryRun?: boolean; forceWeekly?: boolean; now?: Date; 
   }
 
   return report;
+}
+
+// ── Returns ───────────────────────────────────────────────────────────────
+
+export interface EmailReturnRow {
+  kind: DraftKind;
+  source: string;
+  sent: number;
+  /** Visits that arrived through a tagged link in this email type. */
+  visits: number;
+}
+
+/**
+ * Emails sent vs visits back, per email type, over the last `days`. Visits come
+ * from the site's own source counter (utm_source on each email's links), so
+ * they count clicks, not opens, and visits rather than unique people.
+ */
+export async function getEmailReturns(days = 30): Promise<{ available: boolean; days: number; rows: EmailReturnRow[] }> {
+  const kinds = Object.keys(EMAIL_SOURCES) as DraftKind[];
+  const empty = { available: false, days, rows: kinds.map((kind) => ({ kind, source: EMAIL_SOURCES[kind], sent: 0, visits: 0 })) };
+  if (!isSupabaseConfigured()) return empty;
+  try {
+    const supabase = createServiceClient();
+    const since = new Date(Date.now() - days * DAY_MS);
+    const [visitsRes, ...sentCounts] = await Promise.all([
+      supabase
+        .from("site_traffic_breakdown")
+        .select("label, hits")
+        .eq("dimension", "source")
+        .in("label", Object.values(EMAIL_SOURCES))
+        .gte("day", since.toISOString().slice(0, 10)),
+      ...kinds.map((kind) =>
+        supabase.from("email_log").select("id", { count: "exact", head: true }).eq("kind", kind).gte("sent_at", since.toISOString()),
+      ),
+    ]);
+    if (visitsRes.error) throw visitsRes.error;
+    const visits = new Map<string, number>();
+    for (const r of visitsRes.data ?? []) visits.set(r.label, (visits.get(r.label) ?? 0) + Number(r.hits));
+    return {
+      available: true,
+      days,
+      rows: kinds.map((kind, i) => ({
+        kind,
+        source: EMAIL_SOURCES[kind],
+        sent: sentCounts[i].count ?? 0,
+        visits: visits.get(EMAIL_SOURCES[kind]) ?? 0,
+      })),
+    };
+  } catch (err) {
+    console.error("[comeback] returns read failed:", err);
+    return empty;
+  }
 }
