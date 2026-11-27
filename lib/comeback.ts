@@ -9,6 +9,7 @@ import { siteConfig } from "@/lib/config";
 import { SPOTLIGHT } from "@/lib/spotlight";
 import { siteSlug } from "@/lib/site";
 import { formatCompact, formatGrowth } from "@/lib/utils";
+import { benchmarkFor, benchmarkText, opportunityText, topOpportunity, type Benchmark, type Opportunity } from "@/lib/insights";
 
 /**
  * Comeback emails — reasons to return after the first visit:
@@ -97,6 +98,12 @@ export interface OwnerSiteLine {
   spotlightUntil: string | null;
   /** Recent daily clicks, oldest first, for the designed email's trend bars. */
   spark?: number[];
+  /** Growth compared with other verified sites (category or whole board). */
+  benchmark?: Benchmark | null;
+  /** The biggest win in the owner's Search Console (weekly report, lead site only). */
+  opportunity?: Opportunity | null;
+  /** The Search Console property, for fetching the opportunity. Never shown. */
+  property?: string;
 }
 
 const url = (path: string) => `${siteConfig.url}${path}`;
@@ -167,6 +174,7 @@ export function composeOwnerWeekly(lines: OwnerSiteLine[], unsub: string): { sub
       `${s.name} (${s.host})`,
       `  #${s.rank} of ${s.total} on the momentum board${change(s.rank!, s.prevRank)}`,
       `  ${formatCompact(s.clicks7d)} organic clicks in the last 7 days · ${formatGrowth(s.growth)} momentum`,
+      ...(s.benchmark ? [`  ${benchmarkText(s.benchmark)}`] : []),
       s.nextUp ? `  Next up: ${s.nextUp.name} at #${s.nextUp.rank}` : `  You're #1 — ${s.total - 1} verified sites behind you.`,
       `  Profile: ${url(`/site/${siteSlug(`https://${s.host}`)}`)}`,
     ].join("\n"),
@@ -175,11 +183,21 @@ export function composeOwnerWeekly(lines: OwnerSiteLine[], unsub: string): { sub
     blocks.push(`${s.name} (${s.host})\n  No organic clicks in the last 28 days yet — it joins the board automatically the day they land.`);
   }
 
+  const opp = lead.opportunity ? opportunityText(lead.opportunity) : null;
   const text = [
     `Here's how you did on ${siteConfig.name} this week.`,
     "",
     blocks.join("\n\n"),
     "",
+    ...(opp
+      ? [
+          `This week's opportunity for ${lead.name}:`,
+          opp.headline,
+          opp.detail,
+          `More opportunities: ${url("/dashboard/leaks")}`,
+          "",
+        ]
+      : []),
     nudge(lead),
     "",
     `The full board: ${url("/leaderboard")}`,
@@ -260,7 +278,7 @@ export function composeListingWeekly(items: ListingLine[], unsub: string): { sub
  * without sending or recording anything). forceWeekly runs the Monday reports
  * on any day — for previews. Never throws on a single bad send.
  */
-export async function runComeback(opts: { dryRun?: boolean; forceWeekly?: boolean; now?: Date; html?: HtmlRenderers } = {}): Promise<ComebackReport> {
+export async function runComeback(opts: { dryRun?: boolean; forceWeekly?: boolean; now?: Date; html?: HtmlRenderers; opportunities?: boolean } = {}): Promise<ComebackReport> {
   try {
     return await run(opts);
   } catch (err) {
@@ -279,7 +297,7 @@ export async function runComeback(opts: { dryRun?: boolean; forceWeekly?: boolea
   }
 }
 
-async function run(opts: { dryRun?: boolean; forceWeekly?: boolean; now?: Date; html?: HtmlRenderers }): Promise<ComebackReport> {
+async function run(opts: { dryRun?: boolean; forceWeekly?: boolean; now?: Date; html?: HtmlRenderers; opportunities?: boolean }): Promise<ComebackReport> {
   const dryRun = opts.dryRun ?? false;
   const now = opts.now ?? new Date();
   const weeklyRun = opts.forceWeekly || now.getUTCDay() === 1;
@@ -357,6 +375,8 @@ async function run(opts: { dryRun?: boolean; forceWeekly?: boolean; now?: Date; 
       listed: Boolean(listing),
       spotlightUntil: listing?.spotlight_until ?? null,
       spark: sparkById.get(siteId),
+      benchmark: row.pending ? null : benchmarkFor(row, board.organic),
+      property: s.site_url,
     };
   };
 
@@ -401,6 +421,12 @@ async function run(opts: { dryRun?: boolean; forceWeekly?: boolean; now?: Date; 
       if (!to || unsubscribed.has(to)) continue;
       const lines = sites.filter((s) => s.user_id === userId).map((s) => lineFor(s.id)).filter(Boolean) as OwnerSiteLine[];
       if (!lines.some((l) => l.rank !== null)) continue; // nothing to report yet; the on-board alert covers it
+      // One live Search Console read per owner, for their lead site: the
+      // week's biggest opportunity. Only on real runs (it costs an API call).
+      if (opts.opportunities) {
+        const lead = lines.filter((l) => l.rank !== null).sort((a, b) => a.rank! - b.rank!)[0];
+        if (lead.property) lead.opportunity = await topOpportunity(userId, lead.property);
+      }
       const unsub = unsubFor(to);
       if (!unsub) continue;
       const mail = {

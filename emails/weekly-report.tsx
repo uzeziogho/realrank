@@ -14,6 +14,10 @@ export interface WeeklyReportProps {
   dateLabel: string;
   sites: OwnerSiteLine[];
   nudge: { text: string; href: string; label: string } | null;
+  /** Benchmark sentence per site id, e.g. "Growing faster than 72% of verified SaaS sites". */
+  benchmarks?: Record<string, string>;
+  /** The week's biggest Search Console opportunity for the lead site. */
+  opportunity?: { siteName: string; headline: string; detail: string; href: string } | null;
   unsubscribeUrl: string;
 }
 
@@ -37,7 +41,7 @@ function ChangePill({ rank, prev }: { rank: number; prev: number | null }) {
   );
 }
 
-function RankCard({ s, siteUrl }: { s: OwnerSiteLine; siteUrl: string }) {
+function RankCard({ s, siteUrl, benchmark }: { s: OwnerSiteLine; siteUrl: string; benchmark?: string }) {
   const profile = `${siteUrl}/site/${s.host}`;
   return (
     <Section style={{ border: `1px solid ${brand.line}`, borderRadius: 12, padding: "18px 20px", marginTop: 16 }}>
@@ -61,6 +65,11 @@ function RankCard({ s, siteUrl }: { s: OwnerSiteLine; siteUrl: string }) {
       <div style={{ marginTop: 10 }}>
         <ChangePill rank={s.rank!} prev={s.prevRank} />
       </div>
+      {benchmark && (
+        <Text style={{ margin: "10px 0 0", fontSize: 13, lineHeight: "18px", color: brand.ink }}>
+          <span style={{ color: brand.green, fontWeight: 700 }}>●</span> {benchmark}
+        </Text>
+      )}
       <table cellPadding={0} cellSpacing={0} role="presentation" width="100%" style={{ marginTop: 16 }}>
         <tbody>
           <tr>
@@ -93,7 +102,16 @@ function RankCard({ s, siteUrl }: { s: OwnerSiteLine; siteUrl: string }) {
   );
 }
 
-export function WeeklyReportEmail({ siteUrl, siteName, dateLabel, sites, nudge, unsubscribeUrl }: WeeklyReportProps) {
+export function WeeklyReportEmail({
+  siteUrl,
+  siteName,
+  dateLabel,
+  sites,
+  nudge,
+  benchmarks = {},
+  opportunity = null,
+  unsubscribeUrl,
+}: WeeklyReportProps) {
   const ranked = sites.filter((s) => s.rank !== null).sort((a, b) => a.rank! - b.rank!);
   const waiting = sites.filter((s) => s.rank === null);
   const lead = ranked[0];
@@ -122,7 +140,7 @@ export function WeeklyReportEmail({ siteUrl, siteName, dateLabel, sites, nudge, 
       </Text>
 
       {ranked.map((s) => (
-        <RankCard key={s.siteId} s={s} siteUrl={siteUrl} />
+        <RankCard key={s.siteId} s={s} siteUrl={siteUrl} benchmark={benchmarks[s.siteId]} />
       ))}
 
       {waiting.map((s) => (
@@ -133,6 +151,23 @@ export function WeeklyReportEmail({ siteUrl, siteName, dateLabel, sites, nudge, 
           </Text>
         </Section>
       ))}
+
+      {opportunity && (
+        <Section style={{ border: `1px solid ${brand.line}`, borderLeft: `4px solid #f59e0b`, borderRadius: 12, padding: "16px 18px", marginTop: 20 }}>
+          <Text style={{ margin: 0, fontSize: 12, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: "#b45309" }}>
+            This week&apos;s opportunity · {opportunity.siteName}
+          </Text>
+          <Text style={{ margin: "6px 0 0", fontSize: 15, lineHeight: "21px", fontWeight: 600, color: brand.ink }}>
+            {opportunity.headline}
+          </Text>
+          <Text style={{ margin: "6px 0 0", fontSize: 13, lineHeight: "20px", color: brand.muted }}>{opportunity.detail}</Text>
+          <Text style={{ margin: "10px 0 0", fontSize: 13 }}>
+            <Link href={opportunity.href} style={{ color: brand.green, fontWeight: 600, textDecoration: "none" }}>
+              See all your opportunities →
+            </Link>
+          </Text>
+        </Section>
+      )}
 
       {nudge && (
         <Section style={{ backgroundColor: brand.greenSoft, borderRadius: 12, padding: "16px 18px", marginTop: 20 }}>

@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const report = await runComeback({ html: comebackHtml });
+  const report = await runComeback({ html: comebackHtml, opportunities: true });
   const sent = report.sent.owner_weekly + report.sent.owner_alert + report.sent.listing_weekly;
   if (sent > 0 || report.failed > 0) {
     await notifyAdmin({

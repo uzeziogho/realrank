@@ -31,6 +31,7 @@ import { getNotifications, getSetupCheck } from "@/lib/admin-log";
 import { AdminBell, AdminPanel } from "@/components/dashboard/admin-panel";
 import { getGrowthSummary } from "@/lib/growth";
 import { OwnerAnalytics } from "@/components/dashboard/owner-analytics";
+import { WeeklyInsights } from "@/components/dashboard/weekly-insights";
 import type { DirectoryStatus } from "@/components/dashboard/site-manager";
 import { siteConfig } from "@/lib/config";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -208,6 +209,19 @@ export default async function DashboardPage({
               icon={<TrendingUp className="size-4" />}
             />
           </section>
+
+          {/* This week: peer comparison + the biggest Search Console opportunity. */}
+          <WeeklyInsights
+            userId={user.id}
+            rows={myRows}
+            board={board?.organic ?? []}
+            propertyFor={Object.fromEntries(
+              myRows.flatMap((r) => {
+                const s = liveSites.find((x) => hostname(x.site_url).toLowerCase() === hostname(r.siteUrl).toLowerCase());
+                return s ? [[r.id, s.site_url]] : [];
+              }),
+            )}
+          />
 
           {/* Your sites overview */}
           <section className="mt-10">

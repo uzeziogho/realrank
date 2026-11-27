@@ -4,6 +4,7 @@ import { render } from "@react-email/components";
 import { WeeklyReportEmail } from "@/emails/weekly-report";
 import { TopAlertEmail } from "@/emails/top-alert";
 import { nudgeParts, type HtmlRenderers, type OwnerSiteLine } from "@/lib/comeback";
+import { benchmarkText, opportunityText } from "@/lib/insights";
 import { siteConfig } from "@/lib/config";
 
 /**
@@ -17,6 +18,10 @@ const dateLabel = (d: Date) => d.toLocaleDateString("en-US", { month: "short", d
 export const comebackHtml: HtmlRenderers = {
   async weekly(lines: OwnerSiteLine[], unsub: string, now: Date) {
     const lead = lines.filter((l) => l.rank !== null).sort((a, b) => a.rank! - b.rank!)[0];
+    const benchmarks = Object.fromEntries(
+      lines.filter((l) => l.benchmark).map((l) => [l.siteId, benchmarkText(l.benchmark!)]),
+    );
+    const opp = lead?.opportunity ? opportunityText(lead.opportunity) : null;
     return render(
       <WeeklyReportEmail
         siteUrl={siteConfig.url}
@@ -24,6 +29,8 @@ export const comebackHtml: HtmlRenderers = {
         dateLabel={dateLabel(now)}
         sites={lines}
         nudge={lead ? nudgeParts(lead) : null}
+        benchmarks={benchmarks}
+        opportunity={opp ? { siteName: lead.name, ...opp, href: `${siteConfig.url}/dashboard/leaks` } : null}
         unsubscribeUrl={unsub}
       />,
     );
@@ -59,4 +66,14 @@ export const SAMPLE_LINE: OwnerSiteLine = {
   listed: false,
   spotlightUntil: null,
   spark: [92, 101, 96, 110, 104, 118, 121, 130, 126, 141, 150, 147, 168, 175],
+  benchmark: { percentile: 72, peers: 18, category: "SaaS" },
+  opportunity: {
+    kind: "page2",
+    query: "example search phrase",
+    position: 12.4,
+    impressions: 1840,
+    ctr: 0.004,
+    expectedCtr: 0.012,
+    clicks: 37,
+  },
 };
