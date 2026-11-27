@@ -29,6 +29,7 @@ import { getListedSites } from "@/lib/listed";
 import { isAdminEmail } from "@/lib/admin";
 import { getNotifications, getSetupCheck } from "@/lib/admin-log";
 import { AdminBell, AdminPanel } from "@/components/dashboard/admin-panel";
+import { getGrowthSummary } from "@/lib/growth";
 import type { DirectoryStatus } from "@/components/dashboard/site-manager";
 import { siteConfig } from "@/lib/config";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -122,9 +123,9 @@ export default async function DashboardPage({
 
   // Admin-only: the bell + notifications card (and the way into /admin/placements).
   const admin = isAdminEmail(user.email);
-  const [adminNotes, adminSetup] = admin
-    ? await Promise.all([getNotifications(10), getSetupCheck()])
-    : [null, null];
+  const [adminNotes, adminSetup, adminGrowth] = admin
+    ? await Promise.all([getNotifications(10), getSetupCheck(), getGrowthSummary()])
+    : [null, null, null];
 
   return (
     <div className="container max-w-5xl py-10">
@@ -152,6 +153,7 @@ export default async function DashboardPage({
           unread={adminNotes.unread}
           available={adminNotes.available}
           setupProblems={adminSetup.filter((s) => !s.ok).length}
+          growth={adminGrowth}
         />
       )}
 

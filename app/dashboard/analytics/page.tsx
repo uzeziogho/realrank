@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { Activity, Layers, Sparkles, Filter, CalendarRange, Bot, Compass } from "lucide-react";
 import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
 import { StatTile } from "@/components/dash/stat-tile";
+import { GrowthSection } from "@/components/dash/growth-section";
+import { getGrowth } from "@/lib/growth";
 import { EventsAreaChart } from "@/components/dash/events-area-chart";
 import { TrafficBreakdown } from "@/components/traffic-breakdown";
 import {
@@ -95,13 +97,14 @@ export default async function AnalyticsPage({
   const { period: rawPeriod } = await searchParams;
   const period: ReportPeriod = isReportPeriod(rawPeriod) ? rawPeriod : "wow";
 
-  const [stats, funnel, report, bots, stats60, breakdown] = await Promise.all([
+  const [stats, funnel, report, bots, stats60, breakdown, growth] = await Promise.all([
     getEventStats(30),
     getConnectFunnel(30),
     getFeatureUsageReport(period),
     getBotTraffic(30),
     getEventStats(60),
     getTrafficBreakdown(30),
+    getGrowth(),
   ]);
   const topFeature = stats.events[0] ? labelFor(stats.events[0].event) : "—";
 
@@ -122,6 +125,11 @@ export default async function AnalyticsPage({
           Which features people actually use — aggregate, privacy-safe counts from
           the last 30 days. No cookies, no PII, owner-only.
         </p>
+      </div>
+
+      {/* Signups first: listings, verified sites, accounts — the growth that matters. */}
+      <div className="mb-10">
+        <GrowthSection growth={growth} />
       </div>
 
       {/* KPI row */}

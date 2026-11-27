@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bell, ArrowRight, AlertTriangle } from "lucide-react";
+import { Bell, ArrowRight, AlertTriangle, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { markNotificationsReadAction } from "@/app/admin/placements/actions";
 import type { AdminNotification } from "@/lib/supabase/types";
@@ -39,11 +39,14 @@ export function AdminPanel({
   unread,
   available,
   setupProblems,
+  growth = null,
 }: {
   items: AdminNotification[];
   unread: number;
   available: boolean;
   setupProblems: number;
+  /** New signups in the last 7 days (null when the database can't be read). */
+  growth?: { listings: number; sites: number; accounts: number } | null;
 }) {
   const latest = items.slice(0, 4);
   return (
@@ -77,6 +80,29 @@ export function AdminPanel({
           </Link>
         </div>
       </div>
+
+      {growth && (
+        <Link
+          href="/dashboard/analytics#growth"
+          className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border bg-background px-3 py-2.5 text-sm hover:border-primary/40"
+        >
+          <span className="inline-flex items-center gap-1.5 font-medium">
+            <TrendingUp className="size-4 text-primary" /> Last 7 days
+          </span>
+          <span className="tabular-nums">
+            <span className="font-semibold">{growth.listings}</span> listing{growth.listings === 1 ? "" : "s"}
+          </span>
+          <span className="tabular-nums">
+            <span className="font-semibold">{growth.sites}</span> verified site{growth.sites === 1 ? "" : "s"}
+          </span>
+          <span className="tabular-nums">
+            <span className="font-semibold">{growth.accounts}</span> account{growth.accounts === 1 ? "" : "s"}
+          </span>
+          <span className="ml-auto inline-flex items-center gap-1 text-primary">
+            Growth <ArrowRight className="size-3.5" />
+          </span>
+        </Link>
+      )}
 
       {setupProblems > 0 && (
         <Link
