@@ -24,12 +24,13 @@ import { siteSlug } from "@/lib/site";
 import { SiteFavicon } from "@/components/site-favicon";
 import { Sparkline } from "@/components/sparkline";
 import { listUserProperties } from "@/lib/gsc-server";
-import { getLeaderboardData, attachSparklines } from "@/lib/data";
+import { getLeaderboardData, attachSparklines, isReportPeriod, type ReportPeriod } from "@/lib/data";
 import { getListedSites } from "@/lib/listed";
 import { isAdminEmail } from "@/lib/admin";
 import { getNotifications, getSetupCheck } from "@/lib/admin-log";
 import { AdminBell, AdminPanel } from "@/components/dashboard/admin-panel";
 import { getGrowthSummary } from "@/lib/growth";
+import { OwnerAnalytics } from "@/components/dashboard/owner-analytics";
 import type { DirectoryStatus } from "@/components/dashboard/site-manager";
 import { siteConfig } from "@/lib/config";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -47,7 +48,7 @@ export const metadata: Metadata = {
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ directory?: string }>;
+  searchParams: Promise<{ directory?: string; period?: string }>;
 }) {
   // Not configured yet (e.g. local dev without keys): show a setup notice.
   if (!isSupabaseConfigured()) {
@@ -79,7 +80,9 @@ export default async function DashboardPage({
   const listed = await getListedSites();
   const directory: Record<string, DirectoryStatus> = {};
   for (const l of listed) directory[l.host] = { ownerVerified: l.ownerVerified, spotlightUntil: l.spotlightUntil };
-  const { directory: directoryResult } = await searchParams;
+  const { directory: directoryResult, period: rawPeriod } = await searchParams;
+  // Owner analytics comparison window (?period=); anything unrecognised reads as week-over-week.
+  const period: ReportPeriod = isReportPeriod(rawPeriod) ? rawPeriod : "wow";
   const directoryNotice =
     directoryResult === "error"
       ? "Couldn't add that site to the directory. Please try again — or email support if it keeps happening."
@@ -331,6 +334,10 @@ export default async function DashboardPage({
           Channels — track which marketing drives paying customers →
         </Link>
       </section>
+
+      {/* Owner only: signups growth, feature usage and traffic, merged in from
+          the old /dashboard/analytics page (which now redirects here). */}
+      {isOwner(user.email) && <OwnerAnalytics period={period} />}
     </div>
   );
 }

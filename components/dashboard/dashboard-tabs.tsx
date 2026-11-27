@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Search, BarChart3, type LucideIcon } from "lucide-react";
+import { LayoutDashboard, Search, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Tab = { href: string; label: string; icon: LucideIcon; exact?: boolean };
@@ -12,19 +12,15 @@ const TABS: Tab[] = [
   { href: "/dashboard/leaks", label: "Search leaks", icon: Search },
 ];
 
-const OWNER_TAB: Tab = {
-  href: "/dashboard/analytics",
-  label: "Analytics",
-  icon: BarChart3,
-};
 
 /**
- * Persistent sub-navigation across the dashboard's pages. The Analytics tab is
- * owner-only, so it's shown only when `owner` is true.
+ * Persistent sub-navigation across the dashboard's pages. Owner analytics
+ * lives on the Overview page itself (#analytics), so there's no separate tab;
+ * `owner` is kept so existing callers don't change.
  */
-export function DashboardTabs({ owner = false }: { owner?: boolean }) {
+export function DashboardTabs({ owner: _owner = false }: { owner?: boolean }) {
   const pathname = usePathname();
-  const tabs = owner ? [...TABS, OWNER_TAB] : TABS;
+  const tabs = TABS;
   return (
     <nav className="mt-6 flex gap-1 overflow-x-auto border-b border-border">
       {tabs.map((t) => {

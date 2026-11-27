@@ -1,0 +1,543 @@
+import Link from "next/link";
+import { Activity, Layers, Sparkles, Filter, CalendarRange, Bot, Compass } from "lucide-react";
+import { StatTile } from "@/components/dash/stat-tile";
+import { GrowthSection } from "@/components/dash/growth-section";
+import { getGrowth } from "@/lib/growth";
+import { EventsAreaChart } from "@/components/dash/events-area-chart";
+import { TrafficBreakdown } from "@/components/traffic-breakdown";
+import {
+  getEventStats,
+  getConnectFunnel,
+  getFeatureUsageReport,
+  getBotTraffic,
+  getTrafficBreakdown,
+  isReportPeriod,
+  REPORT_PERIODS,
+} from "@/lib/data";
+import type {
+  EventStat,
+  ConnectFunnel,
+  FeatureUsageReport,
+  ReportPeriod,
+  BotTrafficSummary,
+} from "@/lib/data";
+import { cn, formatCompact, formatGrowth } from "@/lib/utils";
+import { dashVar, dashColorAt } from "@/lib/dash-colors";
+
+
+/** Friendly labels for the raw event names the beacons emit. */
+const EVENT_LABELS: Record<string, string> = {
+  report_card: "Report Card",
+  rank_check: "Rank checker",
+  momentum_calc: "Momentum calculator",
+  growth_grader: "Growth grader",
+  traffic_reality: "Is my traffic real?",
+  badge_copy: "Badge copied",
+  embed_copy: "Widget copied",
+  cite_copy: "Index citation copied",
+  cite_embed_copy: "Index embed copied",
+  connect_click: "Connect clicked",
+  list_click: "List-your-project clicked",
+  movers_post_copy: "Movers post copied",
+  movers_post_share: "Movers post shared",
+  listing_created: "Listing created",
+  listing_verified: "Listing verified",
+  outbound_click: "Outbound click to a listed site",
+  signup: "Signed up",
+  permalink_copy: "Listing link copied",
+  share_click: "Listing shared",
+  claim_start: "Claim started",
+  claim_code_copy: "Claim code copied",
+  claim_verified: "Claim verified",
+  listing_edited: "Listing edited by owner",
+  sponsor_contact_click: "Sponsor contact clicked",
+  archive_checkout_click: "Archive: founding checkout clicked",
+  archive_reserve_click: "Archive: waitlist CTA clicked",
+  report_cite_copy: "Report citation copied",
+  report_embed_copy: "Report embed copied",
+  spotlight_checkout_click: "Spotlight: checkout clicked",
+  spotlight_contact_click: "Spotlight: request clicked",
+  sponsor_checkout_click: "Sponsor: checkout clicked",
+};
+
+function labelFor(event: string): string {
+  return EVENT_LABELS[event] ?? event.replace(/_/g, " ");
+}
+
+/** A week-over-week style delta pill from a current and prior window total. */
+function kpiDelta(cur: number, prev: number): { label: string; direction: "up" | "down" | "flat" } | undefined {
+  if (prev <= 0) return undefined;
+  const r = (cur - prev) / prev;
+  const dir = r > 0.005 ? "up" : r < -0.005 ? "down" : "flat";
+  return { label: `${r > 0 ? "+" : ""}${Math.round(r * 100)}%`, direction: dir };
+}
+
+/**
+ * The owner's analytics, shown at the bottom of /dashboard (owner only):
+ * signups growth first, then feature usage, bots, the connect funnel and
+ * where traffic comes from. `period` drives the comparison report.
+ */
+export async function OwnerAnalytics({ period }: { period: ReportPeriod }) {
+  const [stats, funnel, report, bots, stats60, breakdown, growth] = await Promise.all([
+    getEventStats(30),
+    getConnectFunnel(30),
+    getFeatureUsageReport(period),
+    getBotTraffic(30),
+    getEventStats(60),
+    getTrafficBreakdown(30),
+    getGrowth(),
+  ]);
+  const topFeature = stats.events[0] ? labelFor(stats.events[0].event) : "—";
+
+  // Events in the prior 30 days, for the headline delta (last 30 vs the 30 before).
+  const eventsPrev = stats60.daily
+    .slice(0, Math.max(0, stats60.daily.length - 30))
+    .slice(-30)
+    .reduce((s, d) => s + d.hits, 0);
+  const eventsDelta = kpiDelta(stats.total, eventsPrev);
+
+  return (
+    <section id="analytics" className="mt-12 scroll-mt-24 border-t border-border/60 pt-8">
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold tracking-tight">Analytics</h2>
+        <p className="mt-1 text-muted-foreground">
+          Signups, feature usage and traffic — aggregate, privacy-safe counts. No cookies, no PII. Only you can see
+          this.
+        </p>
+      </div>
+
+      {/* Signups first: listings, verified sites, accounts — the growth that matters. */}
+      <div className="mb-10">
+        <GrowthSection growth={growth} />
+      </div>
+
+      {/* KPI row */}
+      <section className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+        <StatTile
+          color="green"
+          label="Events (30d)"
+          value={formatCompact(stats.total)}
+          sub="vs prior 30 days"
+          delta={eventsDelta}
+          icon={<Activity className="size-4" />}
+          spark={stats.daily.map((d) => d.hits)}
+        />
+        <StatTile
+          color="blue"
+          label="Distinct features"
+          value={String(stats.distinct)}
+          sub="with at least one use"
+          icon={<Layers className="size-4" />}
+        />
+        <StatTile
+          color="violet"
+          label="Top feature"
+          value={topFeature}
+          sub={stats.events[0] ? `${formatCompact(stats.events[0].hits)} uses` : "no data yet"}
+          icon={<Sparkles className="size-4" />}
+        />
+      </section>
+
+      {/* Period comparison — the same events read against the window before */}
+      <section className="mt-10">
+        <div className="mb-1 flex items-center gap-2">
+          <CalendarRange className="size-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold">Feature usage report</h2>
+        </div>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Every feature event in the current window against the one before it.
+        </p>
+        <PeriodTabs active={report.period} />
+        <div className="mt-4 rounded-xl border border-border bg-card p-6">
+          <UsageReport report={report} />
+        </div>
+      </section>
+
+      {/* Filtered bot traffic — what the beacon classified as automated */}
+      <section className="mt-10">
+        <div className="mb-1 flex items-center gap-2">
+          <Bot className="size-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold">Filtered bot traffic</h2>
+        </div>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Automated hits the beacon classified and kept out of the public
+          figures, last {bots.days} days.
+        </p>
+        <div className="rounded-xl border border-border bg-card p-6">
+          <BotTrafficView bots={bots} />
+        </div>
+      </section>
+
+      {/* Connect funnel — visits to sites on the board */}
+      <section className="mt-10">
+        <div className="mb-1 flex items-center gap-2">
+          <Filter className="size-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold">Connect funnel</h2>
+        </div>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Visits to sites on the board, last {funnel.days} days. &quot;Sites on the
+          board&quot; is the cumulative total, so treat the last step as a running tally.
+        </p>
+        <div className="rounded-xl border border-border bg-card p-6">
+          <ConnectFunnelView funnel={funnel} />
+        </div>
+      </section>
+
+      {/* Where traffic comes from — owner-only acquisition detail (referrers,
+          landing pages, countries, devices, and the split-Direct rows). Moved
+          off the public /stats page, which keeps only the citable Index and the
+          visitor trend. */}
+      <section className="mt-10">
+        <div className="mb-1 flex items-center gap-2">
+          <Compass className="size-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold">Where traffic comes from</h2>
+        </div>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Top referrers, landing pages, countries and devices — first-party,
+          cookieless, aggregate. Last 30 days.
+        </p>
+        <TrafficBreakdown data={breakdown} />
+      </section>
+
+      {stats.total === 0 ? (
+        <div className="mt-10 rounded-xl border border-border bg-card p-6">
+          <h2 className="text-lg font-semibold">No events yet</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Feature-usage events start counting as visitors use the calculators,
+            rank checker, report card and badge. They&apos;ll chart here once the
+            first ones land.
+          </p>
+        </div>
+      ) : (
+        <>
+          {/* Daily trend */}
+          <section className="mt-10">
+            <h2 className="mb-4 text-lg font-semibold">Daily events</h2>
+            <div className="rounded-xl border border-border bg-card p-6">
+              <EventsAreaChart days={stats.daily} />
+            </div>
+          </section>
+
+          {/* Feature usage bar list */}
+          <section className="mt-10">
+            <h2 className="mb-4 text-lg font-semibold">Feature usage</h2>
+            <div className="rounded-xl border border-border bg-card p-6">
+              <FeatureBars events={stats.events} />
+            </div>
+          </section>
+        </>
+      )}
+    </section>
+  );
+}
+
+/** Horizontal bar list — the datafast/umami "most-used" view, colored by rank. */
+function FeatureBars({ events }: { events: EventStat[] }) {
+  const max = Math.max(1, ...events.map((e) => e.hits));
+  return (
+    <ul className="flex flex-col gap-3">
+      {events.map((e, i) => {
+        const pct = Math.max(3, Math.round((e.hits / max) * 100));
+        const color = dashVar[dashColorAt(i)];
+        return (
+          <li key={e.event}>
+            <div className="mb-1 flex items-baseline justify-between gap-3">
+              <span className="flex min-w-0 items-center gap-2 text-sm font-medium">
+                <span className="size-2 shrink-0 rounded-[3px]" style={{ backgroundColor: color }} aria-hidden />
+                <span className="truncate">{labelFor(e.event)}</span>
+              </span>
+              <span className="shrink-0 text-sm font-semibold tabular-nums">
+                {formatCompact(e.hits)}
+              </span>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full"
+                style={{ width: `${pct}%`, backgroundColor: color }}
+              />
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/** Funnel: visits -> tool -> connect click -> on the board, with step conversion. */
+function ConnectFunnelView({ funnel }: { funnel: ConnectFunnel }) {
+  const stages = [
+    { label: "Visits", value: funnel.visits },
+    { label: "Used a free tool", value: funnel.toolUses },
+    { label: "Clicked connect", value: funnel.connectClicks },
+    { label: "Sites on the board", value: funnel.connectedSites, cumulative: true },
+  ];
+  const top = Math.max(1, funnel.visits);
+
+  if (funnel.visits === 0 && funnel.toolUses === 0 && funnel.connectClicks === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        The funnel fills in as visits, tool usage and connect clicks come in.
+      </p>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      {stages.map((s, i) => {
+        const prev = i > 0 ? stages[i - 1].value : null;
+        const conv = prev && prev > 0 ? Math.round((s.value / prev) * 100) : null;
+        const width = Math.max(3, Math.round((s.value / top) * 100));
+        return (
+          <div key={s.label}>
+            <div className="mb-1 flex items-baseline justify-between gap-3">
+              <span className="text-sm font-medium">
+                {s.label}
+                {s.cumulative && (
+                  <span className="ml-1.5 text-xs font-normal text-muted-foreground">total</span>
+                )}
+              </span>
+              <span className="flex items-baseline gap-2">
+                {conv != null && !s.cumulative && (
+                  <span className="text-xs text-muted-foreground tabular-nums">{conv}%</span>
+                )}
+                <span className="text-sm font-semibold tabular-nums">{formatCompact(s.value)}</span>
+              </span>
+            </div>
+            <div className="h-3 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className={`h-full rounded-full ${s.cumulative ? "bg-success" : "bg-primary"}`}
+                style={{ width: `${width}%` }}
+              />
+            </div>
+          </div>
+        );
+      })}
+
+      {funnel.bySource.length > 0 && (
+        <div className="mt-2 border-t border-border pt-4">
+          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Connect clicks by source
+          </p>
+          <ul className="flex flex-col gap-1.5">
+            {funnel.bySource.map((s) => (
+              <li key={s.source} className="flex items-baseline justify-between gap-3 text-sm">
+                <span className="truncate text-muted-foreground">{s.source}</span>
+                <span className="shrink-0 font-semibold tabular-nums">{formatCompact(s.hits)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function fmtShort(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+/** Period selector — plain links, so the page stays a server component. */
+function PeriodTabs({ active }: { active: ReportPeriod }) {
+  return (
+    <div
+      role="tablist"
+      aria-label="Comparison period"
+      className="inline-flex items-center rounded-lg border border-border bg-card p-1"
+    >
+      {REPORT_PERIODS.map((p) => (
+        <Link
+          key={p.key}
+          href={`/dashboard?period=${p.key}#analytics`}
+          scroll={false}
+          role="tab"
+          aria-selected={p.key === active}
+          title={p.label}
+          className={cn(
+            "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+            p.key === active
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {p.short}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function fmtRange(w: { start: string; end: string }): string {
+  return `${fmtShort(w.start)} – ${fmtShort(w.end)}`;
+}
+
+/** Current vs previous per feature, with the totals line on top. */
+function UsageReport({ report }: { report: FeatureUsageReport }) {
+  const periodLabel =
+    REPORT_PERIODS.find((p) => p.key === report.period)?.label ?? report.period;
+
+  if (report.features.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        No feature events in {fmtRange(report.current)} or the window before it.
+        Usage will appear here as visitors use the tools.
+      </p>
+    );
+  }
+
+  return (
+    <>
+      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <div>
+          <div className="text-sm font-medium">{periodLabel}</div>
+          <div className="text-xs text-muted-foreground">
+            {fmtRange(report.current)} vs {fmtRange(report.previous)}
+          </div>
+        </div>
+        <div className="flex items-baseline gap-2">
+          <span className="text-2xl font-bold tabular-nums">
+            {formatCompact(report.totalCurrent)}
+          </span>
+          <span className="text-xs text-muted-foreground">events</span>
+          <ChangeBadge change={report.totalChange} />
+        </div>
+      </div>
+
+      {/* A zero "previous" means two very different things — usage stopped, or
+          the site had no data back then. Say which, rather than print -100%. */}
+      {report.insufficientHistory && (
+        <p className="mb-4 rounded-lg border border-dashed border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+          No events recorded in {fmtRange(report.previous)} — that window predates
+          the data, so treat these as first-period figures rather than a decline.
+        </p>
+      )}
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-border text-left text-[11px] uppercase tracking-wider text-muted-foreground">
+              <th scope="col" className="pb-2 font-semibold">Feature</th>
+              <th scope="col" className="pb-2 text-right font-semibold">Current</th>
+              <th scope="col" className="pb-2 text-right font-semibold">Previous</th>
+              <th scope="col" className="pb-2 text-right font-semibold">Change</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border/70">
+            {report.features.map((f) => (
+              <tr key={f.event}>
+                <td className="py-2.5 pr-3 font-medium">{labelFor(f.event)}</td>
+                <td className="py-2.5 text-right tabular-nums">{formatCompact(f.current)}</td>
+                <td className="py-2.5 text-right tabular-nums text-muted-foreground">
+                  {formatCompact(f.previous)}
+                </td>
+                <td className="py-2.5 text-right">
+                  <ChangeBadge change={f.change} isNew={f.previous === 0 && f.current > 0} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
+/** A signed percentage, or "new"/"—" when there is no prior figure to divide by. */
+function ChangeBadge({ change, isNew = false }: { change: number | null; isNew?: boolean }) {
+  if (change === null) {
+    return (
+      <span className="text-xs text-muted-foreground">{isNew ? "new" : "—"}</span>
+    );
+  }
+  const tone =
+    change > 0.005 ? "text-success" : change < -0.005 ? "text-danger" : "text-muted-foreground";
+  return <span className={`text-sm font-medium tabular-nums ${tone}`}>{formatGrowth(change)}</span>;
+}
+
+const BOT_REASON_LABELS: Record<string, string> = {
+  "user-agent": "Named itself (crawler, monitor or HTTP client)",
+  webdriver: "Headless automation (navigator.webdriver)",
+  "no-user-agent": "Sent no user-agent",
+};
+
+/** How much automated traffic arrived, and which signal caught it. */
+function BotTrafficView({ bots }: { bots: BotTrafficSummary }) {
+  const totalSessions = bots.botSessions + bots.humanSessions;
+
+  if (totalSessions === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        No sessions recorded in the last {bots.days} days, so there is nothing
+        to classify yet.
+      </p>
+    );
+  }
+
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <Reading
+          label="Bot sessions"
+          value={formatCompact(bots.botSessions)}
+          sub={`of ${formatCompact(totalSessions)} total`}
+        />
+        <Reading
+          label="Bot share"
+          value={bots.botShare === null ? "—" : `${Math.round(bots.botShare * 100)}%`}
+          sub="of all sessions"
+        />
+        <Reading
+          label="Human sessions"
+          value={formatCompact(bots.humanSessions)}
+          sub="in the public figures"
+        />
+      </div>
+
+      {bots.reasons.length > 0 ? (
+        <div className="mt-6">
+          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            What identified them
+          </p>
+          <ul className="flex flex-col gap-1.5">
+            {bots.reasons.map((r) => (
+              <li key={r.reason} className="flex items-baseline justify-between gap-3 text-sm">
+                <span className="truncate text-muted-foreground">
+                  {BOT_REASON_LABELS[r.reason] ?? r.reason}
+                </span>
+                <span className="shrink-0 font-semibold tabular-nums">
+                  {formatCompact(r.hits)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <p className="mt-6 text-sm text-muted-foreground">
+          No automated hits classified yet in this window.
+        </p>
+      )}
+
+      {/* Be honest about the ceiling: these are self-disclosure signals, so this
+          figure reads lower than a behavioural tool's and should not be
+          expected to match it. */}
+      <p className="mt-6 border-t border-border pt-4 text-xs text-muted-foreground">
+        Counts automation that identifies itself — a named user-agent, a missing
+        one, or <code>navigator.webdriver</code>. Behavioural detection
+        (interaction and device patterns, as Microsoft Clarity does it) needs
+        per-visitor signals the beacon deliberately does not collect, so expect
+        this share to read lower than Clarity&apos;s and treat them as separate
+        measurements.
+      </p>
+    </>
+  );
+}
+
+/** Small labelled figure, shared by the bot panel. */
+function Reading({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-4">
+      <div className="text-2xl font-bold tabular-nums">{value}</div>
+      <div className="mt-0.5 text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
+      {sub && <div className="mt-0.5 text-xs text-muted-foreground">{sub}</div>}
+    </div>
+  );
+}

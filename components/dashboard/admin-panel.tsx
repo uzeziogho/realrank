@@ -83,7 +83,7 @@ export function AdminPanel({
 
       {growth && (
         <Link
-          href="/dashboard/analytics#growth"
+          href="/dashboard#growth"
           className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border bg-background px-3 py-2.5 text-sm hover:border-primary/40"
         >
           <span className="inline-flex items-center gap-1.5 font-medium">
