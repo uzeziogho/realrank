@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AdminShell } from "@/components/admin/admin-shell";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin";
 import { getPlacementsOverview, freeSponsorPositions, type AdminSponsor, type AdminSpotlight } from "@/lib/placements";
@@ -55,7 +56,7 @@ export default async function PlacementsAdminPage() {
   const attention = sponsors.filter((s) => ["needs_details", "waitlist", "on_hold"].includes(s.slot.status)).length;
 
   return (
-    <div className="container max-w-5xl py-10">
+    <AdminShell unread={notes.unread}>
       <h1 className="text-2xl font-bold tracking-tight">Paid placements</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         Spotlights expire on their own at their end time; sponsor slots follow Dodo subscription events. Use this page
@@ -246,7 +247,7 @@ export default async function PlacementsAdminPage() {
           </div>
         )}
       </section>
-    </div>
+    </AdminShell>
   );
 }
 

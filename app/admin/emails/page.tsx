@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AdminShell } from "@/components/admin/admin-shell";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin";
 import { comebackStatus, runComeback, LISTING_VISITS_FLOOR, type DraftKind } from "@/lib/comeback";
@@ -48,7 +49,8 @@ export default async function AdminEmailsPage() {
   );
 
   return (
-    <div className="container max-w-3xl py-10">
+    <AdminShell>
+      <div className="max-w-3xl">
       <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground">
         ← Dashboard
       </Link>
@@ -171,5 +173,6 @@ export default async function AdminEmailsPage() {
         )}
       </section>
     </div>
+    </AdminShell>
   );
 }

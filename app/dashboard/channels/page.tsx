@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { DashFrame } from "@/components/admin/admin-shell";
+import { isAdminEmail } from "@/lib/admin";
 import { redirect } from "next/navigation";
 import { ChannelsPanel } from "@/components/dashboard/channels-panel";
 import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
@@ -23,8 +25,8 @@ export default async function ChannelsPage() {
   ]);
 
   return (
-    <div className="container max-w-5xl py-10">
-      <DashboardTabs owner={isOwner(user.email)} />
+    <DashFrame admin={isAdminEmail(user.email)}>
+      {!isAdminEmail(user.email) && <DashboardTabs owner={isOwner(user.email)} />}
 
       <div className="mt-8 mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Channels</h1>
@@ -35,6 +37,6 @@ export default async function ChannelsPage() {
       </div>
 
       <ChannelsPanel channels={channels} stripe={stripe} />
-    </div>
+    </DashFrame>
   );
 }

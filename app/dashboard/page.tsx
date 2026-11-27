@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { DashFrame } from "@/components/admin/admin-shell";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
@@ -132,7 +133,7 @@ export default async function DashboardPage({
     : [null, null, null];
 
   return (
-    <div className="container max-w-5xl py-10">
+    <DashFrame admin={admin} unread={adminNotes?.unread ?? 0}>
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
@@ -161,7 +162,7 @@ export default async function DashboardPage({
         />
       )}
 
-      <DashboardTabs owner={isOwner(user.email)} />
+      {!admin && <DashboardTabs owner={isOwner(user.email)} />}
 
       {/* Archive validation prompt — connected users are the highest-intent audience. */}
       <Link
@@ -224,7 +225,7 @@ export default async function DashboardPage({
           />
 
           {/* Your sites overview */}
-          <section className="mt-10">
+          <section id="sites" className="mt-10 scroll-mt-24">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold">Your sites</h2>
               <span className="text-xs text-muted-foreground">
@@ -352,7 +353,7 @@ export default async function DashboardPage({
       {/* Owner only: signups growth, feature usage and traffic, merged in from
           the old /dashboard/analytics page (which now redirects here). */}
       {isOwner(user.email) && <OwnerAnalytics period={period} />}
-    </div>
+    </DashFrame>
   );
 }
 
